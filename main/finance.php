@@ -11,7 +11,7 @@ if (!isset($_SESSION['a_id'])) {
 include '../db/db_conn.php'; 
 
 // Fetch employee records where role is 'employee' and department is 'finance'
-$sql = "SELECT e_id, firstname, lastname, department, role, position FROM employee_register WHERE role = 'employee' AND department = 'Finance Department'";
+$sql = "SELECT e_id, firstname, lastname, role, position FROM employee_register WHERE role = 'employee' AND department = 'Finance Department'";
 $result = $conn->query($sql);
 
 // Fetch evaluations for this admin
@@ -206,61 +206,66 @@ $conn->close();
         }
 
         function submitEvaluation() {
-            const evaluations = [];
-            const questionsDiv = document.getElementById('questions');
+    const evaluations = [];
+    const questionsDiv = document.getElementById('questions');
 
-            questionsDiv.querySelectorAll('input[type="radio"]:checked').forEach(input => {
-                evaluations.push({
-                    question: input.name,  
-                    rating: input.value    
-                });
-            });
+    questionsDiv.querySelectorAll('input[type="radio"]:checked').forEach(input => {
+        evaluations.push({
+            question: input.name,  
+            rating: input.value    
+        });
+    });
 
-            const totalQuestions = questionsDiv.querySelectorAll('.star-rating').length;
+    const totalQuestions = questionsDiv.querySelectorAll('.star-rating').length;
 
-            if (evaluations.length !== totalQuestions) {
-                alert('Please complete the evaluation before submitting.');
-                return;
+    if (evaluations.length !== totalQuestions) {
+        alert('Please complete the evaluation before submitting.');
+        return;
+    }
+
+    const categoryAverages = {
+        QualityOfWork: calculateAverage('Quality of Work', evaluations),
+        CommunicationSkills: calculateAverage('Communication Skills', evaluations),
+        Teamwork: calculateAverage('Teamwork', evaluations),
+        Punctuality: calculateAverage('Punctuality', evaluations),
+        Initiative: calculateAverage('Initiative', evaluations)
+    };
+
+    console.log('Category Averages:', categoryAverages);
+
+    // Get admin ID from the hidden input field
+    const adminId = document.getElementById('a_id').value;
+
+    // Pass the department value (Finance Department in this case)
+    const department = 'Finance Department'; 
+
+    $.ajax({
+        type: 'POST',
+        url: '../db/submit_finance.php',
+        data: {
+            employeeId: currentEmployeeId,
+            employeeName: currentEmployeeName,
+            employeePosition: currentEmployeePosition,
+            categoryAverages: categoryAverages,
+            adminId: adminId,
+            department: department  // Include department in the AJAX request
+        },
+        success: function (response) {
+            console.log(response); 
+            if (response === 'You have already evaluated this employee.') {
+                alert(response); 
+            } else {
+                $('#evaluationModal').modal('hide');
+                alert('Evaluation submitted successfully!');
             }
-
-            const categoryAverages = {
-                QualityOfWork: calculateAverage('Quality of Work', evaluations),
-                CommunicationSkills: calculateAverage('Communication Skills', evaluations),
-                Teamwork: calculateAverage('Teamwork', evaluations),
-                Punctuality: calculateAverage('Punctuality', evaluations),
-                Initiative: calculateAverage('Initiative', evaluations)
-            };
-
-            console.log('Category Averages:', categoryAverages);
-
-            // Get admin ID from the hidden input field
-            const adminId = document.getElementById('a_id').value;
-
-            $.ajax({
-                type: 'POST',
-                url: '../db/submit_finance.php',
-                data: {
-                    employeeId: currentEmployeeId,
-                    employeeName: currentEmployeeName,
-                    employeePosition: currentEmployeePosition,
-                    categoryAverages: categoryAverages,
-                    adminId: adminId
-                },
-                success: function (response) {
-                    console.log(response); 
-                    if (response === 'You have already evaluated this employee.') {
-                        alert(response); 
-                    } else {
-                        $('#evaluationModal').modal('hide');
-                        alert('Evaluation submitted successfully!');
-                    }
-                },
-                error: function (err) {
-                    console.error(err);
-                    alert('An error occurred while submitting the evaluation.');
-                }
-            });
+        },
+        error: function (err) {
+            console.error(err);
+            alert('An error occurred while submitting the evaluation.');
         }
+    });
+}
+
     </script>
 </body>
 

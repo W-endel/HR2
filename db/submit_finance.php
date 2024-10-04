@@ -4,18 +4,16 @@ session_start();
 // Include database connection
 include '../db/db_conn.php';
 
-// Debugging output
-var_dump($_SESSION); // Check if admin_id is set
-
 if (!isset($_SESSION['a_id'])) {
     echo 'Admin ID not set.';
     exit();
 }
 
 // Get data from the POST request
-$adminId = $_SESSION['a_id']; // Use the correct session variable
+$adminId = $_SESSION['a_id'];
 $employeeId = $_POST['employeeId'];
 $categoryAverages = $_POST['categoryAverages'];
+$department = $_POST['department']; // Get the department from POST data
 
 // Check if the current admin has already evaluated this employee
 $checkSql = "SELECT * FROM admin_evaluations WHERE a_id = ? AND e_id = ?";
@@ -29,15 +27,16 @@ if ($checkStmt->num_rows > 0) {
 } else {
     // Prepare the SQL to insert the evaluation into the database
     $sql = "INSERT INTO admin_evaluations (
-                a_id, e_id, quality, communication_skills, teamwork, punctuality, initiative
-            ) VALUES (?, ?, ?, ?, ?, ?, ?)";
+                a_id, e_id, department, quality, communication_skills, teamwork, punctuality, initiative
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
 
-    // Bind the average ratings to the statement (i for integer, d for decimal)
+    // Bind the parameters to the statement (i for integer, s for string, d for decimal)
     $stmt->bind_param(
-        'iiddddd', 
+        'iisddddd',  // Changed to 'iisdddddd' - department is now string
         $adminId, 
         $employeeId, 
+        $department,  // Bind the department as a string
         $categoryAverages['QualityOfWork'], 
         $categoryAverages['CommunicationSkills'], 
         $categoryAverages['Teamwork'], 

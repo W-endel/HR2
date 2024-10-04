@@ -16,7 +16,7 @@ if ($conn->connect_error) {
 }
 
 // Fetch admin data
-$sql = "SELECT id, firstname, lastname, email, role, phone_number, address FROM admin_register WHERE role='Admin'";
+$sql = "SELECT a_id, firstname, lastname, email, role, phone_number, address FROM admin_register WHERE role='Admin'";
 $result = $conn->query($sql);
 ?>
 
@@ -34,7 +34,7 @@ $result = $conn->query($sql);
         <table class="table table-bordered">
             <thead class="thead-light">
                 <tr class="text-center">
-                    <th>ID</th>
+                    <th>Admin ID</th>
                     <th>First Name</th>
                     <th>Last Name</th>
                     <th>Email</th>
@@ -48,7 +48,7 @@ $result = $conn->query($sql);
                 <?php if ($result->num_rows > 0): ?>
                     <?php while ($row = $result->fetch_assoc()): ?>
                         <tr class="text-center">
-                            <td><?php echo $row['id']; ?></td>
+                            <td><?php echo $row['a_id']; ?></td>
                             <td><?php echo $row['firstname']; ?></td>
                             <td><?php echo $row['lastname']; ?></td>
                             <td><?php echo $row['email']; ?></td>
@@ -56,8 +56,8 @@ $result = $conn->query($sql);
                             <td><?php echo $row['phone_number']; ?></td>
                             <td><?php echo $row['address']; ?></td>
                             <td>
-                                <button class="btn btn-success btn-sm" onclick="fillUpdateForm(<?php echo $row['id']; ?>, '<?php echo $row['firstname']; ?>', '<?php echo $row['lastname']; ?>', '<?php echo $row['email']; ?>', '<?php echo $row['role']; ?>', '<?php echo $row['phone_number']; ?>', '<?php echo $row['address']; ?>')">Update</button>
-                                <button class="btn btn-danger btn-sm" onclick="deleteAdmin(<?php echo $row['id']; ?>)">Delete</button>
+                                <button class="btn btn-success btn-sm" onclick="fillUpdateForm(<?php echo $row['a_id']; ?>, '<?php echo $row['firstname']; ?>', '<?php echo $row['lastname']; ?>', '<?php echo $row['email']; ?>', '<?php echo $row['role']; ?>', '<?php echo $row['phone_number']; ?>', '<?php echo $row['address']; ?>')">Update</button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteAdmin(<?php echo $row['a_id']; ?>)">Delete</button>
                             </td>
                         </tr>
                     <?php endwhile; ?>
@@ -107,8 +107,8 @@ $result = $conn->query($sql);
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
-        function fillUpdateForm(id, firstname, lastname, email, role, phone_number, address) {
-            document.getElementById('updateId').value = id;
+        function fillUpdateForm(adminId, firstname, lastname, email, role, phone_number, address) {
+            document.getElementById('updateId').value = adminId;
             document.querySelector('input[name="firstname"]').value = firstname;
             document.querySelector('input[name="lastname"]').value = lastname;
             document.querySelector('input[name="email"]').value = email;
@@ -118,10 +118,10 @@ $result = $conn->query($sql);
             document.querySelector('input[name="firstname"]').focus();
         }
 
-        function deleteAdmin(id) {
+        function deleteAdmin(adminId) {
             if (confirm('Are you sure you want to delete this admin?')) {
                 const formData = new FormData();
-                formData.append('id', id);
+                formData.append('a_id', adminId);
                 fetch('delete_admin.php', {
                     method: 'POST',
                     body: formData

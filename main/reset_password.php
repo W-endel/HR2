@@ -21,7 +21,7 @@ try {
 
     // Recipients
     $mail->setFrom('microfinancehr2@gmail.com', 'Microfinance');
-    $mail->addAddress('kimwency.17@gmail.com', 'Kim Wency Cornejo'); // Add a recipient
+    $mail->addAddress('uretawendel@gmail.com', 'Wendel Ureta'); // Add a recipient
     $mail->addReplyTo('microfinancehr2@gmail.com', 'Microfinance');
 
     // Content

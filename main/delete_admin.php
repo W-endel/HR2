@@ -17,16 +17,16 @@ if ($conn->connect_error) {
 }
 
 // Get employee ID from request
-$id = isset($_POST['id']) ? trim($_POST['id']) : '';
+$adminId = isset($_POST['a_id']) ? trim($_POST['a_id']) : '';
 
 // Basic validation
-if (empty($id)) {
+if (empty($adminId)) {
     echo json_encode(['error' => 'Admin ID is required.']);
     exit();
 }
 
 // Prepare and execute SQL statement for deleting
-$sql = "DELETE FROM registeradmin_db WHERE id=?";
+$sql = "DELETE FROM admin_register WHERE a_id = ?";
 $stmt = $conn->prepare($sql);
 
 if ($stmt === false) {
@@ -34,7 +34,7 @@ if ($stmt === false) {
     exit();
 }
 
-$stmt->bind_param("i", $id);
+$stmt->bind_param("i", $adminId);
 
 if ($stmt->execute()) {
     echo json_encode(['success' => 'Admin deleted successfully!']);

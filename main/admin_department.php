@@ -3,102 +3,211 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+    <title>Evaluation Dashboard</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <style>
-        body {
-            background-color: #343a40; /* Dark background */
-            color: white; /* White text */
-            overflow: hidden; /* Prevent scrolling */
-        }
-        .sidebar {
-            height: 100vh;
-            background-color: #212529; /* Dark sidebar */
-            padding: 20px;
-            transition: width 0.3s, padding 0.3s;
-            width: 250px;
-            position: relative;
-        }
-        .sidebar.collapsed {
-            width: 0; /* Fully hide sidebar */
-            padding: 0; /* Remove padding */
-        }
-        .sidebar a {
-            color: #ffc107; /* Yellow text */
-            text-decoration: none;
-            display: flex; /* Use flexbox for centering */
-            align-items: center; /* Center vertically */
-            justify-content: center; /* Center horizontally */
-            margin: 10px 0;
-            padding: 15px; /* Increased padding for better touch target */
-            border: 1px solid #ffc107; /* Yellow border */
-            border-radius: 5px;
-            transition: transform 0.3s, opacity 0.3s;
-            transform: translateX(0);
-            opacity: 1; /* Fully visible */
-        }
-        .sidebar.collapsed a {
-            opacity: 0; /* Hide text when collapsed */
-            transform: translateX(-20px); /* Move left */
-        }
-        .sidebar h4 {
-            margin-left: 15px; /* Indent heading */
-            transition: opacity 0.3s;
-        }
-        .sidebar.collapsed h4 {
-            opacity: 0; /* Hide heading when collapsed */
-        }
-        .sidebar a:hover {
-            text-decoration: underline;
-            background-color: rgba(255, 255, 255, 0.1); /* Hover effect */
-        }
-        .toggle-btn {
-            cursor: pointer;
-            color: #ffc107;
-            font-size: 20px;
-            margin-left: 15px; /* Indent toggle button */
-        }
-        .content {
-            flex-grow: 1;
-            padding: 20px;
-            transition: margin-left 0.3s;
-            margin-left: 250px; /* Initial margin for content */
-        }
-        .content.collapsed {
-            margin-left: 0; /* Adjust margin when sidebar is collapsed */
-        }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
-<body>
-    <div class="d-flex">
-        <div class="sidebar" id="sidebar">
-            <span class="toggle-btn text-decoration-none" onclick="toggleSidebar()">&#x276E;</span>
-            <h4>Departments</h4>
-            <a href="../main/finance.php">Finance</a>
-            <a href="../main/hr.php">Human Resources</a>
-            <a href="../main/operations.php">Operations</a>
-            <a href="../main/risk.php">Risk</a>
-            <a href="../main/marketing.php">Marketing</a>
-            <a href="../main/it.php">IT</a>
-        </div>
-        <div class="content" id="content">
-            <h1 class="text-center">Company Dashboard</h1>
-            <p class="text-center">Select a department from the sidebar.</p>
+<body class="bg-dark">
+
+<?php
+// Database connection
+$conn = new mysqli('localhost', 'root', '', 'hr2');
+
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Fetch employee data for each department
+function getDepartmentData($conn, $department) {
+    // Get total employees in the department
+    $employeeQuery = "SELECT COUNT(*) as total FROM employee_register WHERE department = '$department'";
+    $employeeResult = $conn->query($employeeQuery);
+    $totalEmployees = $employeeResult->fetch_assoc()['total'];
+
+    // Get evaluated (assuming evaluation status is 'evaluated')
+    $evaluatedQuery = "SELECT COUNT(*) as evaluated FROM admin_evaluations WHERE department = '$department'";
+    $evaluatedResult = $conn->query($evaluatedQuery);
+    $evaluated = $evaluatedResult->fetch_assoc()['evaluated'];
+    $pendingEmployees = $totalEmployees - $evaluated;
+
+    return array('total' => $totalEmployees, 'evaluated' => $evaluated, 'pending' => $pendingEmployees);
+}
+
+// Fetch data for different departments
+$financeData = getDepartmentData($conn, 'Finance Department');
+$hrData = getDepartmentData($conn, 'Human Resource Department');
+$operationsData = getDepartmentData($conn, 'Operations Department');
+$riskData = getDepartmentData($conn, 'Risk Department');
+$marketingData = getDepartmentData($conn, 'Marketing Department');
+$itData = getDepartmentData($conn, 'IT Department');
+?>
+
+<main>
+    <div class="container-fluid px-3">
+        <h1 class="mt-5 text-center text-light">Admin Evaluation Dashboard</h1>
+        <div class="row justify-content-center">
+            <div class="col-xl-4 col-md-6 mt-5">
+                <div class="card mb-4">
+                    <div class="card-body bg-primary text-center">
+                        <a href="../main/finance.php" class="btn card-button text-dark font-weight-bold bg-light border border-dark w-100">Finance Department</a>
+                    </div>
+                    <div class="card-footer d-flex align-items-center justify-content-between bg-dark border border-light department-toggle" data-target="#financeInfo">
+                        <div class="small text-warning">Click to View Details</div>
+                        <div class="small text-warning">
+                            <i class="fas fa-angle-down"></i>
+                        </div>
+                    </div>
+                    <div id="financeInfo" class="collapse bg-light text-dark">
+                        <div class="card-body bg-dark">
+                        <h5 class="text-center mb-4 text-light">Finance Evaluation Status</h5>
+                            <div class="text-center mb-3">
+                                <span class="badge badge-primary mx-1">Total Employees: <?php echo $financeData['total']; ?></span>
+                                <span class="badge badge-success mx-1">Evaluated: <?php echo $financeData['evaluated']; ?></span>
+                                <span class="badge badge-warning mx-1">Pending Evaluation: <?php echo $financeData['pending']; ?></span>
+                            </div>
+                            <div class="progress mb-2">
+                                <div class="progress-bar bg-success font-weight-bold" role="progressbar" 
+                                     style="width: <?php echo ($financeData['evaluated'] / $financeData['total']) * 100; ?>%;" 
+                                    aria-valuenow="<?php echo $financeData['evaluated']; ?>" 
+                                    aria-valuemin="0" 
+                                    aria-valuemax="<?php echo $financeData['total']; ?>">
+                                     Evaluated (<?php echo $financeData['evaluated']; ?>)
+                                </div>
+                                <div class="progress-bar bg-warning text-dark font-weight-bold" role="progressbar" 
+                                    style="width: <?php echo ($financeData['pending'] / $financeData['total']) * 100; ?>%;" 
+                                    aria-valuenow="<?php echo $financeData['pending']; ?>" 
+                                    aria-valuemin="0" 
+                                    aria-valuemax="<?php echo $financeData['total']; ?>">
+                                    Pending (<?php echo $financeData['pending']; ?>)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-4 col-md-6 mt-5">
+                <div class="card mb-4">
+                    <div class="card-body bg-primary text-center">
+                        <a href="../main/hr.php" class="btn card-button text-dark font-weight-bold bg-light border border-dark w-100">Human Resource Department</a>
+                    </div>
+                    <div class="card-footer d-flex align-items-center justify-content-between bg-dark border border-light department-toggle" data-target="#hrInfo">
+                        <div class="small text-warning">Click to View Details</div>
+                        <div class="small text-warning">
+                            <i class="fas fa-angle-down"></i>
+                        </div>
+                    </div>
+                    <div id="hrInfo" class="collapse bg-light text-dark">
+                        <div class="card-body">
+                            <p>Total Employees: <?php echo $hrData['total']; ?></p>
+                            <p>Evaluated: <?php echo $hrData['evaluated']; ?></p>
+                            <p>Pending Evaluations: <?php echo $hrData['pending']; ?></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-4 col-md-6 mt-5">
+                <div class="card mb-4">
+                    <div class="card-body bg-primary text-center">
+                        <a href="../main/operations.php" class="btn card-button text-dark font-weight-bold bg-light border border-dark w-100">Operations Department</a>
+                    </div>
+                    <div class="card-footer d-flex align-items-center justify-content-between bg-dark border border-light department-toggle" data-target="#operationsInfo">
+                        <div class="small text-warning">Click to View Details</div>
+                        <div class="small text-warning">
+                            <i class="fas fa-angle-down"></i>
+                        </div>
+                    </div>
+                    <div id="operationsInfo" class="collapse bg-light text-dark">
+                        <div class="card-body">
+                            <p>Total Employees: <?php echo $operationsData['total']; ?></p>
+                            <p>Evaluated: <?php echo $operationsData['evaluated']; ?></p>
+                            <p>Pending Evaluations: <?php echo $operationsData['pending']; ?></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-4 col-md-6 mt-5">
+                <div class="card mb-4">
+                    <div class="card-body bg-primary text-center">
+                        <a href="../main/risk.php" class="btn card-button text-dark font-weight-bold bg-light border border-dark w-100">Risk Department</a>
+                    </div>
+                    <div class="card-footer d-flex align-items-center justify-content-between bg-dark border border-light department-toggle" data-target="#riskInfo">
+                        <div class="small text-warning">Click to View Details</div>
+                        <div class="small text-warning">
+                            <i class="fas fa-angle-down"></i>
+                        </div>
+                    </div>
+                    <div id="riskInfo" class="collapse bg-light text-dark">
+                        <div class="card-body">
+                            <p>Total Employees: <?php echo $riskData['total']; ?></p>
+                            <p>Evaluated: <?php echo $riskData['evaluated']; ?></p>
+                            <p>Pending Evaluations: <?php echo $riskData['pending']; ?></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-4 col-md-6 mt-5">
+                <div class="card mb-4">
+                    <div class="card-body bg-primary text-center">
+                        <a href="../main/marketing.php" class="btn card-button text-dark font-weight-bold bg-light border border-dark w-100">Marketing Department</a>
+                    </div>
+                    <div class="card-footer d-flex align-items-center justify-content-between bg-dark border border-light department-toggle" data-target="#marketingInfo">
+                        <div class="small text-warning">Click to View Details</div>
+                        <div class="small text-warning">
+                            <i class="fas fa-angle-down"></i>
+                        </div>
+                    </div>
+                    <div id="marketingInfo" class="collapse bg-light text-dark">
+                        <div class="card-body">
+                            <p>Total Employees: <?php echo $marketingData['total']; ?></p>
+                            <p>Evaluated: <?php echo $marketingData['evaluated']; ?></p>
+                            <p>Pending Evaluations: <?php echo $marketingData['pending']; ?></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-4 col-md-6 mt-5">
+                <div class="card mb-4">
+                    <div class="card-body bg-primary text-center">
+                        <a href="../main/it.php" class="btn card-button text-dark font-weight-bold bg-light border border-dark w-100">IT Department</a>
+                    </div>
+                    <div class="card-footer d-flex align-items-center justify-content-between bg-dark border border-light department-toggle" data-target="#itInfo">
+                        <div class="small text-warning">Click to View Details</div>
+                        <div class="small text-warning">
+                            <i class="fas fa-angle-down"></i>
+                        </div>
+                    </div>
+                    <div id="itInfo" class="collapse bg-light text-dark">
+                        <div class="card-body">
+                            <p>Total Employees: <?php echo $itData['total']; ?></p>
+                            <p>Evaluated: <?php echo $itData['evaluated']; ?></p>
+                            <p>Pending Evaluations: <?php echo $itData['pending']; ?></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script src="../js/department.js"></script>
-    <script>
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const content = document.getElementById('content');
-            sidebar.classList.toggle('collapsed');
-            content.classList.toggle('collapsed');
-            const toggleBtn = sidebar.querySelector('.toggle-btn');
-            toggleBtn.innerHTML = sidebar.classList.contains('collapsed') ? '&#x276E;' : '&#x276F;';
-        }
-    </script>
+</main>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+    // Add event listener to all elements with class "department-toggle"
+    document.querySelectorAll('.department-toggle').forEach(function (toggle) {
+        toggle.addEventListener('click', function () {
+            const target = this.getAttribute('data-target');
+            const icon = this.querySelector('i');
+
+            // Toggle the collapse
+            $(target).collapse('toggle');
+
+            // Toggle the icon classes between angle-down and angle-up
+            icon.classList.toggle('fa-angle-down');
+            icon.classList.toggle('fa-angle-up');
+        });
+    });
+</script>
 </body>
 </html>
