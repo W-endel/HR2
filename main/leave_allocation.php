@@ -10,53 +10,65 @@ if (!isset($_SESSION['a_id'])) {
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Get leave allocations from the form
-    $supervisor_leaves = $_POST['supervisor_leaves'];
+    $admin_leaves = $_POST['admin_leaves'];
     $employee_leaves = $_POST['employee_leaves'];
 
     // Insert or update leave allocations
-    $insert_sql = "INSERT INTO leave_allocations (position, leave_days) VALUES (?, ?) 
+    $insert_sql = "INSERT INTO leave_allocations (role, leave_days) VALUES (?, ?) 
                    ON DUPLICATE KEY UPDATE leave_days = VALUES(leave_days)";
     
-    // Update for Supervisor
+    // Update for Admin
     $insert_stmt = $conn->prepare($insert_sql);
     if ($insert_stmt === false) {
         die("Error preparing statement: " . $conn->error);
     }
-    $position = 'Supervisor';
-    $insert_stmt->bind_param('si', $position, $supervisor_leaves);
+    $role = 'Admin';
+    $insert_stmt->bind_param('si', $role, $admin_leaves);
     if (!$insert_stmt->execute()) {
         die("Error executing statement: " . $insert_stmt->error);
     }
 
     // Update for Employee
-    $position = 'Employee';
-    $insert_stmt->bind_param('si', $position, $employee_leaves);
+    $role = 'Employee';
+    $insert_stmt->bind_param('si', $role, $employee_leaves);
     if (!$insert_stmt->execute()) {
         die("Error executing statement: " . $insert_stmt->error);
     }
 
     // Update available_leaves in employee_register based on leave_allocations
-    $positions_sql = "SELECT * FROM leave_allocations";
-    $positions_result = $conn->query($positions_sql);
-    if (!$positions_result) {
-        die("Error retrieving positions: " . $conn->error);
+    $roles_sql = "SELECT * FROM leave_allocations";
+    $roles_result = $conn->query($roles_sql);
+    if (!$roles_result) {
+        die("Error retrieving roles: " . $conn->error);
     }
 
-    while ($position_row = $positions_result->fetch_assoc()) {
-        $position = $position_row['position'];
-        $leave_days = $position_row['leave_days'];
+    while ($role_row = $roles_result->fetch_assoc()) {
+    $role = $role_row['role'];
+    $leave_days = $role_row['leave_days'];
 
-        // Update the available_leaves for employees in this position
-        $update_sql = "UPDATE employee_register SET available_leaves = ? WHERE position = ?";
-        $update_stmt = $conn->prepare($update_sql);
-        if ($update_stmt === false) {
-            die("Error preparing update statement: " . $conn->error);
-        }
-        $update_stmt->bind_param('is', $leave_days, $position);
-        if (!$update_stmt->execute()) {
-            die("Error executing update statement: " . $update_stmt->error);
-        }
+    // Update the available_leaves for employees in employee_register
+    $update_sql = "UPDATE employee_register SET available_leaves = ? WHERE role = ?";
+    $update_stmt = $conn->prepare($update_sql);
+    if ($update_stmt === false) {
+        die("Error preparing update statement for employees: " . $conn->error);
     }
+    $update_stmt->bind_param('is', $leave_days, $role);
+    if (!$update_stmt->execute()) {
+        die("Error executing update statement for employees: " . $update_stmt->error);
+    }
+
+    // Update the available_leaves for admins in admin_register
+    $update_sql = "UPDATE admin_register SET available_leaves = ? WHERE role = ?";
+    $update_stmt = $conn->prepare($update_sql);
+    if ($update_stmt === false) {
+        die("Error preparing update statement for admins: " . $conn->error);
+    }
+    $update_stmt->bind_param('is', $leave_days, $role);
+    if (!$update_stmt->execute()) {
+        die("Error executing update statement for admins: " . $update_stmt->error);
+    }
+}
+
 
     echo "<div class='alert alert-success'>Leave allocations updated successfully!</div>";
 }
@@ -76,8 +88,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         
         <form method="POST" class="mt-4">
             <div class="form-group">
-                <label class="text-light" for="supervisor_leaves">Leave Days for Supervisor:</label>
-                <input type="number" name="supervisor_leaves" id="supervisor_leaves" class="form-control" required>
+                <label class="text-light" for="admin_leaves">Leave Days for Admin:</label>
+                <input type="number" name="admin_leaves" id="admin_leaves" class="form-control" required>
             </div>
             <div class="form-group">
                 <label class="text-light" for="employee_leaves">Leave Days for Employee:</label>

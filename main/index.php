@@ -167,6 +167,7 @@ $conn->close();
                         </a>
                         <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
+                                <a class="nav-link" href="../main/calendar.php">Calendar</a>
                                 <a class="nav-link" href="../main/admin.php">Admin Accounts</a>
                                 <a class="nav-link" href="../main/registeradmin.php">Create Admin</a>
                                 <a class="nav-link" href="../main/employee.php">Employee Accounts</a>
