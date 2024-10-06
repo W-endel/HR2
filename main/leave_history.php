@@ -40,6 +40,15 @@ $stmt->execute();
 // Fetch the result
 $result = $stmt->get_result();
 
+$holidays = [];
+$holiday_sql = "SELECT date FROM non_working_days";
+$holiday_stmt = $conn->prepare($holiday_sql);
+$holiday_stmt->execute();
+$holiday_result = $holiday_stmt->get_result();
+while ($holiday_row = $holiday_result->fetch_assoc()) {
+    $holidays[] = $holiday_row['date']; // Store holidays in an array
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -53,7 +62,7 @@ $result = $stmt->get_result();
 </head>
 <body class="bg-dark">
     <div class="container">
-        <h2 class="text-center mt-5 text-light">Leave History</h2>
+        <h2 class="text-center mt-3 text-light">Leave History</h2>
         
         <!-- Search Form -->
         <form method="GET" class="mb-4">
@@ -66,15 +75,14 @@ $result = $stmt->get_result();
         </form>
     
     <div class="border-radius-lg overflow-hidden">
-        <table class="table table-bordered border mt-3 text-center text-light .rounded">
+        <table class="table table-bordered border mt-1 text-center text-light .rounded">
             <thead>
                 <tr>
                     <th>Employee ID</th>
                     <th>Employee Name</th>
                     <th>Leave ID</th>
-                    <th>Leave Type</th>
-                    <th>Start Date</th>
-                    <th>End Date</th>
+                    <th>Duration of Leave</th>
+                    <th>Leave Deduction</th>
                     <th>Status</th>
                     <th>Reason</th>
                     <th>Date of Request</th>
@@ -83,25 +91,35 @@ $result = $stmt->get_result();
             <tbody>
                 <?php if ($result->num_rows > 0): ?>
                     <?php while ($row = $result->fetch_assoc()): ?>
+                        <?php
+                            // Calculate total leave days excluding Sundays and holidays
+                            $leave_days = 0;
+                            $current_date = strtotime($row['start_date']);
+                            $end_date = strtotime($row['end_date']);
+                        
+                            while ($current_date <= $end_date) {
+                            $current_date_str = date('Y-m-d', $current_date);
+                            // Check if the current day is not a Sunday (0 = Sunday) and not a holiday
+                            if (date('N', $current_date) != 7 && !in_array($current_date_str, $holidays)) {
+                                $leave_days++; // Count this day as a leave day
+                            }
+                            $current_date = strtotime("+1 day", $current_date); // Move to the next day
+                            }
+                        ?>
                     <tr>
                         <td><?php echo htmlspecialchars($row['e_id']); ?></td>
                         <td><?php echo htmlspecialchars($row['firstname'] . ' ' . $row['lastname']); ?></td>
                         <td><?php echo htmlspecialchars($row['leave_id']); ?></td>
+                        <td><?php echo htmlspecialchars($row['start_date'] . ' / ' . $row['end_date']); ?></td>
                         <td><?php echo htmlspecialchars($row['leave_type']); ?></td>
-                        <td><?php echo htmlspecialchars($row['start_date']); ?></td>
                         <td><?php echo htmlspecialchars($row['end_date']); ?></td>
                         <td class="bold-status <?php 
-    if (htmlspecialchars($row['status']) === 'Approved') {
-        echo 'text-success';
-    } elseif (htmlspecialchars($row['status']) === 'Denied') {
-        echo 'text-danger';
-    } elseif (htmlspecialchars($row['status']) === 'Pending') {
-        echo 'text-warning';
-    } ?>">
-    <?php echo htmlspecialchars($row['status']); ?>
-</td>
-
-                        <td><?php echo htmlspecialchars($row['reason']); ?></td>
+                            if (htmlspecialchars($row['status']) === 'Approved') {echo 'text-success';
+                            } elseif (htmlspecialchars($row['status']) === 'Denied') { echo 'text-danger';
+                            } elseif (htmlspecialchars($row['status']) === 'Pending') { echo 'text-warning'; } 
+                            ?>">
+                            <?php echo htmlspecialchars($row['status']); ?>
+                        </td>
                         <td><?php echo htmlspecialchars($row['created_at']); ?></td>
                     </tr>
                     <?php endwhile; ?>

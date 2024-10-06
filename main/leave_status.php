@@ -8,7 +8,7 @@ if (!isset($_SESSION['a_id'])) {
 }
 
 // Fetch all leave requests (always fetch this for displaying the table)
-$sql = "SELECT lr.leave_id, e.e_id, e.firstname, e.lastname, e.available_leaves, lr.start_date, lr.end_date, lr.leave_type, lr.reason, lr.status
+$sql = "SELECT lr.leave_id, e.e_id, e.firstname, e.lastname, e.available_leaves, lr.start_date, lr.end_date, lr.leave_type, lr.status
         FROM leave_requests lr
         JOIN employee_register e ON lr.e_id = e.e_id
         WHERE lr.status = 'Pending'";
@@ -33,7 +33,7 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
     $status = $_GET['status'];
 
     // Fetch the specific leave request
-    $sql = "SELECT lr.leave_id, e.e_id, e.firstname, e.lastname, e.available_leaves, lr.start_date, lr.end_date, lr.leave_type, lr.reason, lr.status
+    $sql = "SELECT lr.leave_id, e.e_id, e.firstname, e.lastname, e.available_leaves, lr.start_date, lr.end_date, lr.leave_type, lr.status
             FROM leave_requests lr
             JOIN employee_register e ON lr.e_id = e.e_id
             WHERE lr.leave_id = ?";
@@ -158,28 +158,28 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
             <tbody>
                 <?php if ($result->num_rows > 0): ?>
                     <?php while ($row = $result->fetch_assoc()): ?>
-                         <?php
-                        // Calculate total leave days excluding Sundays and holidays
-                        $leave_days = 0;
-                        $current_date = strtotime($row['start_date']);
-                        $end_date = strtotime($row['end_date']);
+                        <?php
+                            // Calculate total leave days excluding Sundays and holidays
+                            $leave_days = 0;
+                            $current_date = strtotime($row['start_date']);
+                            $end_date = strtotime($row['end_date']);
                         
-                        while ($current_date <= $end_date) {
+                            while ($current_date <= $end_date) {
                             $current_date_str = date('Y-m-d', $current_date);
                             // Check if the current day is not a Sunday (0 = Sunday) and not a holiday
                             if (date('N', $current_date) != 7 && !in_array($current_date_str, $holidays)) {
                                 $leave_days++; // Count this day as a leave day
                             }
                             $current_date = strtotime("+1 day", $current_date); // Move to the next day
-                        }
-                    ?>
+                            }
+                        ?>
                     <tr>
                         <td><?php echo htmlspecialchars($row['e_id']); ?></td>
                         <td><?php echo htmlspecialchars($row['firstname'] . ' ' . $row['lastname']); ?></td>
                         <td><?php echo htmlspecialchars($row['leave_id']); ?></td>
                         <td><?php echo htmlspecialchars($row['available_leaves']); ?></td>
                         <td><?php echo htmlspecialchars($row['start_date'] . ' / ' . $row['end_date']); ?></td>
-                        <td><?php echo htmlspecialchars($row['end_date']); ?></td>
+                        <td><?php echo htmlspecialchars($leave_days); ?></td>
                         <td><?php echo htmlspecialchars($row['leave_type']); ?></td>
                         <td class="<?php echo htmlspecialchars($row['status']) === 'Approved' ? 'text-success font-weight-bold' : (htmlspecialchars($row['status']) === 'Denied' ? 'text-danger font-weight-bold' : 
                                              (htmlspecialchars($row['status']) === 'Pending' ? 'text-warning font-weight-bold' : ''));?>">
