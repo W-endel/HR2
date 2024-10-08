@@ -82,9 +82,9 @@ while ($holiday_row = $holiday_result->fetch_assoc()) {
                     <th>Employee Name</th>
                     <th>Leave ID</th>
                     <th>Duration of Leave</th>
+                    <th>Reason</th>
                     <th>Leave Deduction</th>
                     <th>Status</th>
-                    <th>Reason</th>
                     <th>Date of Request</th>
                 </tr>
             </thead>
@@ -107,17 +107,17 @@ while ($holiday_row = $holiday_result->fetch_assoc()) {
                             }
                         ?>
                     <tr>
-                        <td><?php echo htmlspecialchars($row['e_id']); ?></td>
+                        <td>e<?php echo htmlspecialchars($row['e_id']); ?></td>
                         <td><?php echo htmlspecialchars($row['firstname'] . ' ' . $row['lastname']); ?></td>
-                        <td><?php echo htmlspecialchars($row['leave_id']); ?></td>
+                        <td>#<?php echo htmlspecialchars($row['leave_id']); ?></td>
                         <td><?php echo htmlspecialchars($row['start_date'] . ' / ' . $row['end_date']); ?></td>
                         <td><?php echo htmlspecialchars($row['leave_type']); ?></td>
-                        <td><?php echo htmlspecialchars($row['end_date']); ?></td>
+                        <td><?php echo htmlspecialchars($leave_days); ?> day/s</td>
                         <td class="bold-status <?php 
                             if (htmlspecialchars($row['status']) === 'Approved') {echo 'text-success';
                             } elseif (htmlspecialchars($row['status']) === 'Denied') { echo 'text-danger';
                             } elseif (htmlspecialchars($row['status']) === 'Pending') { echo 'text-warning'; } 
-                            ?>">
+                            ?>" style="font-weight: bold;">
                             <?php echo htmlspecialchars($row['status']); ?>
                         </td>
                         <td><?php echo htmlspecialchars($row['created_at']); ?></td>

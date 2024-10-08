@@ -7,23 +7,11 @@ if (!isset($_SESSION['a_id'])) {
     exit();
 }
 
-// Database configuration
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "hr2";
-
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+include '../db/db_conn.php';
 
 // Fetch user info
 $adminId = $_SESSION['a_id'];
-$sql = "SELECT firstname, middlename, lastname, email, role FROM admin_register WHERE a_id = ?";
+$sql = "SELECT firstname, middlename, lastname, email, role, pfp FROM admin_register WHERE a_id = ?";
 $stmt = $conn->prepare($sql);
 
 // Check if statement preparation failed
@@ -39,7 +27,7 @@ $result = $stmt->get_result();
 $adminInfo = $result->fetch_assoc();
 
 // Set profile picture or use default if not set
-$profilePicture = !empty($adminInfo['pfp']) ? $adminInfo['ppf'] : '../img/defaultpfp.png';
+$profilePicture = !empty($adminInfo['pfp']) ? $adminInfo['pfp'] : '../img/defaultpfp.png';
 
 // Close statement and connection
 $stmt->close();
@@ -57,6 +45,7 @@ $conn->close();
     <meta name="author" content="" />
     <title>Admin Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet">
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
     <link href="../css/styles.css" rel="stylesheet" />
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
   </head>
@@ -193,136 +182,270 @@ $conn->close();
             </nav>
         </div>
         <div id="layoutSidenav_content">
-            <main>
-                <div class="container-fluid px-4">
-                    <h1 class="mt-4 text-light">Dashboard</h1>
-                    <div class="row">
-                        <div class="col-xl-6">
-                            <div class="card mb-4">
-                                <div class="card-header">
-                                    <i class="fas fa-chart-area me-1"></i>
-                                    Area Chart Example
-                                </div>
-                                <div class="card-body"><canvas id="myAreaChart" width="100%" height="40"></canvas></div>
-                            </div>
-                        </div>
-                        <div class="col-xl-6">
-                            <div class="card mb-4">
-                                <div class="card-header">
-                                    <i class="fas fa-chart-bar me-1"></i>
-                                    Bar Chart Example
-                                </div>
-                                <div class="card-body"><canvas id="myBarChart" width="100%" height="40"></canvas></div>
-                            </div>
-                        </div>
+<main>
+    <div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 ms-3 col-lg-6 text-light"> <!-- Adjust the column size as needed -->
+            <div id="calendar"></div>
+        </div>
+    </div>
+</div>
+    <div class="container-fluid px-4">
+        <h1 class="mt-4 text-light">Dashboard</h1>
+        <div class="row">
+            <div class="col-xl-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <i class="fas fa-chart-area me-1"></i>
+                        Area Chart Example
                     </div>
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <i class="fas fa-table me-1"></i>
-                            DataTable Example
-                        </div>
-                        <div class="card-body">
-                            <table id="datatablesSimple">
-                                <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Position</th>
-                                        <th>Office</th>
-                                        <th>Age</th>
-                                        <th>Start date</th>
-                                        <th>Salary</th>
-                                    </tr>
-                                </thead>
-                                <tfoot>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Position</th>
-                                        <th>Office</th>
-                                        <th>Age</th>
-                                        <th>Start date</th>
-                                        <th>Salary</th>
-                                    </tr>
-                                </tfoot>
-                                <tbody>
-                                    <tr>
-                                        <td>Zorita Serrano</td>
-                                        <td>Software Engineer</td>
-                                        <td>San Francisco</td>
-                                        <td>56</td>
-                                        <td>2012/06/01</td>
-                                        <td>$115,000</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Jennifer Acosta</td>
-                                        <td>Junior Javascript Developer</td>
-                                        <td>Edinburgh</td>
-                                        <td>43</td>
-                                        <td>2013/02/01</td>
-                                        <td>$75,650</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Cara Stevens</td>
-                                        <td>Sales Assistant</td>
-                                        <td>New York</td>
-                                        <td>46</td>
-                                        <td>2011/12/06</td>
-                                        <td>$145,600</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Hermione Butler</td>
-                                        <td>Regional Director</td>
-                                        <td>London</td>
-                                        <td>47</td>
-                                        <td>2011/03/21</td>
-                                        <td>$356,250</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Lael Greer</td>
-                                        <td>Systems Administrator</td>
-                                        <td>London</td>
-                                        <td>21</td>
-                                        <td>2009/02/27</td>
-                                        <td>$103,500</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Jonas Alexander</td>
-                                        <td>Developer</td>
-                                        <td>San Francisco</td>
-                                        <td>30</td>
-                                        <td>2010/07/14</td>
-                                        <td>$86,500</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Shad Decker</td>
-                                        <td>Regional Director</td>
-                                        <td>Edinburgh</td>
-                                        <td>51</td>
-                                        <td>2008/11/13</td>
-                                        <td>$183,000</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Michael Bruce</td>
-                                        <td>Javascript Developer</td>
-                                        <td>Singapore</td>
-                                        <td>29</td>
-                                        <td>2011/06/27</td>
-                                        <td>$183,000</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Donna Snider</td>
-                                        <td>Customer Support</td>
-                                        <td>New York</td>
-                                        <td>27</td>
-                                        <td>2011/01/25</td>
-                                        <td>$112,000</td>
-                                    </tr>
-                                </tbody>
-
-                            </table>
-                        </div>
+                    <div class="card-body"><canvas id="myAreaChart" width="100%" height="50"></canvas></div>
+                </div>
+            </div>
+            <div class="col-xl-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <i class="fas fa-chart-bar me-1"></i>
+                        Bar Chart Example
+                    </div>
+                    <div class="card-body"><canvas id="myBarChart" width="100%" height="50"></canvas></div>
+                </div>
+            </div>
+        </div>
+        <div class="row mb-4">
+            <div class="col-xl-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <i class="fas fa-chart-pie me-1"></i>
+                        Leave Request Status
+                    </div>
+                    <div class="card-body bg-dark">
+                        <canvas id="leaveStatusChart" width="300" height="300"></canvas>
                     </div>
                 </div>
-            </main>
+            </div>
+        </div>
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-table me-1"></i>
+                DataTable Example
+            </div>
+            <div class="card-body">
+                <table id="datatablesSimple">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Position</th>
+                            <th>Office</th>
+                            <th>Age</th>
+                            <th>Start date</th>
+                            <th>Salary</th>
+                        </tr>
+                    </thead>
+                    <tfoot>
+                        <tr>
+                            <th>Name</th>
+                            <th>Position</th>
+                            <th>Office</th>
+                            <th>Age</th>
+                            <th>Start date</th>
+                            <th>Salary</th>
+                        </tr>
+                    </tfoot>
+                    <tbody>
+                        <tr>
+                            <td>Zorita Serrano</td>
+                            <td>Software Engineer</td>
+                            <td>San Francisco</td>
+                            <td>56</td>
+                            <td>2012/06/01</td>
+                            <td>$115,000</td>
+                        </tr>
+                        <tr>
+                            <td>Jennifer Acosta</td>
+                            <td>Junior Javascript Developer</td>
+                            <td>Edinburgh</td>
+                            <td>43</td>
+                            <td>2013/02/01</td>
+                            <td>$75,650</td>
+                        </tr>
+                        <tr>
+                            <td>Cara Stevens</td>
+                            <td>Sales Assistant</td>
+                            <td>New York</td>
+                            <td>46</td>
+                            <td>2011/12/06</td>
+                            <td>$145,600</td>
+                        </tr>
+                        <tr>
+                            <td>Hermione Butler</td>
+                            <td>Regional Director</td>
+                            <td>London</td>
+                            <td>47</td>
+                            <td>2011/03/21</td>
+                            <td>$356,250</td>
+                        </tr>
+                        <tr>
+                            <td>Lael Greer</td>
+                            <td>Systems Administrator</td>
+                            <td>London</td>
+                            <td>21</td>
+                            <td>2009/02/27</td>
+                            <td>$103,500</td>
+                        </tr>
+                        <tr>
+                            <td>Jonas Alexander</td>
+                            <td>Developer</td>
+                            <td>San Francisco</td>
+                            <td>30</td>
+                            <td>2010/07/14</td>
+                            <td>$86,500</td>
+                        </tr>
+                        <tr>
+                            <td>Shad Decker</td>
+                            <td>Regional Director</td>
+                            <td>Edinburgh</td>
+                            <td>51</td>
+                            <td>2008/11/13</td>
+                            <td>$183,000</td>
+                        </tr>
+                        <tr>
+                            <td>Michael Bruce</td>
+                            <td>Javascript Developer</td>
+                            <td>Singapore</td>
+                            <td>29</td>
+                            <td>2011/06/27</td>
+                            <td>$183,000</td>
+                        </tr>
+                        <tr>
+                            <td>Donna Snider</td>
+                            <td>Customer Support</td>
+                            <td>New York</td>
+                            <td>27</td>
+                            <td>2011/01/25</td>
+                            <td>$112,000</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <?php
+    // Database configuration
+include '../db/db_conn.php';
+
+    // Fetch leave status counts
+    $sql = "SELECT status, COUNT(*) as count FROM leave_requests GROUP BY status";
+    $result = $conn->query($sql);
+
+    // Initialize counts
+    $status_counts = [
+        'Approved' => 0,
+        'Pending' => 0,
+        'Denied' => 0,
+    ];
+
+    while ($row = $result->fetch_assoc()) {
+        $status = $row['status'];
+        if (isset($status_counts[$status])) {
+            $status_counts[$status] = $row['count'];
+        }
+    }
+
+    $conn->close();
+    ?>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Doughnut chart data
+        const data = {
+            labels: ['Approved', 'Pending', 'Denied'],
+            datasets: [{
+                data: [
+                    <?php echo $status_counts['Approved']; ?>,
+                    <?php echo $status_counts['Pending']; ?>,
+                    <?php echo $status_counts['Denied']; ?>
+                ],
+                backgroundColor: ['#28a745', '#ffc107', '#dc3545']
+            }]
+        };
+
+        // Doughnut chart configuration
+        const leaveStatusCtx = document.getElementById('leaveStatusChart').getContext('2d');
+        const leaveStatusChart = new Chart(leaveStatusCtx, {
+            type: 'doughnut',
+            data: data,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                legend: {
+                    position: 'top'
+                },
+                title: {
+                    display: true,
+                    text: 'Leave Request Statuses'
+                }
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        events: {
+            url: 'holiday.php',  // Endpoint created in step 2
+            method: 'GET',
+            failure: function() {
+                alert('There was an error fetching events!');
+            }
+        },
+        eventDidMount: function(info) {
+            // Additional customization of events if needed
+        },
+    });
+
+    calendar.render();
+});
+
+
+ document.addEventListener('DOMContentLoaded', function() {
+            const calendarEl = document.getElementById('calendar');
+
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                plugins: ['dayGrid'],
+                initialView: 'dayGridMonth',
+                dateClick: function(info) {
+                    fetchLeaveData(info.dateStr);
+                },
+                events: '/path/to/your/events/api', // Update with your API endpoint that returns leave data
+            });
+
+            calendar.render();
+
+            function fetchLeaveData(date) {
+                fetch(`leave_data.php?date=${date}`)
+                .then(response => response.json())
+                .then(data => {
+                    let leaveDetails = 'Employees on leave:\n';
+                    if (data.length > 0) {
+                        data.forEach(employee => {
+                            leaveDetails += `${employee.name} (${employee.leave_type})\n`;
+                        });
+                    } else {
+                        leaveDetails = 'No employees on leave for this day.';
+                    }
+                    alert(leaveDetails); // You can replace this with a modal or a more styled output
+                })
+                .catch(error => {
+                    console.error('Error fetching leave data:', error);
+                    alert('An error occurred while fetching leave data.');
+                });
+            }
+        });
+
+    </script>
+</main>
             <footer class="py-4 bg-light mt-auto bg-dark">
                 <div class="container-fluid px-4">
                     <div class="d-flex align-items-center justify-content-between small">
@@ -337,6 +460,7 @@ $conn->close();
             </footer>
         </div>
     </div>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <script src="../js/admin.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>

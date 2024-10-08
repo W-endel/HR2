@@ -6,8 +6,8 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <title>Non-Working Days</title>
 </head>
-<body>
-    <div class="container mt-5">
+<body class="bg-dark">
+    <div class="container mt-5 text-light">
         <h2>Set Non-Working Days</h2>
         <form id="nonWorkingDayForm">
             <div class="form-group">
@@ -24,7 +24,7 @@
         <hr>
 
         <h3>Existing Non-Working Days</h3>
-        <table class="table" id="nonWorkingDaysTable">
+        <table class="table text-light" id="nonWorkingDaysTable">
             <thead>
                 <tr>
                     <th>Date</th>
@@ -39,26 +39,71 @@
     </div>
 
     <script>
-        document.getElementById('nonWorkingDayForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const date = document.getElementById('date').value;
-            const description = document.getElementById('description').value;
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchNonWorkingDays();
 
-            // AJAX call to save the non-working day
-            fetch('nowork_days.php', {
+            document.getElementById('nonWorkingDayForm').addEventListener('submit', function(event) {
+                event.preventDefault();
+                const date = document.getElementById('date').value;
+                const description = document.getElementById('description').value;
+
+                fetch('../main/nowork_days.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ date, description }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        alert('Non-working day added successfully!');
+                        document.getElementById('nonWorkingDayForm').reset();
+                        fetchNonWorkingDays();  // Refresh the table
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An unexpected error occurred.');
+                });
+            });
+        });
+
+        function fetchNonWorkingDays() {
+            fetch('../main/nowork_days.php')
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.getElementById('nonWorkingDaysTable').querySelector('tbody');
+                tbody.innerHTML = '';
+                data.forEach(day => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${day.date}</td>
+                        <td>${day.description}</td>
+                        <td>
+                            <button class="btn btn-danger btn-sm" onclick="deleteNonWorkingDay('${day.date}')">Delete</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            });
+        }
+
+        function deleteNonWorkingDay(date) {
+            fetch('../main/del_nowork.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ date, description }),
+                body: JSON.stringify({ date }),
             })
             .then(response => response.json())
             .then(data => {
-                console.log(data); // Log the response for debugging
                 if (data.status === 'success') {
-                    alert('Non-working day added successfully!');
-                    // Optionally refresh the table or clear the form
-                    document.getElementById('nonWorkingDayForm').reset();
+                    alert('Non-working day deleted successfully!');
+                    fetchNonWorkingDays();  // Refresh the table
                 } else {
                     alert('Error: ' + data.message);
                 }
@@ -67,7 +112,7 @@
                 console.error('Error:', error);
                 alert('An unexpected error occurred.');
             });
-        });
+        }
     </script>
 </body>
 </html>
