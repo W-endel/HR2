@@ -1,17 +1,7 @@
 <?php
 session_start();
 
-// Database configuration
-$servername = "localhost";
-$username = "root";        
-$password = "";            
-$dbname = "hr2";           
-
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+include '../db/db_conn.php';
 
 if (isset($_SESSION['update_success'])) {
     echo '<script>alert("' . htmlspecialchars($_SESSION['update_success']) . '");</script>';
@@ -93,7 +83,7 @@ $conn->close();
                                         </tr>
                                         <tr>
                                             <td>Department:</td>
-                                            <td><?php echo htmlspecialchars($employeInfo['department']); ?></td>
+                                            <td><?php echo htmlspecialchars($employeeInfo['department']); ?></td>
                                         </tr>
                                         <tr>
                                             <td>Email:</td>
@@ -113,43 +103,43 @@ $conn->close();
                                         <div class="row mb-3">
                                             <label for="inputfName" class="col-sm-2 col-form-label text-light">First Name:</label>
                                             <div class="col-sm-9">
-                                                <input type="text" class="form-control bg-dark text-light border border-light" id="inputfName" name="firstname" value="<?php echo htmlspecialchars($userInfo['firstname']); ?>" readonly>
+                                                <input type="text" class="form-control bg-dark text-light border border-light" id="inputfName" name="firstname" value="<?php echo htmlspecialchars($employeeInfo['firstname']); ?>" readonly>
                                             </div>
                                         </div>
                                         <div class="row mb-3">
                                             <label for="inputmName" class="col-sm-2 col-form-label text-light">Middle Name:</label>
                                             <div class="col-sm-9"> 
-                                                <input type="text" class="form-control bg-dark text-light border border-light" id="inputmName" name="middlename" value="<?php echo htmlspecialchars($userInfo['middlename']); ?>" readonly>
+                                                <input type="text" class="form-control bg-dark text-light border border-light" id="inputmName" name="middlename" value="<?php echo htmlspecialchars($employeeInfo['middlename']); ?>" readonly>
                                             </div>
                                         </div>
                                         <div class="row mb-3">
                                             <label for="inputlName" class="col-sm-2 col-form-label text-light">Last Name:</label>
                                             <div class="col-sm-9">
-                                                <input type="text" class="form-control bg-dark text-light border border-light" id="inputlName" name="lastname" value="<?php echo htmlspecialchars($userInfo['lastname']); ?>" readonly>
+                                                <input type="text" class="form-control bg-dark text-light border border-light" id="inputlName" name="lastname" value="<?php echo htmlspecialchars($employeeInfo['lastname']); ?>" readonly>
                                             </div>
                                         </div>
                                         <div class="row mb-3">
                                             <label for="inputbirth" class="col-sm-2 col-form-label text-light">Birthdate:</label>
                                             <div class="col-sm-9">
-                                                <input type="date" class="form-control bg-dark text-light border border-light" id="inputbirth" name="birthdate" value="<?php echo htmlspecialchars($userInfo['birthdate']); ?>" readonly>
+                                                <input type="date" class="form-control bg-dark text-light border border-light" id="inputbirth" name="birthdate" value="<?php echo htmlspecialchars($employeeInfo['birthdate']); ?>" readonly>
                                             </div>
                                         </div>
                                         <div class="row mb-3">
                                             <label for="inputEmail" class="col-sm-2 col-form-label text-light">Email Address:</label>
                                             <div class="col-sm-9">
-                                                <input type="email" class="form-control bg-dark text-light border border-light" id="inputEmail" name="email" value="<?php echo htmlspecialchars($userInfo['email']); ?>" readonly>
+                                                <input type="email" class="form-control bg-dark text-light border border-light" id="inputEmail" name="email" value="<?php echo htmlspecialchars($employeeInfo['email']); ?>" readonly>
                                             </div>
                                         </div>
                                         <div class="row mb-3">
                                             <label for="inputPhone" class="col-sm-2 col-form-label text-light">Phone Number:</label>
                                             <div class="col-sm-9">
-                                                <input type="number" class="form-control bg-dark text-light border border-light" id="inputPhone" name="phone_number" value="<?php echo htmlspecialchars($userInfo['phone_number']); ?>" readonly>
+                                                <input type="number" class="form-control bg-dark text-light border border-light" id="inputPhone" name="phone_number" value="<?php echo htmlspecialchars($employeeInfo['phone_number']); ?>" readonly>
                                             </div>
                                         </div>
                                         <div class="row mb-3">
                                             <label for="inputAddress" class="col-sm-2 col-form-label text-light">Address:</label>
                                             <div class="mb-3 col-sm-9">
-                                                <textarea class="form-control border bg-dark text-light border-light" id="inputAddress" name="address" rows="1" readonly><?php echo htmlspecialchars($userInfo['address']); ?></textarea>
+                                                <textarea class="form-control border bg-dark text-light border-light" id="inputAddress" name="address" rows="1" readonly><?php echo htmlspecialchars($employeeInfo['address']); ?></textarea>
                                             </div>
                                         </div>
                                         <div class="d-flex justify-content-between">

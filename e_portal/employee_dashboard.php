@@ -5,17 +5,7 @@ if (!isset($_SESSION['e_id']))  {
     exit();
 }
 
-// Database configuration
-$servername = "localhost";
-$username = "root";        
-$password = "";            
-$dbname = "hr2";           
-
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+include '../db/db_conn.php';
 
 // Fetch user info
 $employeeId = $_SESSION['e_id'];

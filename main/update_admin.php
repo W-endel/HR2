@@ -1,20 +1,7 @@
 <?php
 session_start();
 
-// Database configuration
-$servername = "localhost";
-$username = "root";        
-$password = "";            
-$dbname = "hr2";           
-
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-// Check connection
-if ($conn->connect_error) {
-    echo json_encode(['error' => 'Connection failed: ' . $conn->connect_error]);
-    exit();
-}
+include '../db/db_conn.php';
 
 // Get form data with validation
 $adminId = isset($_POST['a_id']) ? trim($_POST['a_id']) : '';
@@ -43,7 +30,7 @@ if ($stmt === false) {
 $stmt->bind_param("ssssssi", $firstName, $lastName, $Email, $role, $phone_number, $address, $adminId);
 
 if ($stmt->execute()) {
-    echo json_encode(['success' => 'Employee information updated successfully!']);
+    echo json_encode(['success' => 'Information updated successfully!']);
 } else {
     echo json_encode(['error' => 'Error: ' . $stmt->error]);
 }

@@ -1,22 +1,10 @@
 <?php
 session_start();
 
-// Database configuration
-$servername = "localhost";
-$username = "root";        
-$password = "";            
-$dbname = "hr2";           
-
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+include '../db/db_conn.php';
 
 // Fetch employee data
-$sql = "SELECT id, firstname, lastname, email, role, phone_number, address FROM employee_register WHERE role='employee'";
+$sql = "SELECT e_id, firstname, lastname, email, role, phone_number, address FROM employee_register WHERE role='employee'";
 $result = $conn->query($sql);
 ?>
 
@@ -29,12 +17,12 @@ $result = $conn->query($sql);
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
 </head>
-<body>
+<body class="bg-dark">
     <div class="container mt-5">
-        <h2 class="mb-4">Employee Account Management</h2>
+        <h2 class="mb-4 text-light">Employee Account Management</h2>
         <table class="table table-bordered">
             <thead class="thead-light">
-                <tr class="text-center">
+                <tr class="text-center text-light">
                     <th>ID</th>
                     <th>First Name</th>
                     <th>Last Name</th>
@@ -48,8 +36,8 @@ $result = $conn->query($sql);
             <tbody>
                 <?php if ($result->num_rows > 0): ?>
                     <?php while ($row = $result->fetch_assoc()): ?>
-                        <tr class="text-center">
-                            <td><?php echo $row['id']; ?></td>
+                        <tr class="text-center text-light">
+                            <td><?php echo $row['e_id']; ?></td>
                             <td><?php echo $row['firstname']; ?></td>
                             <td><?php echo $row['lastname']; ?></td>
                             <td><?php echo $row['email']; ?></td>
@@ -57,8 +45,8 @@ $result = $conn->query($sql);
                             <td><?php echo $row['phone_number']; ?></td>
                             <td><?php echo $row['address']; ?></td>
                             <td>
-                                <button class="btn btn-success btn-sm" onclick="fillUpdateForm(<?php echo $row['id']; ?>, '<?php echo $row['firstname']; ?>', '<?php echo $row['lastname']; ?>', '<?php echo $row['email']; ?>', '<?php echo $row['role']; ?>', '<?php echo $row['phone_number']; ?>', '<?php echo $row['address']; ?>')">Update</button>
-                                <button class="btn btn-danger btn-sm" onclick="deleteEmployee(<?php echo $row['id']; ?>)">Delete</button>
+                                <button class="btn btn-success btn-sm" onclick="fillUpdateForm(<?php echo $row['e_id']; ?>, '<?php echo $row['firstname']; ?>', '<?php echo $row['lastname']; ?>', '<?php echo $row['email']; ?>', '<?php echo $row['role']; ?>', '<?php echo $row['phone_number']; ?>', '<?php echo $row['address']; ?>')">Update</button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteEmployee(<?php echo $row['e_id']; ?>)">Delete</button>
                             </td>
                         </tr>
                     <?php endwhile; ?>
@@ -68,22 +56,22 @@ $result = $conn->query($sql);
             </tbody>
         </table>
 
-        <h2 class="mt-5">Update Employee Account</h2>
+        <h2 class="mt-5 text-light">Update Employee Account</h2>
 <form id="updateForm">
     <input type="hidden" name="id" id="updateId">
-    <div class="form-floating mb-3 mb-md-0 form-group">
+    <div class="form-floating mb-3 mb-md-0 form-group text-light">
         <label for="firstname">First Name</label>
         <input type="text" class=" form-control" name="firstname" placeholder="First Name" required>
     </div>
-    <div class="form-group">
+    <div class="form-group text-light">
         <label for="lastname">Last Name</label>
         <input type="text" class="form-control" name="lastname" placeholder="Last Name" required>
     </div>
-    <div class="form-group">
+    <div class="form-group text-light">
         <label for="email">Email</label>
         <input type="email" class="form-control" name="email" placeholder="Email" required>
     </div>
-    <div class="form-group">
+    <div class="form-group text-light">
                 <label for="role">Role</label>
                 <select class="form-control" name="role" required>
                     <option value="" disabled selected>Select a role</option>
@@ -91,11 +79,11 @@ $result = $conn->query($sql);
                     <option value="Employee">Employee</option>
                 </select>
     </div>
-    <div class="form-group">
+    <div class="form-group text-light">
         <label for="phone_number">Phone Number</label>
         <input type="text" class="form-control" name="phone_number" placeholder="Phone Number" required>
     </div>
-    <div class="form-group">
+    <div class="form-group text-light">
         <label for="address">Address</label>
         <input type="text" class="form-control" name="address" placeholder="Address" required>
     </div>
@@ -159,7 +147,7 @@ $result = $conn->query($sql);
         document.getElementById('updateForm').onsubmit = function(e) {
             e.preventDefault();
             const formData = new FormData(this);
-            fetch('update_employee.php', {
+            fetch('../main/update_employee.php', {
                 method: 'POST',
                 body: formData
             })

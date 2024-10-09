@@ -8,7 +8,7 @@ if (!isset($_SESSION['a_id'])) {
 }
 
 // Fetch employee ID from the session
-$e_id = $_SESSION['e_id'];
+$employeeId = $_SESSION['e_id'];
 
 // Check if there is a search term
 $searchTerm = isset($_GET['search']) ? $_GET['search'] : '';
