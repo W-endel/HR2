@@ -10,6 +10,7 @@ let lastScannedCode = null; // Store the last scanned QR code
 let lastScanTime = 0; // Store the timestamp of the last scan
 const scanCooldown = 2000; // 2 seconds cooldown
 let scanningActive = true; // To manage scanning state
+let clockedInEmployees = new Set(); // Set to track employees who have clocked in
 
 // Use getUserMedia API to stream video from the camera
 navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
@@ -81,10 +82,22 @@ function recordTime(employeeId) {
 
 function determineAction(employeeId) {
     const lastRow = recordsTable.rows[recordsTable.rows.length - 1];
-    if (lastRow && lastRow.cells[0].textContent === employeeId && lastRow.cells[1].textContent === 'Time In') {
-        return 'Time Out';
+
+    if (lastRow && lastRow.cells[0].textContent === employeeId) {
+        // If last action was 'Time In', return 'Time Out'
+        if (lastRow.cells[1].textContent === 'Time In') {
+            clockedInEmployees.delete(employeeId); // Remove from clocked in set
+            return 'Time Out';
+        } 
     }
-    return 'Time In';
+    
+    // If the employee is not clocked in, we mark them as clocked in
+    if (!clockedInEmployees.has(employeeId)) {
+        clockedInEmployees.add(employeeId); // Add to clocked in set
+        return 'Time out';
+    }
+
+    return 'Time Out'; // Default action for a new entry is 'Time Out' (though shouldn't be possible)
 }
 
 // Optional: Restart scanning after a cooldown period
@@ -108,6 +121,3 @@ function startCamera() {
             console.error('Error accessing camera: ', err);
         });
 }
-
-
-

@@ -97,7 +97,7 @@
                                     </form>
                                 </div>
                                 <div class="card-footer text-center py-3">
-                                    <div class="small"><a href="../main/adminlogin.php">Have an account? Go to login</a></div>
+                                    <div class="big"><a href="../main/index.php">Back</a></div>
                                 </div>
                             </div>
                         </div>

@@ -50,8 +50,8 @@ $conn->close();
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
   </head>
 
-<body class="sb-nav-fixed bg-dark">
-    <nav class="sb-topnav navbar navbar-expand navbar-dark bg-secondary border border-light">
+<body class="sb-nav-fixed">
+    <nav class="sb-topnav navbar navbar-expand navbar-dark border border-light">
         <a class="navbar-brand ps-3 text-light" href="../main/index.php">Microfinance</a>
         <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars text-light"></i></button>
            <form class="d-none d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0">
@@ -97,92 +97,90 @@ $conn->close();
     </nav>
     <div id="layoutSidenav">
         <div id="layoutSidenav_nav">
-            <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+            <nav class="sb-sidenav accordion bg-black" id="sidenavAccordion">
                 <div class="sb-sidenav-menu ">
                     <div class="nav">
-                        <div class="sb-sidenav-menu-heading text-center bg-secondary text-light">Logo</div>
-                        <a class="nav-link" href="../main/index.php">
+                        <div class="sb-sidenav-menu-heading text-center bg-dark text-info">Logo</div>
+                        <a class="nav-link text-light" href="../main/index.php">
                             <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
                             Dashboard
                         </a>
-                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseTAD" aria-expanded="false" aria-controls="collapseTAD">
+                        <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseTAD" aria-expanded="false" aria-controls="collapseTAD">
                             <div class="sb-nav-link-icon"><i class="fa fa-address-card"></i></div>
                             Time and Attendance
                             <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                         </a>
                         <div class="collapse" id="collapseTAD" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link" href="../main/tad_display.php">Attendance Report</a>
-                                <a class="nav-link" href="../main/tad_timesheet.php">Timesheet</a>
+                                <a class="nav-link text-light" href="../main/tad_display.php">Attendance Report</a>
+                                <a class="nav-link text-light" href="../main/tad_timesheet.php">Timesheet</a>
                             </nav>
                         </div>
-                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLM" aria-expanded="false" aria-controls="collapseLM">
+                        <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLM" aria-expanded="false" aria-controls="collapseLM">
                             <div class="sb-nav-link-icon"><i class="fas fa-calendar-times"></i></div>
                             Leave Management
                             <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                         </a>
                         <div class="collapse" id="collapseLM" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link" href="../main/leave_status.php">Leave Status</a>
-                                <a class="nav-link" href="../main/leave_history.php">Leave History</a>
-                                <a class="nav-link" href="../main/leave_allocation.php">Set Leave</a>
+                                <a class="nav-link text-light" href="../main/leave_status.php">Leave Status</a>
+                                <a class="nav-link text-light" href="../main/leave_history.php">Leave History</a>
+                                <a class="nav-link text-light"  href="../main/leave_allocation.php">Set Leave</a>
                             </nav>
                         </div>
-                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePM" aria-expanded="false" aria-controls="collapsePM">
+                        <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePM" aria-expanded="false" aria-controls="collapsePM">
                             <div class="sb-nav-link-icon"><i class="fas fa-line-chart"></i></div>
                             Performance Management
                             <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                         </a>
                         <div class="collapse" id="collapsePM" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link" href="../main/admin_department.php">Evaluation</a>
+                                <a class="nav-link text-light" href="../main/admin_department.php">Evaluation</a>
                             </nav>
                         </div>
-                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseSR" aria-expanded="false" aria-controls="collapseSR">
+                        <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseSR" aria-expanded="false" aria-controls="collapseSR">
                             <div class="sb-nav-link-icon"><i class="fa fa-address-card"></i></div>
                             Social Recognition
                             <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                         </a>
                         <div class="collapse" id="collapseSR" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link" href="../main/rating.php">View Ratings</a>
+                                <a class="nav-link text-light" href="../main/rating.php">View Ratings</a>
                             </nav>
                         </div>
-                        <div class="sb-sidenav-menu-heading text-center bg-secondary text-light">Account Management</div>
-                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
+                        <div class="sb-sidenav-menu-heading text-center bg-dark text-info">Account Management</div>
+                        <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
                             <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
                             Accounts
                             <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                         </a>
                         <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link" href="../main/calendar.php">Calendar</a>
-                                <a class="nav-link" href="../main/admin.php">Admin Accounts</a>
-                                <a class="nav-link" href="../main/registeradmin.php">Create Admin</a>
-                                <a class="nav-link" href="../main/employee.php">Employee Accounts</a>
-                                <a class="nav-link" href="../main/register_employee.php">Create Employee</a>
+                                <a class="nav-link text-light" href="../main/calendar.php">Calendar</a>
+                                <a class="nav-link text-light" href="../main/admin.php">Admin Accounts</a>
+                                <a class="nav-link text-light" href="../main/employee.php">Employee Accounts</a>
                             </nav>
                         </div>
                         <div class="collapse" id="collapsePages" aria-labelledby="headingTwo" data-bs-parent="#sidenavAccordion">
                         </div>
-                        <div class="sb-sidenav-menu-heading bg-secondary text-light text-center">Addons</div>
-                        <a class="nav-link" href="../main/charts.php">
+                        <div class="sb-sidenav-menu-heading bg-dark text-info text-center">Addons</div>
+                        <a class="nav-link text-light" href="../main/charts.php">
                             <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
                             Charts
                         </a>
-                        <a class="nav-link" href="../main/tables.php">
+                        <a class="nav-link text-light" href="../main/tables.php">
                             <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
                             Tables
                         </a>
                     </div>
                 </div>
-                <div class="sb-sidenav-footer">
+                <div class="sb-sidenav-footer bg-dark text-light">
                     <div class="small">Logged in as: <?php echo htmlspecialchars($adminInfo['firstname'] . ' ' . $adminInfo['lastname']); ?></div>
                 </div>
             </nav>
         </div>
         <div id="layoutSidenav_content">
-<main>
+<main class="bg-dark">
     <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-8 ms-3 col-lg-6 text-light"> <!-- Adjust the column size as needed -->
@@ -446,7 +444,7 @@ include '../db/db_conn.php';
 
     </script>
 </main>
-            <footer class="py-4 bg-light mt-auto bg-dark">
+            <footer class="py-4 bg-black mt-auto">
                 <div class="container-fluid px-4">
                     <div class="d-flex align-items-center justify-content-between small">
                         <div class="text-muted">Copyright &copy; Your Website 2023</div>

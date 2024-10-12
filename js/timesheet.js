@@ -5,11 +5,15 @@ const outputMessage = document.getElementById('outputMessage');
 const outputData = document.getElementById('outputData');
 const recordsTable = document.getElementById('recordsTable').getElementsByTagName('tbody')[0];
 
-// Use the getUserMedia API to stream the video feed from the camera
+// Store last scanned QR code and time to prevent spamming
+let lastScannedCode = null;
+let lastScanTime = 0;
+
+// Use getUserMedia API to stream video from the camera
 navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
     .then(stream => {
         video.srcObject = stream;
-        video.setAttribute('playsinline', true); // required to tell iOS safari we don't want fullscreen
+        video.setAttribute('playsinline', true); // For iOS Safari
         requestAnimationFrame(tick);
     })
     .catch(err => {
@@ -26,9 +30,17 @@ function tick() {
             inversionAttempts: 'dontInvert',
         });
         if (code) {
-            outputMessage.hidden = true;
-            outputData.innerText = `Employee ID: ${code.data}`;
-            recordTime(code.data);
+            const now = Date.now();
+
+            // Check for duplicate within cooldown (e.g., 3000ms or 3 seconds)
+            if (code.data !== lastScannedCode || now - lastScanTime > 3000) {
+                lastScannedCode = code.data;
+                lastScanTime = now;
+
+                outputMessage.hidden = true;
+                outputData.innerText = `Employee ID: ${code.data}`;
+                recordTime(code.data);
+            }
         } else {
             outputMessage.hidden = false;
             outputData.innerText = '';

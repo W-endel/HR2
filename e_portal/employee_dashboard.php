@@ -84,6 +84,7 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
                             <nav class="sb-sidenav-menu-nested nav">
                                 <a class="nav-link" href="../main/tad_display.php">QR for Attendance</a>
                                 <a class="nav-link" href="../main/tad_timesheet.php">View Record Attendance</a>
+                                 <a class="nav-link" href="../main/timeout.php">out</a>
                             </nav>
                         </div>
                         <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLM" aria-expanded="false" aria-controls="collapseLM">

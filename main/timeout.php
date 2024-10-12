@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Time In/Out Recording System</title>
+    <title>QR For out</title>
     <link href="../css/timesheet.css" rel="stylesheet">
 </head>
 <body>
     <header>
-        <h1>Time In Recording System</h1>
+        <h1>Time out Recording System</h1>
     </header>
 
     <section class="scanner">
@@ -35,7 +35,6 @@
     </section>
 
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.3.1/dist/jsQR.js"></script>
-    <script src="../js/Display.js"></script>
+    <script src="../js/out.js"></script>
 </body>
 </html>
-    

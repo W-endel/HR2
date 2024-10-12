@@ -31,6 +31,7 @@ $result = $conn->query($sql);
                     <th>Address</th>
                     <th>Actions</th>
                 </tr>
+                
             </thead>
             <tbody>
                 <?php if ($result->num_rows > 0): ?>
@@ -54,6 +55,10 @@ $result = $conn->query($sql);
                 <?php endif; ?>
             </tbody>
         </table>
+            <div class="d-flex justify-content-between mt-4 mb-0">
+                <a class="btn btn-primary text-light" href="../main/registeradmin.php">Create Admin</a>
+                <a class="btn btn-primary text-light" href="../main/index.php">Back</a>
+            </div>
 
         <h2 class="mt-5 text-light">Update Admin Account</h2>
         <form id="updateForm">

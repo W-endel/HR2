@@ -55,6 +55,10 @@ $result = $conn->query($sql);
                 <?php endif; ?>
             </tbody>
         </table>
+            <div class="d-flex justify-content-between mt-4 mb-0">
+                <a class="btn btn-primary text-light" href="../main/register_employee.php">Create Employee</a>
+                <a class="btn btn-primary text-light" href="../main/index.php">Back</a>
+            </div>
 
         <h2 class="mt-5 text-light">Update Employee Account</h2>
 <form id="updateForm">
