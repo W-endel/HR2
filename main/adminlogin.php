@@ -1,16 +1,36 @@
 <?php
 session_start();
+include '../db/db_conn.php'; // Include your database connection file
 
-// Assume $adminId is fetched from the database during login
-if ($loginSuccessful) {
-    $_SESSION['a_id'] = $adminId; // Set admin ID in session
-    // Redirect to dashboard or another page
-    header("Location: ../main/index.php");
-    exit();
-} else {
-    echo "Login failed. Please try again.";
+// Retrieve form input
+$email = $_POST['email'] ?? '';
+$password = $_POST['password'] ?? '';
+
+// Initialize login success as false by default
+$loginSuccessful = false;
+
+// Prepare and execute the query to check credentials
+$sql = "SELECT a_id, password FROM admin_register WHERE email = ? AND role = 'admin'";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("s", $email);
+$stmt->execute();
+$result = $stmt->get_result();
+
+// Verify login credentials
+if ($row = $result->fetch_assoc()) {
+    // Verify the password
+    if (password_verify($password, $row['password'])) { // Assuming passwords are hashed
+        $loginSuccessful = true;
+        $_SESSION['a_id'] = $row['a_id']; // Set admin ID in session
+        header("Location: ../main/index.php"); // Redirect to dashboard
+        exit();
+    }
 }
+
+$stmt->close();
+$conn->close();
 ?>
+
 
 
 <!DOCTYPE html>
@@ -26,25 +46,24 @@ if ($loginSuccessful) {
     <link href="../css/styles.css" rel="stylesheet" />
 </head>
 
-<body class="bg-dark">
+<body class="bg-black">
     <div id="layoutAuthentication">
         <div id="layoutAuthentication_content">
             <main>
-                <div class="container">
+                <div class="container mt-5">
                     <div class="row justify-content-center">
                         <div class="col-lg-5">
-                            <div class="card shadow-lg border-0 rounded-lg mt-5">
-                                <div class="card-header">
-                                    <h3 class="text-center font-weight-light my-4">Login</h3>
+                            <div class="card shadow-lg border-0 rounded-lg mt-2 mb-2 bg-dark">
+                                <div class="card-header border-bottom border-2 border-warning"> 
+                                    <h3 class="text-center text-light font-weight-light mt-2 mb-4">Admin Login</h3>
                                     <i class="fa-solid fa-house"></i>
-                                    <!-- Display error message if it exists -->
                                     <?php if (isset($_GET['error'])): ?>
-                                        <div class="alert alert-danger text-center" role="alert">
+                                        <div class="alert alert-danger text-center my-2" role="alert">
                                             <?php echo htmlspecialchars(urldecode($_GET['error'])); ?>
                                         </div>
                                     <?php endif; ?>
                                 </div>
-                                <div class="card-body">
+                                <div class="card-body bg-dark">
                                     <form action="../main/adminlogin_conn.php" method="post">
                                         <div class="form-floating mb-3">
                                             <input class="form-control" id="inputEmail" type="email" name="email"
@@ -57,17 +76,23 @@ if ($loginSuccessful) {
                                                 placeholder="Password" required />
                                                 <label for="inputPassword">Password:</label>
                                         </div>
-                                        <div class="form-check mb-3">
-                                            <input class="form-check-input" id="inputRememberPassword" type="checkbox"
-                                                name="remember" value="" />
-                                            <label class="form-check-label" for="inputRememberPassword">Remember
-                                                Password</label>
+                                        <div class="d-flex justify-content-between align-items-center mt-1 mb-2">
+                                            <div class="d-flex align-items-center">
+                                                <input class="form-check-input" id="inputRememberPassword" type="checkbox" name="remember" value="" />
+                                                <label class="form-check-label text-light ms-2" for="inputRememberPassword">Remember Password</label>
+                                            </div>
+                                                <a class="small text-light" href="../main/password.php">Forgot Password?</a>
                                         </div>
-                                        <div class="d-flex align-items-center justify-content-between mt-4 mb-0">
-                                            <a class="small" href="../main/password.php">Forgot Password?</a>
-                                            <button type="submit" class="btn btn-primary">Login</button>
+                                        <div class="d-flex align-items-center justify-content-between mt-2 mb-2">
+                                            <button type="submit" class="btn btn-primary w-100">Login</button>
+                                        </div>
+                                        <div class="text-center">
+                                            <div class="text-center mt-3 mb-0"> <a class="btn border-secondary w-100 text-light border border-2" href="../main/front.php">Back</a></div>
                                         </div>
                                     </form>
+                                </div>
+                                <div class="card-footer text-center border-top border-2 border-warning">
+                                    <div class="text-center text-muted">Human Resource 2</a></div>
                                 </div>
                             </div>
                         </div>
@@ -76,10 +101,10 @@ if ($loginSuccessful) {
             </main>
         </div>
         <div id="layoutAuthentication_footer">
-            <footer class="py-4 bg-light mt-auto">
+            <footer class="py-4 bg-dark mt-auto">
                 <div class="container-fluid px-4">
                     <div class="d-flex align-items-center justify-content-between small">
-                        <div class="text-muted">Copyright &copy; Your Website 2023</div>
+                        <div class="text-muted">Copyright &copy; Human Resource 2</div>
                         <div>
                             <a href="#">Privacy Policy</a>
                             &middot;
@@ -92,7 +117,6 @@ if ($loginSuccessful) {
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
         crossorigin="anonymous"></script>
-    <script src="../js/scripts.js"></script>
 </body>
 
 </html>

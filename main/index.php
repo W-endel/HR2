@@ -61,7 +61,7 @@ $conn->close();
                 </div>
            </form>
         <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
-             <li class="nav-item text-dark d-flex flex-column align-items-start">
+             <li class="nav-item text-light d-flex flex-column align-items-start">
                  <span class="big text-light mb-1">
                     <?php
                       if ($adminInfo) {
@@ -81,8 +81,8 @@ $conn->close();
                     ?>
                  </span>
             </li>
-            <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle text-dark" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <li class="nav-item dropdown text">
+                <a class="nav-link dropdown-toggle text-light" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 <img src="../img/defaultpfp.png" class="rounded-circle border border-dark" width="40" height="40" />
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">

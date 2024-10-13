@@ -12,16 +12,16 @@
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
 </head>
 
-<body class="bg-dark">
+<body class="bg-black">
     <div id="layoutAuthentication">
         <div id="layoutAuthentication_content">
             <main>
                 <div class="container">
                     <div class="row justify-content-center">
                         <div class="col-lg-7">
-                            <div class="card shadow-lg border-0 rounded-lg mt-5 my-5">
-                                <div class="card-header">
-                                    <h3 class="text-center font-weight-light my-4">Create Admin Account</h3>
+                            <div class="card shadow-lg border-0 rounded-lg mt-5 my-5 bg-dark">
+                                <div class="card-header border-bottom border-2 border-warning">
+                                    <h3 class="text-center text-light font-weight-light my-4">Create Admin Account</h3>
                                     <div id="form-feedback" class="alert text-center" style="display: none;"></div>
                                 </div>
                                 <div class="card-body">
@@ -93,11 +93,14 @@
                                             <div class="d-grid">
                                                 <button class="btn btn-primary btn-block" type="submit">Create Account</button>
                                             </div>
+                                            <div class="text-center">
+                                            <div class="text-center mt-3 mb-0"> <a class="btn border-secondary w-100 text-light border border-2" href="../main/index.php">Back</a></div>
+                                        </div>
                                         </div>
                                     </form>
                                 </div>
-                                <div class="card-footer text-center py-3">
-                                    <div class="big"><a href="../main/index.php">Back</a></div>
+                                <div class="card-footer text-center text-muted py-3 border-top border-2 border-warning">
+                                    <div class="big">Human Resource 2</div>
                                 </div>
                             </div>
                         </div>
@@ -106,7 +109,7 @@
             </main>
         </div>
         <div id="layoutAuthentication_footer">
-            <footer class="py-4 bg-light mt-auto">
+            <footer class="py-4 bg-dark mt-auto">
                 <div class="container-fluid px-4">
                     <div class="d-flex align-items-center justify-content-between small">
                         <div class="text-muted">Copyright &copy; Your Website 2023</div>
