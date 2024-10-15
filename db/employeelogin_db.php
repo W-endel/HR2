@@ -1,19 +1,7 @@
 <?php
 session_start();
 
-// Database configuration
-$servername = "localhost";
-$username = "root";        
-$password = "";            
-$dbname = "hr2";           
-
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+include '../db/db_conn.php';
 
 // Get form data
 $inputEmail = $_POST['email'];

@@ -1,20 +1,7 @@
 <?php
 session_start();
 
-// Database configuration
-$servername = "localhost";
-$username = "root";        
-$password = "";            
-$dbname = "hr2";           
-
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-// Check connection
-if ($conn->connect_error) {
-    echo json_encode(['error' => 'Connection failed: ' . $conn->connect_error] );
-    exit();
-}
+include '../db/db_conn.php';
 
 // Get employee ID from request
 $adminId = isset($_POST['a_id']) ? trim($_POST['a_id']) : '';

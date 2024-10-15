@@ -51,7 +51,7 @@ $conn->close();
   </head>
 
 <body class="sb-nav-fixed">
-    <nav class="sb-topnav navbar navbar-expand navbar-dark border border-light">
+    <nav class="sb-topnav navbar navbar-expand navbar-dark border-bottom border-2 border-warning bg-dark">
         <a class="navbar-brand ps-3 text-light" href="../main/index.php">Microfinance</a>
         <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars text-light"></i></button>
            <form class="d-none d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0">
@@ -97,10 +97,10 @@ $conn->close();
     </nav>
     <div id="layoutSidenav">
         <div id="layoutSidenav_nav">
-            <nav class="sb-sidenav accordion bg-black" id="sidenavAccordion">
+            <nav class="sb-sidenav accordion bg-dark" id="sidenavAccordion">
                 <div class="sb-sidenav-menu ">
                     <div class="nav">
-                        <div class="sb-sidenav-menu-heading text-center bg-dark text-info">Logo</div>
+                        <div class="sb-sidenav-menu-heading text-center bg-black text-info border-bottom border-2 border-warning">Logo</div>
                         <a class="nav-link text-light" href="../main/index.php">
                             <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
                             Dashboard
@@ -148,7 +148,7 @@ $conn->close();
                                 <a class="nav-link text-light" href="../main/rating.php">View Ratings</a>
                             </nav>
                         </div>
-                        <div class="sb-sidenav-menu-heading text-center bg-dark text-info">Account Management</div>
+                        <div class="sb-sidenav-menu-heading text-center bg-black text-info border-top border-bottom border-2 border-warning">Account Management</div>
                         <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
                             <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
                             Accounts
@@ -163,7 +163,7 @@ $conn->close();
                         </div>
                         <div class="collapse" id="collapsePages" aria-labelledby="headingTwo" data-bs-parent="#sidenavAccordion">
                         </div>
-                        <div class="sb-sidenav-menu-heading bg-dark text-info text-center">Addons</div>
+                        <div class="sb-sidenav-menu-heading bg-black text-info text-center border-top border-bottom border-2 border-warning">Addons</div>
                         <a class="nav-link text-light" href="../main/charts.php">
                             <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
                             Charts
@@ -174,47 +174,27 @@ $conn->close();
                         </a>
                     </div>
                 </div>
-                <div class="sb-sidenav-footer bg-dark text-light">
+                <div class="sb-sidenav-footer bg-black text-light border-top border-2 border-warning">
                     <div class="small">Logged in as: <?php echo htmlspecialchars($adminInfo['firstname'] . ' ' . $adminInfo['lastname']); ?></div>
                 </div>
             </nav>
         </div>
         <div id="layoutSidenav_content">
-<main class="bg-dark">
-    <div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8 ms-3 col-lg-6 text-light"> <!-- Adjust the column size as needed -->
-            <div id="calendar"></div>
+<main class="bg-black">
+    <div class="container-fluid px-4">
+        <h1 class="mt-4 text-light">Dashboard</h1>
+        <div class="container mb-5">
+    <div class="row justify-content-end">
+        <div class="col-md-8 ms-3 col-lg-5 text-light"> <!-- Adjust the column size as needed -->
+            <div id="calendar" class="small"></div>
         </div>
     </div>
 </div>
-    <div class="container-fluid px-4">
-        <h1 class="mt-4 text-light">Dashboard</h1>
-        <div class="row">
-            <div class="col-xl-6">
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <i class="fas fa-chart-area me-1"></i>
-                        Area Chart Example
-                    </div>
-                    <div class="card-body"><canvas id="myAreaChart" width="100%" height="50"></canvas></div>
-                </div>
-            </div>
-            <div class="col-xl-6">
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <i class="fas fa-chart-bar me-1"></i>
-                        Bar Chart Example
-                    </div>
-                    <div class="card-body"><canvas id="myBarChart" width="100%" height="50"></canvas></div>
-                </div>
-            </div>
-        </div>
         <div class="row mb-4">
             <div class="col-xl-6">
                 <div class="card mb-4">
-                    <div class="card-header">
-                        <i class="fas fa-chart-pie me-1"></i>
+                    <div class="card-header bg-black text-light border-bottom border-2 border-warning">
+                        <i class="fas fa-chart-pie me-1"></i> 
                         Leave Request Status
                     </div>
                     <div class="card-body bg-dark">
@@ -328,6 +308,8 @@ $conn->close();
             </div>
         </div>
     </div>
+
+    <!-- for leaveStatusChart -->
     <?php
     // Database configuration
 include '../db/db_conn.php';
@@ -352,7 +334,22 @@ include '../db/db_conn.php';
 
     $conn->close();
     ?>
-
+</main>
+            <footer class="py-4 bg-black mt-auto border-top border-2 border-warning">
+                <div class="container-fluid px-4">
+                    <div class="d-flex align-items-center justify-content-between small">
+                        <div class="text-muted">Copyright &copy; Your Website 2023</div>
+                        <div>
+                            <a href="#">Privacy Policy</a>
+                            &middot;
+                            <a href="#">Terms &amp; Conditions</a>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         // Doughnut chart data
@@ -385,7 +382,9 @@ include '../db/db_conn.php';
                 }
             }
         });
+        //for leaveStatusChart
 
+        //for calendar only
         document.addEventListener('DOMContentLoaded', function() {
     var calendarEl = document.getElementById('calendar');
 
@@ -405,8 +404,9 @@ include '../db/db_conn.php';
 
     calendar.render();
 });
+        //for calendar only
 
-
+        //for leave request (error)
  document.addEventListener('DOMContentLoaded', function() {
             const calendarEl = document.getElementById('calendar');
 
@@ -441,29 +441,13 @@ include '../db/db_conn.php';
                 });
             }
         });
+            //for leave request (error)
 
     </script>
-</main>
-            <footer class="py-4 bg-black mt-auto">
-                <div class="container-fluid px-4">
-                    <div class="d-flex align-items-center justify-content-between small">
-                        <div class="text-muted">Copyright &copy; Your Website 2023</div>
-                        <div>
-                            <a href="#">Privacy Policy</a>
-                            &middot;
-                            <a href="#">Terms &amp; Conditions</a>
-                        </div>
-                    </div>
-                </div>
-            </footer>
-        </div>
-    </div>
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'> </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <script src="../js/admin.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
-    <script src="../src/assets/demo/chart-area-demo.js"></script>
-    <script src="../src/assets/demo/chart-bar-demo.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js" crossorigin="anonymous"></script>
     <script src="../js/datatables-simple-demo.js"></script>
 

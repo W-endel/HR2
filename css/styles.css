@@ -278,7 +278,6 @@ sup {
 
 a {
     color: var(--bs-link-color);
-    text-decoration: underline;
 }
 
 a:hover {
@@ -12822,7 +12821,6 @@ body {
 
 .sb-nav-fixed .sb-topnav {
     z-index: 1039;
-    background-color: black;
 }
 
 .sb-nav-fixed #layoutSidenav #layoutSidenav_nav {
@@ -13180,4 +13178,11 @@ body {
     width: 20px !important;
     font-size: 0.75rem;
     border-radius: 0.375rem !important;
+}
+
+/* new */
+
+#calendar {
+    color: #007bff;
+    /* Change to your preferred color */
 }

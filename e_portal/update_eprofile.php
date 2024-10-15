@@ -1,23 +1,13 @@
 <?php
 session_start();
 
-// Database configuration
-$servername = "localhost";
-$username = "root";        
-$password = "";            
-$dbname = "hr2";           
-
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+include '../db/db_conn.php';
 
 // Fetch user ID from session
-$userId = $_SESSION['user_id'];
+$employeeId = $_SESSION['e_id'];
 
 // Prepare and bind
-$stmt = $conn->prepare("UPDATE employee_register SET firstname = ?, middlename = ?, lastname = ?, birthdate = ?, email = ?, phone_number = ?, address = ? WHERE id = ?");
+$stmt = $conn->prepare("UPDATE employee_register SET firstname = ?, middlename = ?, lastname = ?, birthdate = ?, email = ?, phone_number = ?, address = ? WHERE e_id = ?");
 $stmt->bind_param("sssssssi", $firstname, $middlename, $lastname, $birthdate, $email, $phone_number, $address, $userId);
 
 // Get form data
@@ -39,7 +29,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Move the uploaded file
         if (move_uploaded_file($profilePicture['tmp_name'], $targetFile)) {
             // Prepare to update the profile picture path in the database
-            $stmtPic = $conn->prepare("UPDATE employee_register SET pfp = ? WHERE id = ?");
+            $stmtPic = $conn->prepare("UPDATE employee_register SET pfp = ? WHERE e_id = ?");
             $stmtPic->bind_param("si", $targetFile, $userId);
             $stmtPic->execute();
             $stmtPic->close();

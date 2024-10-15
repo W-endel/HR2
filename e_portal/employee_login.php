@@ -1,15 +1,34 @@
 <?php
 session_start();
+include '../db/db_conn.php'; // Include your database connection file
 
-// Assume $adminId is fetched from the database during login
-if ($loginSuccessful) {
-    $_SESSION['e_id'] = $employeeId; // Set admin ID in session
-    // Redirect to dashboard or another page
-    header("Location: ../e_portal/employee_dashboard.php");
-    exit();
-} else {
-    echo "Login failed. Please try again.";
+// Retrieve form input
+$email = $_POST['email'] ?? '';
+$password = $_POST['password'] ?? '';
+
+// Initialize login success as false by default
+$loginSuccessful = false;
+
+// Prepare and execute the query to check credentials
+$sql = "SELECT e_id, password FROM employee_register WHERE email = ? AND role = 'employee'";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("s", $email);
+$stmt->execute();
+$result = $stmt->get_result();
+
+// Verify login credentials
+if ($row = $result->fetch_assoc()) {
+    // Verify the password
+    if (password_verify($password, $row['password'])) { // Assuming passwords are hashed
+        $loginSuccessful = true;
+        $_SESSION['e_id'] = $row['e_id']; // Set admin ID in session
+        header("Location: ../main/employee_dashboard.php"); // Redirect to dashboard
+        exit();
+    }
 }
+
+$stmt->close();
+$conn->close();
 ?>
 
 

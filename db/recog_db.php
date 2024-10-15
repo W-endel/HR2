@@ -1,17 +1,5 @@
 <?php
-    // Database connection
-    $servername = "localhost";
-    $username = "root"; 
-    $password = ""; 
-    $dbname = "hr2";
-
-    // Create connection
-    $conn = new mysqli($servername, $username, $password, $dbname);
-
-    // Check connection
-    if ($conn->connect_error) {
-        die("Connection failed: " . $conn->connect_error);
-    }
+include '../db/db_conn.php';
 
     // Handle form submission
     if ($_SERVER["REQUEST_METHOD"] == "POST") {

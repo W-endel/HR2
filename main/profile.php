@@ -1,17 +1,7 @@
 <?php
 session_start();
 
-// Database configuration
-$servername = "localhost";
-$username = "root";        
-$password = "";            
-$dbname = "hr2";           
-
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+include '../db/db_conn.php';
 
 if (isset($_SESSION['update_success'])) {
     echo '<script>alert("' . htmlspecialchars($_SESSION['update_success']) . '");</script>';
