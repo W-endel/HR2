@@ -54,7 +54,7 @@ $conn->close();
                     <div class="row justify-content-center">
                         <div class="col-lg-5">
                             <div class="card shadow-lg border-0 rounded-lg mt-2 mb-2 bg-dark">
-                                <div class="card-header border-bottom border-2 border-warning"> 
+                                <div class="card-header border-bottom border-1 border-warning"> 
                                     <h3 class="text-center text-light font-weight-light mt-2 mb-4">Admin Login</h3>
                                     <i class="fa-solid fa-house"></i>
                                     <?php if (isset($_GET['error'])): ?>
@@ -87,11 +87,11 @@ $conn->close();
                                             <button type="submit" class="btn btn-primary w-100">Login</button>
                                         </div>
                                         <div class="text-center">
-                                            <div class="text-center mt-3 mb-0"> <a class="btn border-secondary w-100 text-light border border-2" href="../main/front.php">Back</a></div>
+                                            <div class="text-center mt-3 mb-0"> <a class="btn border-secondary w-100 text-light border border-1" href="../main/front.php">Back</a></div>
                                         </div>
                                     </form>
                                 </div>
-                                <div class="card-footer text-center border-top border-2 border-warning">
+                                <div class="card-footer text-center border-top border-1 border-warning">
                                     <div class="text-center text-muted">Human Resource 2</a></div>
                                 </div>
                             </div>

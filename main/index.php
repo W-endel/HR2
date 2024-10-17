@@ -51,56 +51,74 @@ $conn->close();
   </head>
 
 <body class="sb-nav-fixed">
-    <nav class="sb-topnav navbar navbar-expand navbar-dark border-bottom border-2 border-warning bg-dark">
+    <nav class="sb-topnav navbar navbar-expand navbar-dark border-bottom border-1 border-warning bg-dark">
         <a class="navbar-brand ps-3 text-light" href="../main/index.php">Microfinance</a>
         <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars text-light"></i></button>
-           <form class="d-none d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0">
-                <div class="input-group">
-                    <input class="form-control" type="text" placeholder="Search for..." aria-label="Search for..." aria-describedby="btnNavbarSearch" />
-                    <button class="btn btn-primary" id="btnNavbarSearch" type="button"><i class="fas fa-search"></i></button>
-                </div>
-           </form>
-        <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
-             <li class="nav-item text-light d-flex flex-column align-items-start">
-                 <span class="big text-light mb-1">
-                    <?php
-                      if ($adminInfo) {
-                      echo htmlspecialchars($adminInfo['firstname'] . ' ' . $adminInfo['middlename'] . ' ' . $adminInfo['lastname']);
-                      } else {
-                      echo "Admin information not available.";
-                      }
-                    ?>
-                 </span>      
-                 <span class="big text-light">
-                    <?php
-                      if ($adminInfo) {
-                      echo htmlspecialchars($adminInfo['role']);
-                      } else {
-                      echo "User information not available.";
-                      }
-                    ?>
-                 </span>
-            </li>
-            <li class="nav-item dropdown text">
-                <a class="nav-link dropdown-toggle text-light" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <img src="../img/defaultpfp.png" class="rounded-circle border border-dark" width="40" height="40" />
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                    <li><a class="dropdown-item" href="../main/profile.php">Profile</a></li>
-                    <li><a class="dropdown-item" href="#!">Settings</a></li>
-                    <li><a class="dropdown-item" href="#!">Activity Log</a></li>
-                    <li><hr class="dropdown-divider" /></li>
-                    <li><a class="dropdown-item" href="../main/adminlogout.php" onclick="confirmLogout(event)">Logout</a></li>
-                </ul>
-            </li>
-        </ul>
+    
+    <!-- Flex container to hold both time/date and search form -->
+        <div class="d-flex ms-auto me-0 me-md-3 my-2 my-md-0 align-items-center">
+            <div class="text-light me-3 p-2 rounded shadow-sm bg-gradient" id="currentTimeContainer" 
+            style="background: linear-gradient(45deg, #333333, #444444); border-radius: 5px;">
+                <span class="d-flex align-items-center">
+                    <span class="pe-2">
+                        <i class="fas fa-clock"></i> 
+                        <span id="currentTime">00:00:00</span>
+                    </span>
+                    <button class="btn btn-outline-warning btn-sm ms-2" type="button" onclick="toggleCalendar()">
+    <i class="fas fa-calendar-alt"></i>
+    <span id="currentDate">00/00/0000</span>
+</button>
+                </span>
+            </div>
+            <form class="d-none d-md-inline-block form-inline">
+            <div class="input-group">
+                <input class="form-control" type="text" placeholder="Search for..." aria-label="Search for..." aria-describedby="btnNavbarSearch" />
+                <button class="btn btn-primary" id="btnNavbarSearch" type="button"><i class="fas fa-search"></i></button>
+            </div>
+            </form>
+        </div>
     </nav>
     <div id="layoutSidenav">
         <div id="layoutSidenav_nav">
             <nav class="sb-sidenav accordion bg-dark" id="sidenavAccordion">
                 <div class="sb-sidenav-menu ">
                     <div class="nav">
-                        <div class="sb-sidenav-menu-heading text-center bg-black text-info border-bottom border-2 border-warning">Logo</div>
+                        <div class="sb-sidenav-menu-heading text-center text-muted">Your Profile</div>
+                        <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
+                            <li class="nav-item dropdown text">
+                                <a class="nav-link dropdown-toggle text-light d-flex justify-content-center ms-4" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <img src="../img/defaultpfp.png" class="rounded-circle border border-dark" width="120" height="120" />
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                    <li><a class="dropdown-item" href="../main/profile.php">Profile</a></li>
+                                    <li><a class="dropdown-item" href="#!">Settings</a></li>
+                                    <li><a class="dropdown-item" href="#!">Activity Log</a></li>
+                                    <li><hr class="dropdown-divider" /></li>
+                                    <li><a class="dropdown-item" href="../main/adminlogout.php" onclick="confirmLogout(event)">Logout</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item text-light d-flex ms-3 flex-column align-items-center text-center">
+                                <span class="big text-light mb-1">
+                                    <?php
+                                        if ($adminInfo) {
+                                        echo htmlspecialchars($adminInfo['firstname'] . ' ' . $adminInfo['middlename'] . ' ' . $adminInfo['lastname']);
+                                        } else {
+                                        echo "Admin information not available.";
+                                        }
+                                    ?>
+                                </span>      
+                                <span class="big text-light">
+                                    <?php
+                                        if ($adminInfo) {
+                                        echo htmlspecialchars($adminInfo['role']);
+                                        } else {
+                                        echo "User information not available.";
+                                        }
+                                    ?>
+                                </span>
+                            </li>
+                        </ul>
+                        <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-warning mt-3">Admin Dashboard</div>
                         <a class="nav-link text-light" href="../main/index.php">
                             <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
                             Dashboard
@@ -148,7 +166,7 @@ $conn->close();
                                 <a class="nav-link text-light" href="../main/rating.php">View Ratings</a>
                             </nav>
                         </div>
-                        <div class="sb-sidenav-menu-heading text-center bg-black text-info border-top border-bottom border-2 border-warning">Account Management</div>
+                        <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-warning">Account Management</div>
                         <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
                             <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
                             Accounts
@@ -163,7 +181,7 @@ $conn->close();
                         </div>
                         <div class="collapse" id="collapsePages" aria-labelledby="headingTwo" data-bs-parent="#sidenavAccordion">
                         </div>
-                        <div class="sb-sidenav-menu-heading bg-black text-info text-center border-top border-bottom border-2 border-warning">Addons</div>
+                        <div class="sb-sidenav-menu-heading text-muted text-center border-top border-1 border-warning">Addons</div>
                         <a class="nav-link text-light" href="../main/charts.php">
                             <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
                             Charts
@@ -174,7 +192,7 @@ $conn->close();
                         </a>
                     </div>
                 </div>
-                <div class="sb-sidenav-footer bg-black text-light border-top border-2 border-warning">
+                <div class="sb-sidenav-footer text-light border-top border-1 border-warning">
                     <div class="small">Logged in as: <?php echo htmlspecialchars($adminInfo['firstname'] . ' ' . $adminInfo['lastname']); ?></div>
                 </div>
             </nav>
@@ -183,17 +201,18 @@ $conn->close();
 <main class="bg-black">
     <div class="container-fluid px-4">
         <h1 class="mt-4 text-light">Dashboard</h1>
-        <div class="container mb-5">
-    <div class="row justify-content-end">
-        <div class="col-md-8 ms-3 col-lg-5 text-light"> <!-- Adjust the column size as needed -->
-            <div id="calendar" class="small"></div>
+        <div class="container position-absolute" id="calendarContainer" 
+     style="top: 10px; right: 0; z-index: 1050; background-color: black; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); width: 800px; display: none;">
+    <div class="row">
+        <div class="col-md-12">
+            <div id="calendar" class="p-2"></div>
         </div>
     </div>
 </div>
         <div class="row mb-4">
             <div class="col-xl-6">
                 <div class="card mb-4">
-                    <div class="card-header bg-black text-light border-bottom border-2 border-warning">
+                    <div class="card-header bg-black text-light border-bottom border-1 border-warning">
                         <i class="fas fa-chart-pie me-1"></i> 
                         Leave Request Status
                     </div>
@@ -335,7 +354,7 @@ include '../db/db_conn.php';
     $conn->close();
     ?>
 </main>
-            <footer class="py-4 bg-black mt-auto border-top border-2 border-warning">
+            <footer class="py-4 bg-black mt-auto border-top border-1 border-warning">
                 <div class="container-fluid px-4">
                     <div class="d-flex align-items-center justify-content-between small">
                         <div class="text-muted">Copyright &copy; Your Website 2023</div>
@@ -382,44 +401,85 @@ include '../db/db_conn.php';
                 }
             }
         });
-        //for leaveStatusChart
+        //for leaveStatusChart end
 
         //for calendar only
-        document.addEventListener('DOMContentLoaded', function() {
-    var calendarEl = document.getElementById('calendar');
+        // Global variable for calendar
+let calendar; // Declare calendar variable globally
 
-    var calendar = new FullCalendar.Calendar(calendarEl, {
+function toggleCalendar() {
+    const calendarContainer = document.getElementById('calendarContainer');
+
+    // Check if the calendar is currently hidden
+    if (calendarContainer.style.display === 'none' || calendarContainer.style.display === '') {
+        // Show the calendar
+        calendarContainer.style.display = 'block';
+
+        // Initialize the calendar only if it hasn't been initialized yet
+        if (!calendar) {
+            initializeCalendar(); // Initialize FullCalendar
+        }
+    } else {
+        // Hide the calendar if it is already visible
+        calendarContainer.style.display = 'none';
+    }
+}
+
+// Function to initialize FullCalendar
+function initializeCalendar() {
+    const calendarEl = document.getElementById('calendar');
+    calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
         events: {
-            url: 'holiday.php',  // Endpoint created in step 2
+            url: '../main/holiday.php',  // Endpoint for fetching events
             method: 'GET',
             failure: function() {
                 alert('There was an error fetching events!');
             }
-        },
-        eventDidMount: function(info) {
-            // Additional customization of events if needed
-        },
+        }
     });
 
     calendar.render();
+}
+
+// Set the current date when the page loads
+document.addEventListener('DOMContentLoaded', function () {
+    const currentDateElement = document.getElementById('currentDate');
+    const currentDate = new Date().toLocaleDateString(); // Get the current date
+    currentDateElement.textContent = currentDate; // Set the date text
 });
-        //for calendar only
+
+// Close the calendar when clicking outside of it
+document.addEventListener('click', function(event) {
+    const calendarContainer = document.getElementById('calendarContainer');
+    const calendarButton = document.querySelector('button[onclick="toggleCalendar()"]');
+
+    // Hide calendar if clicked outside the button and container
+    if (!calendarContainer.contains(event.target) && event.target !== calendarButton) {
+        calendarContainer.style.display = 'none';
+    }
+});
+        //for calendar only end
 
         //for leave request (error)
- document.addEventListener('DOMContentLoaded', function() {
-            const calendarEl = document.getElementById('calendar');
+ document.addEventListener('DOMContentLoaded', function () {
+    const calendarEl = document.getElementById('calendar');
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth', // Basic view to confirm setup
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth'
+        }
+    });
+    calendar.render();
+    //console.log("Calendar initialized and rendered");
 
-            const calendar = new FullCalendar.Calendar(calendarEl, {
-                plugins: ['dayGrid'],
-                initialView: 'dayGridMonth',
-                dateClick: function(info) {
-                    fetchLeaveData(info.dateStr);
-                },
-                events: '/path/to/your/events/api', // Update with your API endpoint that returns leave data
-            });
-
-            calendar.render();
 
             function fetchLeaveData(date) {
                 fetch(`leave_data.php?date=${date}`)
@@ -441,7 +501,40 @@ include '../db/db_conn.php';
                 });
             }
         });
-            //for leave request (error)
+            //for leave request (error) end
+
+            function setCurrentTime() {
+    const currentTimeElement = document.getElementById('currentTime');
+    const currentDateElement = document.getElementById('currentDate');
+
+    // Get the current date and time in UTC
+    const currentDate = new Date();
+    
+    // Adjust time to Philippine Time (UTC+8)
+    currentDate.setHours(currentDate.getHours() + 0);
+
+    // Extract hours, minutes, and seconds
+    const hours = currentDate.getHours();
+    const minutes = currentDate.getMinutes();
+    const seconds = currentDate.getSeconds();
+
+    // Format hours, minutes, and seconds to ensure they are always two digits
+    const formattedHours = hours < 10 ? '0' + hours : hours;
+    const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
+    const formattedSeconds = seconds < 10 ? '0' + seconds : seconds;
+
+    // Set the current time
+    currentTimeElement.textContent = `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+
+    // Set the current date
+    currentDateElement.textContent = currentDate.toLocaleDateString();
+}
+
+// Initial call to set the current time and date
+setCurrentTime();
+
+// Update the current time every second
+setInterval(setCurrentTime, 1000);
 
     </script>
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'> </script>

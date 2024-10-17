@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <div class="row justify-content-center mt-5">
             <div class="col-lg-5">
                 <div class="card shadow-lg border-0 rounded-lg mt-5 bg-dark">
-                    <div class="card-header border-bottom border-2 border-warning">
+                    <div class="card-header border-bottom border-1 border-warning">
                         <h3 class="text-center text-light font-weight-light my-4">Reset Your Password</h3>
                         <?php if (!empty($message)) echo $message; ?>
                     </div>
@@ -87,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <?php endif; ?>
 
                         <div class="text-center mt-3 mb-0">
-                            <a class="btn border-secondary w-100 text-light border border-2" href="../main/adminlogin.php">Back</a>
+                            <a class="btn border-secondary w-100 text-light border border-1" href="../main/adminlogin.php">Back</a>
                         </div>
                     </div>
                 </div>
