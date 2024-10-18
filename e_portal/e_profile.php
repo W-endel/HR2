@@ -1,7 +1,7 @@
 <?php
 session_start();
-
 include '../db/db_conn.php';
+include '../phpqrcode/qrlib.php'; // Include phpqrcode library
 
 if (isset($_SESSION['update_success'])) {
     echo '<script>alert("' . htmlspecialchars($_SESSION['update_success']) . '");</script>';
@@ -18,7 +18,23 @@ $result = $stmt->get_result();
 $employeeInfo = $result->fetch_assoc();
 $stmt->close();
 $conn->close();
+
+// Generate QR Code content
+$qrData = 'Employee ID: ' . $employeeInfo['e_id'] . ' | Email: ' . $employeeInfo['email'];
+
+$qrCodeDir = '../qrcodes/';
+if (!is_dir($qrCodeDir)) {
+    mkdir($qrCodeDir, 0755, true); // Create the directory if it doesn't exist
+}
+
+// Path to store the generated QR Code image
+$qrImagePath = '../qrcodes/employee_' . $employeeId . '.png';
+
+// Generate QR Code and save it as a PNG image
+QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
+
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -51,7 +67,7 @@ $conn->close();
         <div id="layoutSidenav_content">
             <main>
                 <div class="container-fluid px-4 bg-dark">
-                    <h1 class="big mt-4 text-light">Your Profile</h1>
+                    <h1 class="big mt-4 text-light">My Profile</h1>
                     <div class="row">
                         <div class="col-md-4">
                             <div class="card mb-4 border border-light">
@@ -89,14 +105,16 @@ $conn->close();
                                             <td>Email:</td>
                                             <td><?php echo htmlspecialchars($employeeInfo['email']); ?></td>
                                         </tr>
+                                        
                                     </table>
+                                     <button type="button" class="btn btn-warning btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#qrCodeModal">Show QR Code</button>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-8">
                             <div class="card mb-4 border border-light">
                                 <div class="card-header bg-warning">
-                                    <h5 class="card-title text-center">Your Information</h5>
+                                    <h5 class="card-title text-center">My Information</h5>
                                 </div>
                                 <div class="card-body bg-dark">
                                     <form id="infoForm" action="../e_portal/update_eprofile.php" method="post">
@@ -153,18 +171,25 @@ $conn->close();
                     </div>
                 </div>
             </main>
-            <footer class="py-4 bg-light mt-auto bg-dark">
-                <div class="container-fluid px-4">
-                    <div class="d-flex align-items-center justify-content-between small">
-                        <div class="text-muted">Copyright &copy; Your Website 2024</div>
-                        <div>
-                            <a href="#">Privacy Policy</a>
-                            &middot;
-                            <a href="#">Terms & Conditions</a>
+            <div class="modal fade" id="qrCodeModal" tabindex="-1" aria-labelledby="qrCodeModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content bg-dark text-light">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="qrCodeModalLabel">Employee QR Code</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body text-center">
+                            <!-- Display the generated QR code -->
+                            <img src="<?php echo $qrImagePath; ?>" alt="QR Code" class="img-fluid border border-light" width="200">
+                            <p class="mt-3">Employee ID: <?php echo htmlspecialchars($employeeInfo['e_id']); ?></p>
+                            <p>Name: <?php echo htmlspecialchars($employeeInfo['firstname'] . ' ' . $employeeInfo['middlename'] . ' ' . $employeeInfo['lastname']); ?></p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-warning" data-bs-dismiss="modal">Close</button>
                         </div>
                     </div>
                 </div>
-            </footer>
+            </div>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
@@ -172,4 +197,3 @@ $conn->close();
     <script src="../js/profile.js"></script>
 </body>
 </html>
-

@@ -8,7 +8,7 @@ $employeeId = $_SESSION['e_id'];
 
 // Prepare and bind
 $stmt = $conn->prepare("UPDATE employee_register SET firstname = ?, middlename = ?, lastname = ?, birthdate = ?, email = ?, phone_number = ?, address = ? WHERE e_id = ?");
-$stmt->bind_param("sssssssi", $firstname, $middlename, $lastname, $birthdate, $email, $phone_number, $address, $userId);
+$stmt->bind_param("sssssssi", $firstname, $middlename, $lastname, $birthdate, $email, $phone_number, $address, $employeeId);
 
 // Get form data
 if ($_SERVER["REQUEST_METHOD"] == "POST") {

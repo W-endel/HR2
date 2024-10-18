@@ -2,6 +2,7 @@
 session_start();
 
 include '../db/db_conn.php';
+include '../phpqrcode/qrlib.php';  // Include the QR code library
 
 // Get form data with validation
 $firstName = isset($_POST['firstname']) ? trim($_POST['firstname']) : '';
@@ -48,7 +49,7 @@ if ($count > 0) {
 // Hash the password
 $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-// Prepare and execute SQL statement
+// Prepare and execute SQL statement to insert employee data
 $sql = "INSERT INTO employee_register (firstname, lastname, email, password, role, position, department) VALUES (?, ?, ?, ?, ?, ?, ?)";
 $stmt = $conn->prepare($sql);
 
@@ -60,7 +61,36 @@ if (!$stmt) {
 $stmt->bind_param("sssssss", $firstName, $lastName, $Email, $hashedPassword, $role, $position, $department);
 
 if ($stmt->execute()) {
-    echo json_encode(['success' => 'Registration successful!']);
+    // Get the last inserted employee ID for QR code generation
+    $employeeId = $stmt->insert_id;
+
+    // Define QR code content (using employee ID or email)
+    $codeContents = 'Employee ID: ' . $employeeId . ' | Email: ' . $Email;
+
+    // Define the directory for QR codes
+    $tempDir = "C:/xampp/htdocs/HR2/QR/";
+
+    // Create the directory if it doesn't exist
+    if (!file_exists($tempDir)) {
+        mkdir($tempDir, 0777, true);
+    }
+
+    // Define the file name and path for the QR code
+    $fileName = 'employee_' . $employeeId . '.png';
+    $pngAbsoluteFilePath = $tempDir . $fileName;
+
+    // Generate the QR code
+    QRcode::png($codeContents, $pngAbsoluteFilePath);
+
+    // Update the employee's record with the QR code path
+    $qrCodePath = 'QR/' . $fileName;
+    $updateSql = "UPDATE employee_register SET qr_code_path = ? WHERE e_id = ?";
+    $updateStmt = $conn->prepare($updateSql);
+    $updateStmt->bind_param("si", $qrCodePath, $employeeId);
+    $updateStmt->execute();
+    $updateStmt->close();
+
+    echo json_encode(['success' => 'Registration successful! QR code generated.']);
 } else {
     echo json_encode(['error' => 'Error: ' . $stmt->error]);
 }
