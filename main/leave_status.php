@@ -1,11 +1,12 @@
 <?php
 session_start();
-include '../db/db_conn.php';
 
-// Ensure the admin is logged in
 if (!isset($_SESSION['a_id'])) {
-    die("Error: You must be logged in as admin.");
+    header("Location: ../main/adminlogin.php");
+    exit();
 }
+
+include '../db/db_conn.php';
 
 // Fetch all leave requests (always fetch this for displaying the table)
 $sql = "SELECT lr.leave_id, e.e_id, e.firstname, e.lastname, e.available_leaves, lr.start_date, lr.end_date, lr.leave_type, lr.status

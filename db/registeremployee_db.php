@@ -90,7 +90,7 @@ if ($stmt->execute()) {
     $updateStmt->execute();
     $updateStmt->close();
 
-    echo json_encode(['success' => 'Registration successful! QR code generated.']);
+    echo json_encode(['success' => 'Registration successful!']);
 } else {
     echo json_encode(['error' => 'Error: ' . $stmt->error]);
 }

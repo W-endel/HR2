@@ -1,13 +1,12 @@
 <?php
 session_start();
 
-// Include the database connection
-include '../db/db_conn.php'; 
-
-// Check if admin ID is set in the session
 if (!isset($_SESSION['a_id'])) {
-    die("Admin ID is not set. Please log in.");
+    header("Location: ../main/adminlogin.php");
+    exit();
 }
+
+include '../db/db_conn.php';
 
 // Fetch employee records where role is 'employee' and department is 'finance'
 $sql = "SELECT e_id, firstname, lastname, department, role, position FROM employee_register WHERE role = 'employee' AND department = 'Risk Management Department'";

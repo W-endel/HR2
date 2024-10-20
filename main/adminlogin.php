@@ -64,7 +64,7 @@ $conn->close();
                                     <?php endif; ?>
                                 </div>
                                 <div class="card-body bg-dark">
-                                    <form action="../main/adminlogin_conn.php" method="post">
+                                    <form action="../db/adminlogin_conn.php" method="post">
                                         <div class="form-floating mb-3">
                                             <input class="form-control" id="inputEmail" type="email" name="email"
                                                 placeholder="name@example.com" required />  

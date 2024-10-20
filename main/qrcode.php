@@ -1,7 +1,7 @@
 <?php
    // Include QR code library
    include('../phpqrcode/qrlib.php');
-   include('config.php'); // Your database connection
+   //include('config.php'); // Your database connection
 
    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
        // Capture employee details from the form submission

@@ -1,10 +1,9 @@
 <?php
 session_start();
 
-
-// Check if admin ID is set in the session
 if (!isset($_SESSION['a_id'])) {
-    die("Admin ID is not set. Please log in.");
+    header("Location: ../main/adminlogin.php");
+    exit();
 }
 
 // Include the database connection  

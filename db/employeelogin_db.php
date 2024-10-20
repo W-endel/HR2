@@ -8,7 +8,7 @@ $inputEmail = $_POST['email'];
 $inputPassword = $_POST['password'];
 
 // Prepare and execute SQL statement
-$sql = "SELECT id, password FROM employee_register WHERE email = ?";
+$sql = "SELECT e_id, password FROM employee_register WHERE email = ?";
 $stmt = $conn->prepare($sql);
 
 if ($stmt === false) {
@@ -26,7 +26,7 @@ if ($result->num_rows > 0) {
     // Verify the password
     if (password_verify($inputPassword, $user['password'])) {
         // Start session and store user ID
-        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['e_id'] = $employeeId['e_id'];
         $stmt->close();
         $conn->close();
         header("Location: ../main/employee_dashboard.php");

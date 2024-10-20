@@ -1,6 +1,11 @@
 <?php
 session_start();
 
+if (!isset($_SESSION['a_id'])) {
+    header("Location: ../main/adminlogin.php");
+    exit();
+}
+
 include '../db/db_conn.php';
 
 if (isset($_SESSION['update_success'])) {

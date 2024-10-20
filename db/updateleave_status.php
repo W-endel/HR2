@@ -2,11 +2,6 @@
 session_start();
 include '../db/db_conn.php';
 
-// Ensure the admin is logged in
-if (!isset($_SESSION['a_id'])) {
-    die("Error: You must be logged in as admin.");
-}
-
 // Check if the request ID and status are set
 if (isset($_GET['leave_id']) && isset($_GET['status'])) {
     $requestId = (int) $_GET['leave_id'];

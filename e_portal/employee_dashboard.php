@@ -30,113 +30,144 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
     <meta name="description" content="" />
     <meta name="author" content="" />
     <title>Employee Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css?v=<?php echo time(); ?>" rel="stylesheet">
     <link href="../css/styles.css" rel="stylesheet" />
+    <link href="../css/calendar.css" rel="stylesheet"/>
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
   </head>
 
-<body class="sb-nav-fixed bg-dark">
-    <nav class="sb-topnav navbar navbar-expand navbar-dark bg-light">
+<body class="sb-nav-fixed bg-black">
+    <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark border-bottom border-1 border-warning">
         <a class="navbar-brand ps-3 text-muted" href="../e_portal/employee_dashboard.php">Employee Portal</a>
-        <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars text-dark"></i></button>
-           <form class="d-none d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0">
-                <div class="input-group">
-                   
-           </form>
-        <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
-             <li class="nav-item text-dark d-flex flex-column align-items-start">
-        <span class="big text-dark mb-1">
-            <?php echo htmlspecialchars($employeeInfo['firstname'] . ' ' . $employeeInfo['middlename'] . ' ' . $employeeInfo['lastname']); ?>
-        </span>
-        <span class="big text-dark">
-            <?php echo htmlspecialchars($employeeInfo['role']); ?>
-        </span>
-    </li>
-            <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle text-dark" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <img src="../img/defaultpfp.png" class="rounded-circle border border-dark" width="40" height="40" />
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                    <li><a class="dropdown-item" href="../e_portal/e_profile.php">Profile</a></li>
-                    <li><a class="dropdown-item" href="#!">Settings</a></li>
-                    <li><a class="dropdown-item" href="#!">Activity Log</a></li>
-                    <li><hr class="dropdown-divider" /></li>
-                    <li><a class="dropdown-item" href="../e_portal/employee_login.php" onclick="confirmLogout(event)">Logout</a></li>
-
-                </ul>
-          </li>
-        </ul>
+        <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars text-light"></i></button>
+        <div class="d-flex ms-auto me-0 me-md-3 my-2 my-md-0 align-items-center">
+            <div class="text-light me-3 p-2 rounded shadow-sm bg-gradient" id="currentTimeContainer" 
+            style="background: linear-gradient(45deg, #333333, #444444); border-radius: 5px;">
+                <span class="d-flex align-items-center">
+                    <span class="pe-2">
+                        <i class="fas fa-clock"></i> 
+                        <span id="currentTime">00:00:00</span>
+                    </span>
+                    <button class="btn btn-outline-warning btn-sm ms-2" type="button" onclick="toggleCalendar()">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span id="currentDate">00/00/0000</span>
+                    </button>
+                </span>
+            </div>
+            <form class="d-none d-md-inline-block form-inline">
+            <div class="input-group">
+                <input class="form-control" type="text" placeholder="Search for..." aria-label="Search for..." aria-describedby="btnNavbarSearch" />
+                <button class="btn btn-warning" id="btnNavbarSearch" type="button"><i class="fas fa-search"></i></button>
+            </div>
+            </form>
+        </div>
     </nav>
     <div id="layoutSidenav">
         <div id="layoutSidenav_nav">
             <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
-                <div class="sb-sidenav-menu ">
+                <div class="sb-sidenav-menu">
                     <div class="nav">
-                        <div class="sb-sidenav-menu-heading text-center bg-warning text-dark">Logo</div>
-                        
-                       
-                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseTAD" aria-expanded="false" aria-controls="collapseTAD">
+                         <div class="sb-sidenav-menu-heading text-center text-muted">Your Profile</div>  
+                        <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-light d-flex justify-content-center ms-4" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <img src="../img/defaultpfp.png" class="rounded-circle border border-dark" width="120" height="120" />
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                    <li><a class="dropdown-item" href="../e_portal/e_profile.php">Profile</a></li>
+                                    <li><a class="dropdown-item" href="#!">Settings</a></li>
+                                    <li><a class="dropdown-item" href="#!">Activity Log</a></li>
+                                    <li><hr class="dropdown-divider" /></li>
+                                    <li><a class="dropdown-item" href="../e_portal/employee_login.php" onclick="confirmLogout(event)">Logout</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item text-light d-flex ms-3 flex-column align-items-center text-center">
+                                <span class="big text-light mb-1">
+                                    <?php echo htmlspecialchars($employeeInfo['firstname'] . ' ' . $employeeInfo['middlename'] . ' ' . $employeeInfo['lastname']); ?>
+                                </span>
+                                <span class="big text-light">
+                                    <?php echo htmlspecialchars($employeeInfo['role']); ?>
+                                </span>
+                            </li>
+                        </ul>
+                        <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-warning mt-3">Employee Dashboard</div>           
+                        <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseTAD" aria-expanded="false" aria-controls="collapseTAD">
                             <div class="sb-nav-link-icon"><i class="fa fa-address-card"></i></div>
                             Time and Attendance
                             <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                         </a>
                         <div class="collapse" id="collapseTAD" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link" href="../main/tad_display.php">QR for Attendance</a>
-                                <a class="nav-link" href="../main/tad_timesheet.php">View Record Attendance</a>
-                                 <a class="nav-link" href="../main/timeout.php">out</a>
+                                <a class="nav-link text-light" href="../main/tad_display.php">QR for Attendance</a>
+                                <a class="nav-link text-light" href="../main/tad_timesheet.php">View Record Attendance</a>
+                                 <a class="nav-link text-light" href="../main/timeout.php">out</a>
                             </nav>
                         </div>
-                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLM" aria-expanded="false" aria-controls="collapseLM">
-                            <div class="sb-nav-link-icon"><i class="fas fa-calendar-times"></i></div>
+                        <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLM" aria-expanded="false" aria-controls="collapseLM">
+                            <div class="sb-nav-link-icon "><i class="fas fa-calendar-times"></i></div>
                             Leave Management
                             <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                         </a>
                         <div class="collapse" id="collapseLM" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link" href="../e_portal/leave_update.php">File Leave Request</a>
-                                <a class="nav-link" href="../e_portal/leave_balance.php">View Remaining Leave</a>
+                                <a class="nav-link text-light" href="../e_portal/leave_update.php">File Leave Request</a>
+                                <a class="nav-link text-light" href="../e_portal/leave_balance.php">View Remaining Leave</a>
                             </nav>
                         </div>
-                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePM" aria-expanded="false" aria-controls="collapsePM">
+                        <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePM" aria-expanded="false" aria-controls="collapsePM">
                             <div class="sb-nav-link-icon"><i class="fas fa-line-chart"></i></div>
                             Performance Management
                             <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                         </a>
                         <div class="collapse" id="collapsePM" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link" href="../e_portal/employee_department.php">Evaluation</a>
+                                <a class="nav-link text-light" href="../e_portal/employee_department.php">Evaluation</a>
                             </nav>
                         </div>
-                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseSR" aria-expanded="false" aria-controls="collapseSR">
+                        <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseSR" aria-expanded="false" aria-controls="collapseSR">
                             <div class="sb-nav-link-icon"><i class="fa fa-address-card"></i></div>
                             Social Recognition
                             <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                         </a>
                         <div class="collapse" id="collapseSR" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link" href="../e_portal/e_recognition.php">View Your Rating</a>
+                                <a class="nav-link text-light" href="../e_portal/e_recognition.php">View Your Rating</a>
                             </nav>
-                        </div>
-                       
-                        </div>
-                        <div class="collapse" id="collapsePages" aria-labelledby="headingTwo" data-bs-parent="#sidenavAccordion">
-
+                        </div> 
+                        <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-warning mt-3">Feedback</div> 
+                        <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseFB" aria-expanded="false" aria-controls="collapseFB">
+                            <div class="sb-nav-link-icon"><i class="fas fa-exclamation-circle"></i></div>
+                            Report Issue
+                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                        </a>
+                        <div class="collapse" id="collapseFB" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                            <nav class="sb-sidenav-menu-nested nav">
+                                <a class="nav-link text-light" href="">Report Issue</a>
+                            </nav>
+                        </div> 
                     </div>
                 </div>
-                <div class="sb-sidenav-footer">
-                    <div class="small">Logged in as: <?php echo htmlspecialchars($employeeInfo['firstname'] . ' ' . $employeeInfo['lastname']); ?></div>
+                <div class="sb-sidenav-footer bg-black border-top border-1 border-warning">
+                    <div class="small text-light">Logged in as: <?php echo htmlspecialchars($employeeInfo['firstname'] . ' ' . $employeeInfo['lastname']); ?></div>
                 </div>
             </nav>
         </div>
         <div id="layoutSidenav_content">
             <main>
-</div>
+                 <div class="container-fluid position-relative px-4">
+                    <h1 class="mb-4 text-light">Dashboard</h1>
+                    <div class="container" id="calendarContainer" 
+                        style="position: fixed; top: 9%; right: 0; z-index: 1050; 
+                        width: 700px; height: 300px; display: none;">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div id="calendar" class="p-2"></div>
+                            </div>
                         </div>
                     </div>
-                </div>
+                 </div>
             </main>
-            <footer class="py-4 bg-light mt-auto bg-dark">
+            <footer class="py-4 bg-light mt-auto bg-dark border-top border-1 border-warning">
                 <div class="container-fluid px-4">
                     <div class="d-flex align-items-center justify-content-between small">
                         <div class="text-muted">Copyright &copy; Your Website 2023</div>
@@ -150,13 +181,107 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
             </footer>
         </div>
     </div>
+
+    <script>
+//for calendar only
+// Global variable for calendar
+        let calendar; // Declare calendar variable globally
+
+            function toggleCalendar() {
+                const calendarContainer = document.getElementById('calendarContainer');
+// Toggle visibility of the calendar container
+                if (calendarContainer.style.display === 'none' || calendarContainer.style.display === '') {
+                    calendarContainer.style.display = 'block';
+
+                    // Initialize the calendar if it hasn't been initialized yet
+                    if (!calendar) {
+                        initializeCalendar();
+                    }
+                } else {
+                    calendarContainer.style.display = 'none';
+                }
+            }
+
+// Function to initialize FullCalendar
+            function initializeCalendar() {
+                const calendarEl = document.getElementById('calendar');
+                calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'dayGridMonth',
+                    headerToolbar: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                    },
+                    height: 440,  // Set the height of the calendar to make it small
+                    events: {
+                        url: '../db/holiday.php',  // Endpoint for fetching events
+                        method: 'GET',
+                        failure: function() {
+                            alert('There was an error fetching events!');
+                        }
+                    }
+                });
+
+                calendar.render();
+            }
+
+// Set the current date when the page loads
+            document.addEventListener('DOMContentLoaded', function () {
+                const currentDateElement = document.getElementById('currentDate');
+                const currentDate = new Date().toLocaleDateString(); // Get the current date
+                currentDateElement.textContent = currentDate; // Set the date text
+            });
+
+// Close the calendar when clicking outside of it
+            document.addEventListener('click', function(event) {
+                const calendarContainer = document.getElementById('calendarContainer');
+                const calendarButton = document.querySelector('button[onclick="toggleCalendar()"]');
+
+// Hide the calendar if the user clicks outside of the calendar and button
+                if (!calendarContainer.contains(event.target) && !calendarButton.contains(event.target)) {
+                    calendarContainer.style.display = 'none';
+                }
+            });
+//for calendar only end
+
+            function setCurrentTime() {
+                const currentTimeElement = document.getElementById('currentTime');
+                const currentDateElement = document.getElementById('currentDate');
+
+// Get the current date and time in UTC
+                const currentDate = new Date();
+    
+// Adjust time to Philippine Time (UTC+8)
+                currentDate.setHours(currentDate.getHours() + 0);
+
+// Extract hours, minutes, and seconds
+                const hours = currentDate.getHours();
+                const minutes = currentDate.getMinutes();
+                const seconds = currentDate.getSeconds();
+
+// Format hours, minutes, and seconds to ensure they are always two digits
+                const formattedHours = hours < 10 ? '0' + hours : hours;
+                const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
+                const formattedSeconds = seconds < 10 ? '0' + seconds : seconds;
+
+// Set the current time
+                currentTimeElement.textContent = `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+
+// Set the current date
+                currentDateElement.textContent = currentDate.toLocaleDateString();
+            }
+
+// Initial call to set the current time and date
+            setCurrentTime();
+
+// Update the current time every second
+            setInterval(setCurrentTime, 1000);
+    </script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'> </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <script src="../js/e_dashboard.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
-    <script src="../src/assets/demo/chart-area-demo.js"></script>
-    <script src="../src/assets/demo/chart-bar-demo.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js" crossorigin="anonymous"></script>
-    <script src="../js/datatables-simple-demo.js"></script>
+
+
 
 </body>
 

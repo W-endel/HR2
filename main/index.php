@@ -1,3 +1,4 @@
+
 <?php
 session_start();
 
@@ -47,12 +48,13 @@ $conn->close();
     <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet">
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
     <link href="../css/styles.css" rel="stylesheet" />
+    <link href="../css/calendar.css" rel="stylesheet"/>
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
   </head>
 
 <body class="sb-nav-fixed">
     <nav class="sb-topnav navbar navbar-expand navbar-dark border-bottom border-1 border-warning bg-dark">
-        <a class="navbar-brand ps-3 text-light" href="../main/index.php">Microfinance</a>
+        <a class="navbar-brand ps-3 text-muted" href="../main/index.php">Microfinance</a>
         <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars text-light"></i></button>
     
     <!-- Flex container to hold both time/date and search form -->
@@ -73,7 +75,7 @@ $conn->close();
             <form class="d-none d-md-inline-block form-inline">
             <div class="input-group">
                 <input class="form-control" type="text" placeholder="Search for..." aria-label="Search for..." aria-describedby="btnNavbarSearch" />
-                <button class="btn btn-primary" id="btnNavbarSearch" type="button"><i class="fas fa-search"></i></button>
+                <button class="btn btn-warning" id="btnNavbarSearch" type="button"><i class="fas fa-search"></i></button>
             </div>
             </form>
         </div>
@@ -181,191 +183,183 @@ $conn->close();
                         </div>
                         <div class="collapse" id="collapsePages" aria-labelledby="headingTwo" data-bs-parent="#sidenavAccordion">
                         </div>
-                        <div class="sb-sidenav-menu-heading text-muted text-center border-top border-1 border-warning">Addons</div>
-                        <a class="nav-link text-light" href="../main/charts.php">
-                            <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
-                            Charts
-                        </a>
-                        <a class="nav-link text-light" href="../main/tables.php">
-                            <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
-                            Tables
-                        </a>
                     </div>
                 </div>
-                <div class="sb-sidenav-footer text-light border-top border-1 border-warning">
+                <div class="sb-sidenav-footer bg-black text-light border-top border-1 border-warning">
                     <div class="small">Logged in as: <?php echo htmlspecialchars($adminInfo['firstname'] . ' ' . $adminInfo['lastname']); ?></div>
                 </div>
             </nav>
         </div>
         <div id="layoutSidenav_content">
-<main class="bg-black">
-    <div class="container-fluid px-4">
-        <h1 class="mt-4 text-light">Dashboard</h1>
-        <div class="container position-absolute" id="calendarContainer" 
-     style="top: 10px; right: 0; z-index: 1050; background-color: black; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); width: 800px; display: none;">
-    <div class="row">
-        <div class="col-md-12">
-            <div id="calendar" class="p-2"></div>
-        </div>
-    </div>
-</div>
-        <div class="row mb-4">
-            <div class="col-xl-6">
-                <div class="card mb-4">
-                    <div class="card-header bg-black text-light border-bottom border-1 border-warning">
-                        <i class="fas fa-chart-pie me-1"></i> 
-                        Leave Request Status
-                    </div>
-                    <div class="card-body bg-dark">
-                        <canvas id="leaveStatusChart" width="300" height="300"></canvas>
+    <main class="bg-black">
+        <div class="container-fluid position-relative px-4">
+            <h1 class="mb-4 text-light">Dashboard</h1>
+                <div class="container" id="calendarContainer" 
+                    style="position: fixed; top: 9%; right: 0; z-index: 1050; 
+                    width: 700px; display: none;">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div id="calendar" class="p-2"></div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
-        <div class="card mb-4">
-            <div class="card-header">
-                <i class="fas fa-table me-1"></i>
-                DataTable Example
-            </div>
-            <div class="card-body">
-                <table id="datatablesSimple">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Position</th>
-                            <th>Office</th>
-                            <th>Age</th>
-                            <th>Start date</th>
-                            <th>Salary</th>
-                        </tr>
-                    </thead>
-                    <tfoot>
-                        <tr>
-                            <th>Name</th>
-                            <th>Position</th>
-                            <th>Office</th>
-                            <th>Age</th>
-                            <th>Start date</th>
-                            <th>Salary</th>
-                        </tr>
-                    </tfoot>
-                    <tbody>
-                        <tr>
-                            <td>Zorita Serrano</td>
-                            <td>Software Engineer</td>
-                            <td>San Francisco</td>
-                            <td>56</td>
-                            <td>2012/06/01</td>
-                            <td>$115,000</td>
-                        </tr>
-                        <tr>
-                            <td>Jennifer Acosta</td>
-                            <td>Junior Javascript Developer</td>
-                            <td>Edinburgh</td>
-                            <td>43</td>
-                            <td>2013/02/01</td>
-                            <td>$75,650</td>
-                        </tr>
-                        <tr>
-                            <td>Cara Stevens</td>
-                            <td>Sales Assistant</td>
-                            <td>New York</td>
-                            <td>46</td>
-                            <td>2011/12/06</td>
-                            <td>$145,600</td>
-                        </tr>
-                        <tr>
-                            <td>Hermione Butler</td>
-                            <td>Regional Director</td>
-                            <td>London</td>
-                            <td>47</td>
-                            <td>2011/03/21</td>
-                            <td>$356,250</td>
-                        </tr>
-                        <tr>
-                            <td>Lael Greer</td>
-                            <td>Systems Administrator</td>
-                            <td>London</td>
-                            <td>21</td>
-                            <td>2009/02/27</td>
-                            <td>$103,500</td>
-                        </tr>
-                        <tr>
-                            <td>Jonas Alexander</td>
-                            <td>Developer</td>
-                            <td>San Francisco</td>
-                            <td>30</td>
-                            <td>2010/07/14</td>
-                            <td>$86,500</td>
-                        </tr>
-                        <tr>
-                            <td>Shad Decker</td>
-                            <td>Regional Director</td>
-                            <td>Edinburgh</td>
-                            <td>51</td>
-                            <td>2008/11/13</td>
-                            <td>$183,000</td>
-                        </tr>
-                        <tr>
-                            <td>Michael Bruce</td>
-                            <td>Javascript Developer</td>
-                            <td>Singapore</td>
-                            <td>29</td>
-                            <td>2011/06/27</td>
-                            <td>$183,000</td>
-                        </tr>
-                        <tr>
-                            <td>Donna Snider</td>
-                            <td>Customer Support</td>
-                            <td>New York</td>
-                            <td>27</td>
-                            <td>2011/01/25</td>
-                            <td>$112,000</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+        <!-- Leave Request Status Section -->
+                <div class="col-xl-6">
+                    <div class="card mb-4">
+                        <div class="card-header bg-black text-light border-bottom border-1 border-warning">
+                            <i class="fas fa-chart-pie me-1"></i> 
+                            Leave Request Status
+                        </div>
+                        <div class="card-body bg-dark">
+                            <canvas id="leaveStatusChart" width="300" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
 
-    <!-- for leaveStatusChart -->
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <i class="fas fa-table me-1"></i>
+                        DataTable Example
+                    </div>
+                    <div class="card-body">
+                        <table id="datatablesSimple" class="table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Position</th>
+                                    <th>Office</th>
+                                    <th>Age</th>
+                                    <th>Start date</th>
+                                    <th>Salary</th>
+                                </tr>
+                            </thead>
+                            <tfoot>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Position</th>
+                                    <th>Office</th>
+                                    <th>Age</th>
+                                    <th>Start date</th>
+                                    <th>Salary</th>
+                                </tr>
+                            </tfoot>
+                            <tbody>
+                                <tr>
+                                    <td>Zorita Serrano</td>
+                                    <td>Software Engineer</td>
+                                    <td>San Francisco</td>
+                                    <td>56</td>
+                                    <td>2012/06/01</td>
+                                    <td>$115,000</td>
+                                </tr>
+                                <tr>
+                                    <td>Jennifer Acosta</td>
+                                    <td>Junior Javascript Developer</td>
+                                    <td>Edinburgh</td>
+                                    <td>43</td>
+                                    <td>2013/02/01</td>
+                                    <td>$75,650</td>
+                                </tr>
+                                <tr>
+                                    <td>Cara Stevens</td>
+                                    <td>Sales Assistant</td>
+                                    <td>New York</td>
+                                    <td>46</td>
+                                    <td>2011/12/06</td>
+                                    <td>$145,600</td>
+                                </tr>
+                                <tr>
+                                    <td>Hermione Butler</td>
+                                    <td>Regional Director</td>
+                                    <td>London</td>
+                                    <td>47</td>
+                                    <td>2011/03/21</td>
+                                    <td>$356,250</td>
+                                </tr>
+                                <tr>
+                                    <td>Lael Greer</td>
+                                    <td>Systems Administrator</td>
+                                    <td>London</td>
+                                    <td>21</td>
+                                    <td>2009/02/27</td>
+                                    <td>$103,500</td>
+                                </tr>
+                                <tr>
+                                    <td>Jonas Alexander</td>
+                                    <td>Developer</td>
+                                    <td>San Francisco</td>
+                                    <td>30</td>
+                                    <td>2010/07/14</td>
+                                    <td>$86,500</td>
+                                </tr>
+                                <tr>
+                                    <td>Shad Decker</td>
+                                    <td>Regional Director</td>
+                                    <td>Edinburgh</td>
+                                    <td>51</td>
+                                    <td>2008/11/13</td>
+                                    <td>$183,000</td>
+                                </tr>
+                                <tr>
+                                    <td>Michael Bruce</td>
+                                    <td>Javascript Developer</td>
+                                    <td>Singapore</td>
+                                    <td>29</td>
+                                    <td>2011/06/27</td>
+                                    <td>$183,000</td>
+                                </tr>
+                                <tr>
+                                    <td>Donna Snider</td>
+                                    <td>Customer Support</td>
+                                    <td>New York</td>
+                                    <td>27</td>
+                                    <td>2011/01/25</td>
+                                    <td>$112,000</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+<!-- for leaveStatusChart -->
     <?php
-    // Database configuration
-include '../db/db_conn.php';
 
-    // Fetch leave status counts
-    $sql = "SELECT status, COUNT(*) as count FROM leave_requests GROUP BY status";
-    $result = $conn->query($sql);
+        include '../db/db_conn.php';
 
-    // Initialize counts
-    $status_counts = [
-        'Approved' => 0,
-        'Pending' => 0,
-        'Denied' => 0,
-    ];
+// Fetch leave status counts
+        $sql = "SELECT status, COUNT(*) as count FROM leave_requests GROUP BY status";
+        $result = $conn->query($sql);
 
-    while ($row = $result->fetch_assoc()) {
-        $status = $row['status'];
-        if (isset($status_counts[$status])) {
-            $status_counts[$status] = $row['count'];
+// Initialize counts
+        $status_counts = [
+            'Approved' => 0,
+            'Pending' => 0,
+            'Denied' => 0,
+        ];
+
+        while ($row = $result->fetch_assoc()) {
+            $status = $row['status'];
+            if (isset($status_counts[$status])) {
+                $status_counts[$status] = $row['count'];
+            }
         }
-    }
 
-    $conn->close();
+        $conn->close();
     ?>
-</main>
-            <footer class="py-4 bg-black mt-auto border-top border-1 border-warning">
-                <div class="container-fluid px-4">
-                    <div class="d-flex align-items-center justify-content-between small">
-                        <div class="text-muted">Copyright &copy; Your Website 2023</div>
+        </div>
+    </main>
+        <footer class="py-4 bg-dark mt-auto border-top border-1 border-warning">
+            <div class="container-fluid px-4">
+                <div class="d-flex align-items-center justify-content-between small">
+                    <div class="text-muted">Copyright &copy; Your Website 2023</div>
                         <div>
                             <a href="#">Privacy Policy</a>
                             &middot;
                             <a href="#">Terms &amp; Conditions</a>
                         </div>
-                    </div>
+                        </div>
                 </div>
-            </footer>
+        </footer>
         </div>
     </div>
     
@@ -405,22 +399,20 @@ include '../db/db_conn.php';
 
         //for calendar only
         // Global variable for calendar
-let calendar; // Declare calendar variable globally
+        let calendar; // Declare calendar variable globally
 
 function toggleCalendar() {
     const calendarContainer = document.getElementById('calendarContainer');
 
-    // Check if the calendar is currently hidden
+    // Toggle visibility of the calendar container
     if (calendarContainer.style.display === 'none' || calendarContainer.style.display === '') {
-        // Show the calendar
         calendarContainer.style.display = 'block';
 
-        // Initialize the calendar only if it hasn't been initialized yet
+        // Initialize the calendar if it hasn't been initialized yet
         if (!calendar) {
-            initializeCalendar(); // Initialize FullCalendar
+            initializeCalendar();
         }
     } else {
-        // Hide the calendar if it is already visible
         calendarContainer.style.display = 'none';
     }
 }
@@ -435,8 +427,9 @@ function initializeCalendar() {
             center: 'title',
             right: 'dayGridMonth,timeGridWeek,timeGridDay'
         },
+        height: 440,  // Set the height of the calendar to make it small
         events: {
-            url: '../main/holiday.php',  // Endpoint for fetching events
+            url: '../db/holiday.php',  // Endpoint for fetching events
             method: 'GET',
             failure: function() {
                 alert('There was an error fetching events!');
@@ -459,8 +452,8 @@ document.addEventListener('click', function(event) {
     const calendarContainer = document.getElementById('calendarContainer');
     const calendarButton = document.querySelector('button[onclick="toggleCalendar()"]');
 
-    // Hide calendar if clicked outside the button and container
-    if (!calendarContainer.contains(event.target) && event.target !== calendarButton) {
+    // Hide the calendar if the user clicks outside of the calendar and button
+    if (!calendarContainer.contains(event.target) && !calendarButton.contains(event.target)) {
         calendarContainer.style.display = 'none';
     }
 });

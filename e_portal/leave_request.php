@@ -21,6 +21,10 @@ if (!$employee) {
     die("Error: Employee information not found.");
 }
 
+// Check if there are any status messages to display
+$status_message = isset($_SESSION['status_message']) ? $_SESSION['status_message'] : '';
+unset($_SESSION['status_message']); // Clear the status message after displaying it
+
 // Close the database connection
 $stmt->close();
 $conn->close();
@@ -38,9 +42,16 @@ $conn->close();
 <body class="bg-dark text-warning">
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-md-6 border border-light rounded p-4 mt-5">
+            <div class="col-md-6 border border-light rounded p-4 mt-3 mb-5 ">
+                <h2 class="text-center text-light">Leave Request Form</h2>
+
+                <?php if ($status_message): ?>
+                    <div class="alert alert-<?php echo $status_message['type']; ?> text-center" role="alert">
+                        <?php echo htmlspecialchars($status_message['message']); ?>
+                    </div>
+                <?php endif; ?>
+
                 <form id="leave-request-form" action="../db/leave_conn.php" method="POST">
-                    <h2 class="text-center text-light">Leave Request Form</h2>
                     <div class="form-group">
                         <div class="row">
                             <div class="col-md-6">

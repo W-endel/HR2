@@ -1,3 +1,13 @@
+<?php
+session_start();
+
+if (!isset($_SESSION['a_id'])) {
+    header("Location: ../main/adminlogin.php");
+    exit();
+}
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -47,7 +57,7 @@
                 const date = document.getElementById('date').value;
                 const description = document.getElementById('description').value;
 
-                fetch('../main/nowork_days.php', {
+                fetch('../db/nowork_days.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -72,7 +82,7 @@
         });
 
         function fetchNonWorkingDays() {
-            fetch('../main/nowork_days.php')
+            fetch('../db/nowork_days.php')
             .then(response => response.json())
             .then(data => {
                 const tbody = document.getElementById('nonWorkingDaysTable').querySelector('tbody');
@@ -92,7 +102,7 @@
         }
 
         function deleteNonWorkingDay(date) {
-            fetch('../main/del_nowork.php', {
+            fetch('..db/del_nowork.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

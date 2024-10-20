@@ -1,10 +1,15 @@
 <?php
 session_start();
 
+if (!isset($_SESSION['a_id'])) {
+    header("Location: ../main/adminlogin.php");
+    exit();
+}
+
 include '../db/db_conn.php';
 
 // Fetch employee data
-$sql = "SELECT e_id, firstname, lastname, email, role, phone_number, address FROM employee_register WHERE role='employee'";
+$sql = "SELECT e_id, firstname, lastname, email, role, phone_number, address FROM employee_register WHERE role='Employee'";
 $result = $conn->query($sql);
 ?>
 
@@ -23,7 +28,7 @@ $result = $conn->query($sql);
         <table class="table table-bordered">
             <thead class="thead-light">
                 <tr class="text-center text-light">
-                    <th>ID</th>
+                    <th>Employee ID</th>
                     <th>First Name</th>
                     <th>Last Name</th>
                     <th>Email</th>
@@ -62,7 +67,7 @@ $result = $conn->query($sql);
 
         <h2 class="mt-5 text-light">Update Employee Account</h2>
 <form id="updateForm">
-    <input type="hidden" name="id" id="updateId">
+    <input type="hidden" name="e_id" id="updateId">
     <div class="form-floating mb-3 mb-md-0 form-group text-light">
         <label for="firstname">First Name</label>
         <input type="text" class=" form-control" name="firstname" placeholder="First Name" required>
@@ -120,8 +125,8 @@ $result = $conn->query($sql);
             }, false);
         })();
 
-        function fillUpdateForm(id, firstname, lastname, email, role, phone_number, address) {
-    document.getElementById('updateId').value = id;
+        function fillUpdateForm(employeeId, firstname, lastname, email, role, phone_number, address) {
+    document.getElementById('updateId').value = employeeId;
     document.querySelector('input[name="firstname"]').value = firstname;
     document.querySelector('input[name="lastname"]').value = lastname;
     document.querySelector('input[name="email"]').value = email;
@@ -134,11 +139,11 @@ $result = $conn->query($sql);
 }
 
 
-        function deleteEmployee(id) {
+        function deleteEmployee(employeeId) {
             if (confirm('Are you sure you want to delete this employee?')) {
                 const formData = new FormData();
-                formData.append('id', id);
-                fetch('delete_employee.php', {
+                formData.append('e_id', employeeId);
+                fetch('../e_portal/delete_employee.php', {
                     method: 'POST',
                     body: formData
                 })
@@ -151,7 +156,7 @@ $result = $conn->query($sql);
         document.getElementById('updateForm').onsubmit = function(e) {
             e.preventDefault();
             const formData = new FormData(this);
-            fetch('../main/update_employee.php', {
+            fetch('../e_portal/update_employee.php', {
                 method: 'POST',
                 body: formData
             })

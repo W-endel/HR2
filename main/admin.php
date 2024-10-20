@@ -1,6 +1,11 @@
 <?php
 session_start();
 
+if (!isset($_SESSION['a_id'])) {
+    header("Location: ../main/adminlogin.php");
+    exit();
+}
+
 include '../db/db_conn.php';
 
 // Fetch admin data
@@ -115,7 +120,7 @@ $result = $conn->query($sql);
             if (confirm('Are you sure you want to delete this admin?')) {
                 const formData = new FormData();
                 formData.append('a_id', adminId);
-                fetch('../main/delete_admin.php', {
+                fetch('../db/delete_admin.php', {
                     method: 'POST',
                     body: formData
                 })

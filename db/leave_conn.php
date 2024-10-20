@@ -11,7 +11,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // Check if the employee is logged in
     if (!isset($_SESSION['e_id'])) {
-        die("Error: User not logged in.");
+        $_SESSION['status_message'] = "User not logged in.";
+        header("Location: ../e_portal/leave_request.php"); // Redirect back to form
+        exit();
     }
 
     // Get the employee ID from the session
@@ -25,12 +27,44 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // Validate form data (check for empty fields)
     if (empty($startDate) || empty($endDate) || empty($leaveType) || empty($reason)) {
-        die("Error: Please fill in all required fields.");
+        $_SESSION['status_message'] = "Please fill in all required fields.";
+        header("Location: ../e_portal/leave_request.php"); // Redirect back to form
+        exit();
     }
 
     // Check if the end date is after the start date
     if (strtotime($endDate) < strtotime($startDate)) {
-        die("Error: End date cannot be earlier than start date.");
+        $_SESSION['status_message'] = "End date cannot be earlier than start date.";
+        header("Location: ../e_portal/leave_request.php"); // Redirect back to form
+        exit();
+    }
+
+    // Prepare the SQL query to get the available leaves
+    $sql = "SELECT available_leaves FROM employee_register WHERE e_id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param('i', $employeeId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    if ($result->num_rows > 0) {
+        $employee = $result->fetch_assoc();
+        $availableLeaves = $employee['available_leaves'];
+
+        // Calculate the number of leave days requested
+        $startDateObj = new DateTime($startDate);
+        $endDateObj = new DateTime($endDate);
+        $leaveDaysRequested = $endDateObj->diff($startDateObj)->days + 1; // Include start date
+
+        // Check if the requested leave days exceed available leaves
+        if ($leaveDaysRequested > $availableLeaves) {
+            $_SESSION['status_message'] = ['type' => 'warning', 'message' => "You do not have enough leave days available. Available leaves: $availableLeaves"];
+            header("Location: ../e_portal/leave_request.php"); // Redirect back to form
+            exit();
+        }
+    } else {
+        $_SESSION['status_message'] = "Error: Employee not found.";
+        header("Location: ../e_portal/leave_request.php"); // Redirect back to form
+        exit();
     }
 
     // Prepare the SQL query to insert the leave request
@@ -46,20 +80,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         // Check if the insertion was successful
         if ($stmt->affected_rows > 0) {
-            echo "Leave request submitted successfully.";
+            $_SESSION['status_message'] = ['type' => 'success', 'message' => 'Leave request submitted successfully.'];
         } else {
-            echo "Error: Failed to submit leave request.";
+            $_SESSION['status_message'] = ['type' => 'warning', 'message' => 'Error: Failed to submit leave request.'];
         }
 
         // Close the statement
         $stmt->close();
     } else {
-        echo "Error: Failed to prepare SQL query: " . $conn->error;
+        $_SESSION['status_message'] = ['type' => 'warning', 'message' => 'Error: Failed to prepare SQL query.'] . $conn->error;
     }
 
     // Close the database connection
     $conn->close();
+
+    // Redirect back to the leave request form
+    header("Location: ../e_portal/leave_request.php");
+    exit();
 } else {
-    die("Error: Invalid request method.");
+    $_SESSION['status_message'] = "Invalid request method.";
+    header("Location: ../e_portal/leave_request.php"); // Redirect back to form
+    exit();
 }
 ?>

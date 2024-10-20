@@ -1,14 +1,12 @@
 <?php
 session_start();
-include '../db/db_conn.php';
 
-// Ensure the user is logged in
 if (!isset($_SESSION['a_id'])) {
-    die("Error: You must be logged in.");
+    header("Location: ../main/adminlogin.php");
+    exit();
 }
 
-// Fetch employee ID from the session
-$employeeId = $_SESSION['e_id'];
+include '../db/db_conn.php';
 
 // Check if there is a search term
 $searchTerm = isset($_GET['search']) ? $_GET['search'] : '';

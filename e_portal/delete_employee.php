@@ -4,16 +4,16 @@ session_start();
 include '../db/db_conn.php';
 
 // Get employee ID from request
-$id = isset($_POST['id']) ? trim($_POST['id']) : '';
+$employeeId = isset($_POST['e_id']) ? trim($_POST['e_id']) : '';
 
 // Basic validation
-if (empty($id)) {
+if (empty($employeeId)) {
     echo json_encode(['error' => 'Employee ID is required.']);
     exit();
 }
 
 // Prepare and execute SQL statement for deleting
-$sql = "DELETE FROM employee_register WHERE id=?";
+$sql = "DELETE FROM employee_register WHERE e_id=?";
 $stmt = $conn->prepare($sql);
 
 if ($stmt === false) {
@@ -21,7 +21,7 @@ if ($stmt === false) {
     exit();
 }
 
-$stmt->bind_param("i", $id);
+$stmt->bind_param("i", $employeeId);
 
 if ($stmt->execute()) {
     echo json_encode(['success' => 'Employee deleted successfully!']);

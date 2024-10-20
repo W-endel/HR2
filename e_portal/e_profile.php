@@ -49,9 +49,9 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <div class="bg-warning" id="layoutSidenav">
+    <div class="bg-black" id="layoutSidenav">
         <div id="layoutSidenav_nav">
-            <nav class="sidenav navbar navbar-dark bg-dark">
+            <nav class="sidenav navbar navbar-dark bg-black border-bottom border-1 border-warning">
                 <div class="container-fluid">
                     <div class="big text-light">Hello, <?php echo htmlspecialchars($employeeInfo['firstname'] . ' ' . $employeeInfo['middlename'] . ' ' . $employeeInfo['lastname']); ?></div>
                     <ul class="navbar-nav">
@@ -66,7 +66,7 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
         </div>
         <div id="layoutSidenav_content">
             <main>
-                <div class="container-fluid px-4 bg-dark">
+                <div class="container-fluid px-4 bg-black">
                     <h1 class="big mt-4 text-light">My Profile</h1>
                     <div class="row">
                         <div class="col-md-4">
@@ -113,7 +113,7 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                         </div>
                         <div class="col-md-8">
                             <div class="card mb-4 border border-light">
-                                <div class="card-header bg-warning">
+                                <div class="card-header bg-dark border-bottom border-1 border-warning">
                                     <h5 class="card-title text-center">My Information</h5>
                                 </div>
                                 <div class="card-body bg-dark">
@@ -174,7 +174,7 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
             <div class="modal fade" id="qrCodeModal" tabindex="-1" aria-labelledby="qrCodeModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content bg-dark text-light">
-                        <div class="modal-header">
+                        <div class="modal-header boder-1 border-warning">
                             <h5 class="modal-title" id="qrCodeModalLabel">Employee QR Code</h5>
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
@@ -184,7 +184,7 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                             <p class="mt-3">Employee ID: <?php echo htmlspecialchars($employeeInfo['e_id']); ?></p>
                             <p>Name: <?php echo htmlspecialchars($employeeInfo['firstname'] . ' ' . $employeeInfo['middlename'] . ' ' . $employeeInfo['lastname']); ?></p>
                         </div>
-                        <div class="modal-footer">
+                        <div class="modal-footer boder-1 border-warning">
                             <button type="button" class="btn btn-warning" data-bs-dismiss="modal">Close</button>
                         </div>
                     </div>

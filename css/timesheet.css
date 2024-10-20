@@ -2,7 +2,7 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #f4f4f4;
+    background-color: #3d3a3a;
     color: #333;
     display: flex;
     flex-direction: column;
@@ -12,12 +12,12 @@ body {
 }
 
 header {
-    background-color: #007BFF;
-    padding: 20px;
+    background-color: #000000;
+    padding: 5px;
+    margin-bottom: 20px;
     width: 100%;
     text-align: center;
-    color: white;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    color: #faf6f6;
 }
 
 .scanner {
@@ -31,19 +31,19 @@ header {
 video {
     width: 100%;
     max-width: 600px;
-    border: 5px solid #007BFF;
+    border: 5px solid #000000;
     border-radius: 10px;
     margin-bottom: 20px;
 }
 
 #outputMessage {
     font-size: 1.2em;
-    color: #555;
+    color: #faf6f6;
 }
 
 #outputData {
     font-size: 1.5em;
-    color: #007BFF;
+    color: #faf6f6;
     margin-top: 10px;
 }
 
@@ -59,7 +59,7 @@ video {
 
 .records h2 {
     text-align: center;
-    color: #007BFF;
+    color: #faf6f6;
     margin-bottom: 20px;
 }
 
@@ -74,11 +74,12 @@ video {
     padding: 10px;
     text-align: center;
     border: 1px solid #ccc;
+    color: #faf6f6;
 }
 
 .records th {
-    background-color: #007BFF;
-    color: white;
+    background-color: #000000;
+    color: #faf6f6;
 }
 table {
     border-collapse: collapse;
