@@ -5,9 +5,7 @@ if (!isset($_SESSION['a_id'])) {
     header("Location: ../main/adminlogin.php");
     exit();
 }
-
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -21,6 +19,22 @@ if (!isset($_SESSION['a_id'])) {
     <title>Employee Account Registration</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" />
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+
+    <style>
+        /* Ensures the page fills the full height */
+        html, body {
+            height: 100%;
+        }
+        /* Makes the layout use the full height and pushes footer to the bottom */
+        #layoutAuthentication {
+            min-height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        #layoutAuthentication_content {
+            flex-grow: 1;
+        }
+    </style>
 </head>
 
 <body class="bg-black">
@@ -91,6 +105,7 @@ if (!isset($_SESSION['a_id'])) {
                                                         <option value="Sales Department">Sales Department</option>
                                                         <option value="Credit Department">Credit Department</option>
                                                         <option value="Human Resource Department">Human Resource Department</option>
+                                                        <option value="IT Department">IT Department</option>
                                                     </select>
                                                     <label for="inputDepartment">Select Department</label>
                                                 </div>          
@@ -106,11 +121,14 @@ if (!isset($_SESSION['a_id'])) {
                                             <div class="d-grid">
                                                 <button class="btn btn-primary btn-block" type="submit">Create Account</button>
                                             </div>
+                                            <div class="text-center">
+                                                <div class="text-center mt-2 mb-2"> <a class="btn border-secondary w-100 text-light" href="../main/employee.php">Back</a></div>
+                                            </div>  
                                         </div>
                                     </form>
                                 </div>
-                                <div class="card-footer text-center py-3 border-top border-1 border-warning">
-                                    <div class="small"><a href="../e_portal/employee_login.php">Have an account? Go to login</a></div>
+                                <div class="card-footer text-center border-top border-1 border-warning">
+                                    <p class="small text-center text-muted mt-1">Human Resource 2</p>
                                 </div>
                             </div>
                         </div>
@@ -118,21 +136,24 @@ if (!isset($_SESSION['a_id'])) {
                 </div>
             </main>
         </div>
+        
+        <!-- Updated Footer matching Admin registration -->
         <div id="layoutAuthentication_footer">
-            <footer class="py-4 bg-light mt-auto">
+            <footer class="py-4 bg-dark text-light mt-auto border-1 border-warning border-top">
                 <div class="container-fluid px-4">
                     <div class="d-flex align-items-center justify-content-between small">
                         <div class="text-muted">Copyright &copy; Your Website 2023</div>
                         <div>
-                            <a href="#">Privacy Policy</a>
+                            <a href="#" class="text-light">Privacy Policy</a>
                             &middot;
-                            <a href="#">Terms &amp; Conditions</a>
+                            <a href="#" class="text-light">Terms &amp; Conditions</a>
                         </div>
                     </div>
                 </div>
             </footer>
         </div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
         crossorigin="anonymous"></script>
     
@@ -143,7 +164,8 @@ if (!isset($_SESSION['a_id'])) {
             "Administration Department": ["Facilities Manager", "Operations Manager", "Customer Service Representative", "Staff"],
             "Sales Department": ["Sales Manager", "Sales Representative", "Marketing Coordinator", "Staff"],
             "Credit Department": ["Loan Officer", "Loan Collection Officer", "Credit Risk Analyst", "Staff"],
-            "Human Resource Department": ["HR Manager", "Recruitment Specialists", "Training Coordinator", "Staff"]
+            "Human Resource Department": ["HR Manager", "Recruitment Specialists", "Training Coordinator", "Staff"],
+            "IT Department": ["IT Manager", "Network Administrator", "System Administrator", "IT Support Specialist"]
         };
 
         function filterPositions() {
@@ -169,6 +191,7 @@ if (!isset($_SESSION['a_id'])) {
         document.getElementById("inputDepartment").addEventListener("change", filterPositions);
 
 
+        
         document.getElementById("registrationForm").addEventListener("submit", function (event) {
     event.preventDefault();
     
@@ -196,10 +219,7 @@ if (!isset($_SESSION['a_id'])) {
             document.getElementById("registrationForm").reset();
         }
     })
-    .catch(error => console.error('Error:', error));
 });
-
-
     </script>
 </body>
 

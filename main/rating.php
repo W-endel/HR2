@@ -1,188 +1,99 @@
 <?php
 session_start();
+include '../db/db_conn.php';  // Include the database connection
 
+// Check if the user is logged in
 if (!isset($_SESSION['a_id'])) {
-    header("Location: ../main/adminlogin.php");
-    exit();
+    header('Location: ../main/adminlogin.php');  // Redirect to login if not logged in
+    exit;
 }
 
+// Fetch posts along with the poster's name
+$result = $conn->query("SELECT posts.*, 
+    CASE 
+        WHEN admin_register.a_id IS NOT NULL THEN CONCAT(admin_register.firstname)
+        ELSE CONCAT(employee_register.firstname, ' ', employee_register.lastname)
+    END AS poster_name 
+    FROM posts 
+    LEFT JOIN admin_register ON posts.user_id = admin_register.a_id 
+    LEFT JOIN employee_register ON posts.user_id = employee_register.e_id 
+    ORDER BY post_date DESC");
 ?>
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Social Recognition</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <style>
-        .star {
-            font-size: 2rem;
-            color: #ccc;
-            cursor: pointer;
-            transition: color 0.3s;
-        }
-        .star.full {
-            color: #f39c12;
-        }
-        .star:hover,
-        .star.selected {
-            color: #f39c12;
-        }
-        .employee-card {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            overflow: hidden;
-            margin-bottom: 20px;
-            padding: 15px;
-            text-align: center;
-            background-color: #fff;
-        }
-        .employee-card img {
-            width: 100px;
-            height: 100px;
-            object-fit: cover;
-            border-radius: 50%;
-            border: 2px solid #ddd;
-            margin-bottom: 10px;
-        }
-        .employee-card h4 {
-            margin: 10px 0;
-        }
-        .employee-card .rating-display {
-            margin-top: 10px;
-        }
-    </style>
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="../css/styles.css"> <!-- Link to your CSS file -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"> <!-- Bootstrap CSS -->
 </head>
-<body class="bg-dark">
-    <div class="container mt-5">
-        <h2 class="mb-4 text-center text-light">Social Recognition</h2>
+<body>
 
-        <form id="employee-form" class="mb-4">
-            <div class="form-group text-light">
-                <label for="employee-name">Name:</label>
-                <input type="text" id="employee-name" class="form-control" required>
+<div class="container mt-5">
+    <h1 class="text-center">Admin Dashboard</h1>
+    <div class="mb-4">
+        <!-- Admin post form -->
+        <?php if ($_SESSION['role'] == 'Admin'): ?>
+        <form action="../db/add_post.php" method="post">
+            <div class="form-group">
+                <textarea class="form-control" name="post_content" placeholder="What's on your mind?" rows="3" required></textarea>
             </div>
-            <div class="form-group text-light">
-                <label for="employee-image">Image:</label>
-                <input type="file" id="employee-image" class="form-control-file" accept="image/*" required>
-            </div>
-            <div class="form-group text-light">
-                <label for="employee-rating">Rating:</label>
-                <div class="star-rating" id="star-rating-input">
-                    <span class="star" data-value="1">&#9733;</span>
-                    <span class="star" data-value="2">&#9733;</span>
-                    <span class="star" data-value="3">&#9733;</span>
-                    <span class="star" data-value="4">&#9733;</span>
-                    <span class="star" data-value="5">&#9733;</span>
-                </div>
-                <input type="hidden" id="employee-rating" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Add Employee</button>
+            <button type="submit" class="btn btn-primary">Post</button>
         </form>
-
-        <div id="employee-container" class="row">
-            <!-- Employee cards will be added here dynamically -->
-        </div>
+        <?php endif; ?>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const employeeContainer = document.getElementById('employee-container');
-            const employeeForm = document.getElementById('employee-form');
-            const starRatingInput = document.getElementById('star-rating-input');
-            const ratingHiddenInput = document.getElementById('employee-rating');
+    <!-- Fetch and display posts -->
+    <?php while ($row = $result->fetch_assoc()): ?>
+        <div class='post card mb-3'>
+            <div class='card-body'>
+                <h5 class='card-title'><?php echo htmlspecialchars($row['poster_name']); ?> posted:</h5>
+                <p class='card-text'><?php echo htmlspecialchars($row['post_content']); ?></p>
+                <small class='text-muted'>Posted on <?php echo $row['post_date']; ?></small>
+            </div>
 
-            // Function to create and display an employee card
-            function createEmployeeCard(name, imageUrl, rating) {
-                const card = document.createElement('div');
-                card.className = 'col-md-4';
-                card.innerHTML = `
-                    <div class="employee-card">
-                        <img src="${imageUrl}" alt="${name}">
-                        <h4>${name}</h4>
-                        <p class="rating">Rating: ${rating}</p>
-                        <div class="star-rating" id="star-rating-${name.replace(/\s+/g, '')}">
-                            <span class="star" data-value="1">&#9733;</span>
-                            <span class="star" data-value="2">&#9733;</span>
-                            <span class="star" data-value="3">&#9733;</span>
-                            <span class="star" data-value="4">&#9733;</span>
-                            <span class="star" data-value="5">&#9733;</span>
-                        </div>
-                        <div class="rating-display mt-2">
-                            Your rating: <span id="rating-value-${name.replace(/\s+/g, '')}">0</span> stars
-                        </div>
+            <!-- Comment form visible to all roles -->
+            <div class="card-footer">
+                <form action='../db/add_comment.php' method='post'>
+                    <input type='hidden' name='post_id' value='<?php echo $row['post_id']; ?>'>
+                    <div class="form-group">
+                        <textarea class='form-control' name='comment_content' placeholder='Write a comment...' required></textarea>
                     </div>
-                `;
-                employeeContainer.appendChild(card);
+                    <button type='submit' class='btn btn-secondary'>Comment</button>
+                </form>
+            </div>
 
-                // Function to update stars based on rating
-                function updateStars(ratingValue) {
-                    const stars = card.querySelectorAll('.star');
-                    const ratingDisplay = card.querySelector('.rating-display span');
-                    stars.forEach(star => {
-                        star.classList.remove('selected');
-                        const value = parseFloat(star.getAttribute('data-value'));
-                        if (value <= ratingValue) {
-                            star.classList.add('full');
-                        }
-                    });
-                    ratingDisplay.textContent = ratingValue;
-                }
+            <!-- Fetch and display comments for each post -->
+            <div class='card-body'>
+                <h6>Comments:</h6>
+                <?php
+                $post_id = $row['post_id'];
+                // Fetch comments with the commenter names
+                $comments = $conn->query("SELECT comments.*, 
+                    CASE 
+                        WHEN admin_register.a_id IS NOT NULL THEN CONCAT(admin_register.firstname)
+                        ELSE CONCAT(employee_register.firstname, ' ', employee_register.lastname)
+                    END AS commenter_name 
+                    FROM comments 
+                    LEFT JOIN admin_register ON comments.user_id = admin_register.a_id 
+                    LEFT JOIN employee_register ON comments.user_id = employee_register.e_id 
+                    WHERE post_id = $post_id 
+                    ORDER BY comment_date ASC");
 
-                // Update stars based on initial rating
-                updateStars(parseFloat(rating));
+                while ($comment = $comments->fetch_assoc()): ?>
+                    <div class='comment'>
+                        <p><strong><?php echo htmlspecialchars($comment['commenter_name']); ?>:</strong> <?php echo htmlspecialchars($comment['comment_content']); ?></p>
+                        <small class='text-muted'>Commented on <?php echo $comment['comment_date']; ?></small>
+                    </div>
+                <?php endwhile; ?>
+            </div>
+        </div>
+    <?php endwhile; ?>
+</div>
 
-                // Add event listeners to the stars
-                const stars = card.querySelectorAll('.star');
-                stars.forEach(star => {
-                    star.addEventListener('click', () => {
-                        const value = parseFloat(star.getAttribute('data-value'));
-                        updateStars(value);
-                        card.querySelector('.rating-display span').textContent = value;
-                    });
-                });
-            }
-
-            // Handle form submission
-            employeeForm.addEventListener('submit', (event) => {
-                event.preventDefault();
-
-                const name = document.getElementById('employee-name').value;
-                const rating = ratingHiddenInput.value || '0'; // Default to '0' if no rating
-                const imageInput = document.getElementById('employee-image');
-                const imageFile = imageInput.files[0];
-                const imageUrl = URL.createObjectURL(imageFile);
-
-                createEmployeeCard(name, imageUrl, rating);
-
-                // Reset form fields
-                employeeForm.reset();
-                // Reset star rating input
-                ratingHiddenInput.value = '';
-                // Reset star rating UI
-                const stars = starRatingInput.querySelectorAll('.star');
-                stars.forEach(star => star.classList.remove('selected', 'full'));
-            });
-
-            // Add event listeners to the star rating input
-            const stars = starRatingInput.querySelectorAll('.star');
-            stars.forEach(star => {
-                star.addEventListener('click', () => {
-                    const value = parseFloat(star.getAttribute('data-value'));
-                    stars.forEach(s => {
-                        const sValue = parseFloat(s.getAttribute('data-value'));
-                        if (sValue <= value) {
-                            s.classList.add('selected');
-                        } else {
-                            s.classList.remove('selected');
-                        }
-                    });
-                    ratingHiddenInput.value = value;
-                });
-            });
-        });
-    </script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>

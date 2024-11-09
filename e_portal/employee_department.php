@@ -75,7 +75,7 @@
             <span class="toggle-btn text-decoration-none" onclick="toggleSidebar()">&#x276E;</span>
             <h4>Departments</h4>
             <a href="../e_portal/e_finance.php">Finance</a>
-            <a href="../e_portal/e_hr.php">Human Resources</a>
+            <a href="../e_portal/e_hr.php">Human Resource</a>
             <a href="../e_portal/e_operations.php">Operations</a>
             <a href="../e_portal/e_risk.php">Risk</a>
             <a href="../e_portal/e_marketing.php">Marketing</a>

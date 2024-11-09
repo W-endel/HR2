@@ -1,12 +1,10 @@
 <?php
 session_start();
 
-
 if (!isset($_SESSION['a_id'])) {
     header("Location: ../main/adminlogin.php");
     exit();
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -21,11 +19,27 @@ if (!isset($_SESSION['a_id'])) {
     <title>Admin Account Registration</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" />
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+
+    <style>
+        /* Ensures the page fills the full height */
+        html, body {
+            height: 100%;
+        }
+        /* Makes the layout use the full height and pushes footer to the bottom */
+        #layoutAuthentication {
+            min-height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        #layoutAuthentication_content {
+            flex-grow: 1;
+        }
+    </style>
 </head>
 
 <body class="bg-black">
-    <div id="layoutAuthentication">
-        <div id="layoutAuthentication_content">
+    <div id="layoutAuthentication" class="d-flex flex-column">
+        <div id="layoutAuthentication_content" class="flex-grow-1">
             <main>
                 <div class="container">
                     <div class="row justify-content-center">
@@ -105,7 +119,7 @@ if (!isset($_SESSION['a_id'])) {
                                                     <button class="btn btn-primary btn-block" type="submit">Create Account</button>
                                                 </div>
                                                 <div class="text-center">
-                                                    <div class="text-center mt-2 mb-2"> <a class="btn border-secondary w-100 text-light" href="../main/index.php">Back</a></div>
+                                                    <div class="text-center mt-2 mb-2"> <a class="btn border-secondary w-100 text-light" href="../main/admin.php">Back</a></div>
                                                 </div>  
                                             </div> 
                                     </form>
@@ -119,24 +133,23 @@ if (!isset($_SESSION['a_id'])) {
                 </div>
             </main>
         </div>
-        <div id="layoutAuthentication_footer">
-            <footer class="py-4 bg-dark mt-auto border-top border-1 border-warning">
-                <div class="container-fluid px-4">
-                    <div class="d-flex align-items-center justify-content-between small">
-                        <div class="text-muted">Copyright &copy; Your Website 2023</div>
-                        <div>
-                            <a href="#">Privacy Policy</a>
-                            &middot;
-                            <a href="#">Terms &amp; Conditions</a>
-                        </div>
+        <footer class="py-4 bg-dark mt-auto border-top border-1 border-warning">
+            <div class="container-fluid px-4">
+                <div class="d-flex align-items-center justify-content-between small">
+                    <div class="text-muted">Copyright &copy; Your Website 2023</div>
+                    <div>
+                        <a href="#">Privacy Policy</a>
+                        &middot;
+                        <a href="#">Terms &amp; Conditions</a>
                     </div>
                 </div>
-            </footer>
-        </div>
+            </div>
+        </footer>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
         crossorigin="anonymous"></script>
-    <script src="../js/register.js"></script>
+    <script src="../js/registeradmin.js"></script>
 </body>
 
 </html>

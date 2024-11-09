@@ -19,7 +19,7 @@ $result = $stmt->get_result();
 // Verify login credentials
 if ($row = $result->fetch_assoc()) {
     // Verify the password
-    if (password_verify($password, $row['password'])) { // Assuming passwords are hashed
+    if (password_verify($password, $row['password'])) {
         $loginSuccessful = true;
         $_SESSION['a_id'] = $row['a_id']; // Set admin ID in session
         header("Location: ../main/index.php"); // Redirect to dashboard
@@ -53,7 +53,7 @@ $conn->close();
                 <div class="container mt-5">
                     <div class="row justify-content-center">
                         <div class="col-lg-5">
-                            <div class="card shadow-lg border-0 rounded-lg mt-2 mb-2 bg-dark">
+                            <div class="card shadow-lg border-0 rounded-lg mt-5 mb-2 bg-dark">
                                 <div class="card-header border-bottom border-1 border-warning"> 
                                     <h3 class="text-center text-light font-weight-light mt-2 mb-4">Admin Login</h3>
                                     <i class="fa-solid fa-house"></i>
@@ -81,7 +81,7 @@ $conn->close();
                                                 <input class="form-check-input" id="inputRememberPassword" type="checkbox" name="remember" value="" />
                                                 <label class="form-check-label text-light ms-2" for="inputRememberPassword">Remember Password</label>
                                             </div>
-                                                <a class="small text-light" href="../main/password.php">Forgot Password?</a>
+                                                <a class="small text-info" href="../main/forgot_pass.php">Forgot Password?</a>
                                         </div>
                                         <div class="d-flex align-items-center justify-content-between mt-2 mb-2">
                                             <button type="submit" class="btn btn-primary w-100">Login</button>

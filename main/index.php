@@ -38,39 +38,39 @@ $conn->close();
 
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <meta name="description" content="" />
     <meta name="author" content="" />
-    <title>Admin Dashboard</title>
+    <title>Admin Dashboard | HR2</title>
     <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet">
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
     <link href="../css/styles.css" rel="stylesheet" />
     <link href="../css/calendar.css" rel="stylesheet"/>
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
-  </head>
+</head>
 
 <body class="sb-nav-fixed">
     <nav class="sb-topnav navbar navbar-expand navbar-dark border-bottom border-1 border-warning bg-dark">
-        <a class="navbar-brand ps-3 text-muted" href="../main/index.php">Microfinance</a>
+        <a class="navbar-brand ps-3 text-muted" href="../main/index.php">Admin Portal</a>
         <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars text-light"></i></button>
     
     <!-- Flex container to hold both time/date and search form -->
         <div class="d-flex ms-auto me-0 me-md-3 my-2 my-md-0 align-items-center">
             <div class="text-light me-3 p-2 rounded shadow-sm bg-gradient" id="currentTimeContainer" 
-            style="background: linear-gradient(45deg, #333333, #444444); border-radius: 5px;">
-                <span class="d-flex align-items-center">
-                    <span class="pe-2">
-                        <i class="fas fa-clock"></i> 
+                style="background: linear-gradient(45deg, #333333, #444444); border-radius: 5px;">
+                    <span class="d-flex align-items-center">
+                        <span class="pe-2">
+                            <i class="fas fa-clock"></i> 
                         <span id="currentTime">00:00:00</span>
                     </span>
                     <button class="btn btn-outline-warning btn-sm ms-2" type="button" onclick="toggleCalendar()">
-    <i class="fas fa-calendar-alt"></i>
-    <span id="currentDate">00/00/0000</span>
-</button>
-                </span>
+                        <i class="fas fa-calendar-alt"></i>
+                        <span id="currentDate">00/00/0000</span>
+                    </button>
+                    </span>
             </div>
             <form class="d-none d-md-inline-block form-inline">
             <div class="input-group">
@@ -186,7 +186,7 @@ $conn->close();
                     </div>
                 </div>
                 <div class="sb-sidenav-footer bg-black text-light border-top border-1 border-warning">
-                    <div class="small">Logged in as: <?php echo htmlspecialchars($adminInfo['firstname'] . ' ' . $adminInfo['lastname']); ?></div>
+                    <div class="small">Logged in as: <?php echo htmlspecialchars($adminInfo['role']); ?></div>
                 </div>
             </nav>
         </div>
@@ -204,7 +204,7 @@ $conn->close();
                     </div>
                 </div>
         <!-- Leave Request Status Section -->
-                <div class="col-xl-6">
+                <div class="col-xl-3">
                     <div class="card mb-4">
                         <div class="card-header bg-black text-light border-bottom border-1 border-warning">
                             <i class="fas fa-chart-pie me-1"></i> 
@@ -215,8 +215,7 @@ $conn->close();
                         </div>
                     </div>
                 </div>
-
-
+                
                 <div class="card mb-4">
                     <div class="card-header">
                         <i class="fas fa-table me-1"></i>

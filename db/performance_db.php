@@ -1,15 +1,5 @@
 <?php
-$host = 'localhost'; // Change this if your database is hosted elsewhere
-$dbname = 'hr2';
-$user = 'root'; // Your MySQL username
-$pass = ''; // Your MySQL password
-
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $user, $pass);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die("Database connection failed: " . $e->getMessage());
-}
+include '../db/db_conn.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $sales = $_POST["sales"];
@@ -31,18 +21,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         'learning_development' => $learning_development
     ]);
 
-    // Insert into database
-    $stmt = $pdo->prepare("INSERT INTO performance_db (sales, customer_satisfaction, attendance, project_completion, team_collaboration, learning_development, total_score, overall_rating) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->execute([
-        $sales,
-        $customer_satisfaction,
-        $attendance,
-        $project_completion,
-        $team_collaboration,
-        $learning_development,
-        $result['total_score'],
+    // Insert into database using MySQLi
+    $stmt = $conn->prepare("INSERT INTO performance_db (sales, customer_satisfaction, attendance, project_completion, team_collaboration, learning_development, total_score, overall_rating) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param('ssssssss', 
+        $sales, 
+        $customer_satisfaction, 
+        $attendance, 
+        $project_completion, 
+        $team_collaboration, 
+        $learning_development, 
+        $result['total_score'], 
         $result['overall_rating']
-    ]);
+    );
+    $stmt->execute();
 
     // Display result
     echo "<div class='mt-4 card result-card'>";

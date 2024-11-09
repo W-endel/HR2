@@ -11,7 +11,7 @@ if (!isset($_SESSION['a_id'])) {
 
 // Get data from the POST request
 $adminId = $_SESSION['a_id'];
-$employeeId = $_POST['employeeId'];
+$employeeId = $_POST['e_id'];
 $categoryAverages = $_POST['categoryAverages'];
 $department = $_POST['department']; // Get the department from POST data
 

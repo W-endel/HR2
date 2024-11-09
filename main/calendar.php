@@ -13,10 +13,10 @@ if (!isset($_SESSION['a_id'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/styles.css">
     <title>Non-Working Days</title>
 </head>
-<body class="bg-dark">
+<body class="bg-black">
     <div class="container mt-5 text-light">
         <h2>Set Non-Working Days</h2>
         <form id="nonWorkingDayForm">
@@ -28,7 +28,7 @@ if (!isset($_SESSION['a_id'])) {
                 <label for="description">Description:</label>
                 <input type="text" class="form-control" id="description" required>
             </div>
-            <button type="submit" class="btn btn-primary">Add Non-Working Day</button>
+            <button type="submit" class="btn btn-primary mt-3">Add Non-Working Day</button>
         </form>
 
         <hr>
@@ -102,7 +102,7 @@ if (!isset($_SESSION['a_id'])) {
         }
 
         function deleteNonWorkingDay(date) {
-            fetch('..db/del_nowork.php', {
+            fetch('../db/del_nowork.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

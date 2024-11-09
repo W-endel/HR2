@@ -2,7 +2,7 @@
 function confirmLogout(event) {
     event.preventDefault();
     if (confirm("Are you sure you want to log out?")) {
-        window.location.href = "../main/front.php";
+        window.location.href = "../main/adminlogin.php";
     }
 }
 

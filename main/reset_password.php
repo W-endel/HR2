@@ -1,5 +1,6 @@
 <?php
-require '../db/pass_conn.php'; // Ensure this is the correct file for the database connection
+require '../db/db_conn.php'; // Ensure this is the correct file for the database connection
+require '../vendor/autoload.php'; // Ensure PHPMailer is properly loaded
 
 $message = ''; // Initialize a variable to hold the message
 $expiresAt = null;
@@ -9,12 +10,19 @@ if (isset($_GET['token'])) {
     $token = $_GET['token'];
 
     // Query expiration time of the token
-    $sql = "SELECT expires_at FROM password_resets WHERE token = ?";
-    $stmt = $db->prepare($sql);
-    $stmt->execute([$token]);
-    $expiresAt = $stmt->fetchColumn();
+    $sql = "SELECT expires_at, email FROM password_resets WHERE token = ?";
+    $stmt = $conn->prepare($sql); // Use the $conn connection for mysqli
+    $stmt->bind_param("s", $token); // Bind token parameter to prevent SQL injection
+    $stmt->execute();
+    $result = $stmt->get_result();
     
-    if (!$expiresAt) {
+    if ($result->num_rows > 0) {
+        // Fetch the row if it exists
+        $row = $result->fetch_assoc();
+        $expiresAt = $row['expires_at'];
+        $email = $row['email'];
+    } else {
+        // No matching token found, handle this case
         echo "Invalid or expired token.";
         exit;
     }
@@ -26,23 +34,101 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (strtotime($expiresAt) < time()) {
         $message = "<div class='alert alert-danger text-center'>Token has expired. Please request a new password reset.</div>";
     } else {
-        $newPassword = $_POST['new_password'];
-        $confirmNewPassword = $_POST['confirm_new_password'];
-        
-        // Check if passwords match
-        if ($newPassword === $confirmNewPassword) {
-            // Proceed with password update
-            $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
+        // Ensure the required form fields are set before accessing them
+        if (isset($_POST['new_password']) && isset($_POST['confirm_new_password'])) {
+            $newPassword = $_POST['new_password'];
+            $confirmNewPassword = $_POST['confirm_new_password'];
             
-            $updateSql = "UPDATE admin_register SET password = ? WHERE email = (SELECT email FROM password_resets WHERE token = ?)";
-            $updateStmt = $db->prepare($updateSql);
-            $updateStmt->execute([$hashedPassword, $token]);
+            // Check if passwords match
+            if ($newPassword === $confirmNewPassword) {
+                // Proceed with password update
+                $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
+                
+                $updateSql = "UPDATE admin_register SET password = ? WHERE email = (SELECT email FROM password_resets WHERE token = ? LIMIT 1)";
+                $updateStmt = $conn->prepare($updateSql);
+                $updateStmt->bind_param("ss", $hashedPassword, $token); // Bind parameters
+                $updateStmt->execute(); 
 
-            $message = "<div class='alert alert-success text-center'>Password reset successfully.</div>";
-            $resetSuccessful = true; // Set to true after successful reset
-        } else {
-            $message = "<div class='alert alert-danger text-center'>Passwords do not match.</div>";
+                $message = "<div class='alert alert-success text-center'>Password reset successfully.</div>";
+                $resetSuccessful = true; // Set to true after successful reset
+            } else {
+                $message = "<div class='alert alert-danger text-center'>Passwords do not match.</div>";
+            }
         }
+    }
+}
+
+// Handle resend link request
+if (isset($_POST['resend_token'])) {
+    // Generate a new token
+    date_default_timezone_set('Asia/Manila');
+    $newToken = bin2hex(random_bytes(32));
+    $newExpiresAt = date("Y-m-d H:i:s", strtotime("+3 minutes")); // Set expiration time to 30 minutes from now
+    
+    // Update the most recent reset request for the email
+    $insertSql = "UPDATE password_resets 
+                  SET token = ?, expires_at = ? 
+                  WHERE email = ? 
+                  ORDER BY created_at DESC LIMIT 1";
+    $insertStmt = $conn->prepare($insertSql);
+    $insertStmt->bind_param("sss", $newToken, $newExpiresAt, $email); // Bind parameters
+    $insertStmt->execute();
+
+    // Send the reset email with PHPMailer
+    try {
+        // Check if the email exists in the admin_register table
+        $sql = "SELECT firstname, lastname FROM admin_register WHERE email = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param('s', $email);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+            // Fetch the first and last name
+            $row = $result->fetch_assoc();
+            $userName = $row['firstname'] . ' ' . $row['lastname'];
+        $mail = new PHPMailer\PHPMailer\PHPMailer;
+        $mail->isSMTP();
+        $mail->Host = 'smtp.gmail.com'; // Use Gmail's SMTP server
+        $mail->SMTPAuth = true;
+        $mail->Username = 'microfinancehr2@gmail.com'; // Your Gmail address
+        $mail->Password = 'yjla pidq jfdr qbnz'; // Your Gmail password or app password
+        $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port = 587;
+
+        $mail->setFrom('microfinancehr2@gmail.com', 'Microfinance');
+        $mail->addAddress($email);
+        $mail->Subject = 'Password Reset Request';
+        $resetLink = "http://localhost/HR2/main/reset_password.php?token=$newToken"; // Update the URL with the new token
+        $mail->isHTML(true);
+
+        $mail->Body = '
+        <div style="font-family: Arial, sans-serif; padding: 20px; background-color: rgba(24, 25, 26); color: #f8f9fa;">
+            <div style="max-width: 600px; margin: 0 auto; background-color: rgba(33, 37, 41); padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
+                <h2 style="text-align: center; color: #007bff;">Password Reset Request</h2>
+                <p style="font-size: 16px; color: #f8f9fa;">Hello, ' . $userName . '</p>
+                <p style="font-size: 16px; color: #f8f9fa;">We received a request to reset your password. Click the button below to reset your password:</p>
+                <p style="text-align: center; margin-top: 30px;">
+                    <a href="' . $resetLink . '" style="padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px; display: inline-block;">
+                        Reset Password
+                    </a>
+                </p>
+                <p style="font-size: 16px; color: #999; text-align: center;">This link will expire in 3 minutes.</p>
+                <hr style="border-top: 1px solid #ddd; margin-top: 20px;">
+                <p style="font-size: 14px; color: #f8f9fa;">If you didn\'t request a password reset, you can safely ignore this email.</p>
+                <p style="font-size: 14px; color: #999; text-align: center;">Microfinance HR 2 System</p>
+            </div>
+        </div>
+    ';
+
+    $mail->send();
+            // Show success message without redirecting
+            $message = "<div class='alert alert-success text-center'>A new password reset link has been sent to your email. Please check your inbox.</div>";
+        } else {
+            $message = "<div class='alert alert-danger text-center'>Failed to send the reset link. Please try again later.</div>";
+        }
+    } catch (Exception $e) {
+        $message = "<div class='alert alert-danger text-center'>Mailer Error: {$mail->ErrorInfo}</div>";
     }
 }
 
@@ -83,7 +169,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                     <button type="submit" class="btn btn-primary w-100" id="submitButton">Reset Password</button>
                                 </div>
                             </form>
-                            <div id="expiredTime" class="text-center text-danger small" style="display: none;">The token has expired, resend the link again to change your password.</div>
+                            <div id="expiredTime" class="text-center text-danger small" style="display: none;">The token has expired, resend the link again to reset your password.</div>
+                            
+                            <!-- Resend Link Form -->
+                            <form method="POST" action="" style="display: none;" id="resendForm">
+                                <button type="submit" name="resend_token" class="btn btn-warning w-100 mt-3">Resend Link</button>
+                            </form>
                         <?php endif; ?>
 
                         <div class="text-center mt-3 mb-0">
@@ -104,6 +195,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 var resetForm = document.getElementById('resetForm');
                 var submitButton = document.getElementById('submitButton');
                 var expiredTimeDiv = document.getElementById('expiredTime');
+                var resendForm = document.getElementById('resendForm');
 
                 var countdownInterval = setInterval(function () {
                     var now = new Date().getTime();
@@ -115,6 +207,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         resetForm.style.display = 'none'; // Hide the form
                         submitButton.disabled = true; // Disable the submit button
                         expiredTimeDiv.style.display = 'block'; // Show token expired message
+                        resendForm.style.display = 'block'; // Show resend button
                     } else {
                         var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
                         var seconds = Math.floor((distance % (1000 * 60)) / 1000);
@@ -126,4 +219,3 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </script>
 </body>
 </html>
-

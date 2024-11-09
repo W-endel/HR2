@@ -1,11 +1,6 @@
 <?php
 session_start();
 
-if (!isset($_SESSION['a_id'])) {
-    header("Location: ../main/adminlogin.php");
-    exit();
-}
-
 include '../db/db_conn.php';
 
 // Get form data with validation
@@ -35,7 +30,7 @@ if ($stmt === false) {
 $stmt->bind_param("ssssssi", $firstName, $lastName, $Email, $role, $phone_number, $address, $adminId);
 
 if ($stmt->execute()) {
-    echo json_encode(['success' => 'Information updated successfully!']);
+    echo json_encode(['success' => 'Admin information updated successfully!']);
 } else {
     echo json_encode(['error' => 'Error: ' . $stmt->error]);
 }

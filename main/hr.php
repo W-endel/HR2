@@ -6,11 +6,11 @@ if (!isset($_SESSION['a_id'])) {
     exit();
 }
 
-// Include the database connection
+// Include the database connection  
 include '../db/db_conn.php'; 
 
-// Fetch employee records where role is 'employee' and department is 'finance'
-$sql = "SELECT e_id, firstname, lastname, department, role, position FROM employee_register WHERE role = 'employee' AND department = 'Human Resources Department'";
+// Fetch employee records where role is 'employee' and department is 'hr'
+$sql = "SELECT e_id, firstname, lastname, role, position FROM employee_register WHERE role = 'employee' AND department = 'Human Resource Department'";
 $result = $conn->query($sql);
 
 // Fetch evaluations for this admin
@@ -38,58 +38,62 @@ $conn->close();
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Evaluation Table</title>
-    <link rel="stylesheet" href="../css/finance.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/styles.css" rel="stylesheet">
+    <link href="../css/star.css" rel="stylesheet">
 </head>
-<body>
-<body class="bg-secondary">
-    <h2 class="text-light">Human Resources Department Employee Evaluation</h2>
-        <div class="container">
-        <table class="table table-striped table-hover text-dark">
-            <thead>
-                <tr>
-                    <th>Full Name</th>
-                    <th>Position</th>
-                    <th>Role</th>
-                    <th>Evaluation</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (!empty($employees)): ?>
-                    <?php foreach ($employees as $employee): ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($employee['firstname'] . ' ' . $employee['lastname']); ?></td>
-                            <td><?php echo htmlspecialchars($employee['position']); ?></td>
-                            <td><?php echo htmlspecialchars($employee['role']); ?></td>
-                            <td>
-                                <button class="eval-btn" 
-                                    onclick="evaluateEmployee(<?php echo $employee['e_id']; ?>, '<?php echo htmlspecialchars($employee['firstname'] . ' ' . $employee['lastname']); ?>', '<?php echo htmlspecialchars($employee['position']); ?>')"
-                                    <?php echo in_array($employee['e_id'], $evaluatedEmployees) ? 'disabled' : ''; ?>>
-                                    <?php echo in_array($employee['e_id'], $evaluatedEmployees) ? 'Evaluated' : 'Evaluate'; ?>
-                                </button>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                <?php else: ?>
-                    <tr><td colspan="4">No employees found for evaluation in Operations Department.</td></tr>
-                <?php endif; ?>
-            </tbody>
-        </table>
+
+<body class="bg-dark text-light">
+    <div class="container mt-5">
+        <h2 class="text-center text-primary mb-4">Human Resource Department Employee Evaluation</h2>
+
+        <!-- Employee Evaluation Table -->
+        <div class="table-responsive">
+            <table class="table table-striped table-hover text-dark">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Full Name</th>
+                        <th>Position</th>
+                        <th>Role</th>
+                        <th>Evaluation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (!empty($employees)): ?>
+                        <?php foreach ($employees as $employee): ?>
+                            <tr>
+                                <td class="text-light"><?php echo htmlspecialchars($employee['firstname'] . ' ' . $employee['lastname']); ?></td>
+                                <td class="text-light"><?php echo htmlspecialchars($employee['position']); ?></td>
+                                <td class="text-light"><?php echo htmlspecialchars($employee['role']); ?></td>
+                                <td>
+                                    <button class="btn btn-success" 
+                                        onclick="evaluateEmployee(<?php echo $employee['e_id']; ?>, '<?php echo htmlspecialchars($employee['firstname'] . ' ' . $employee['lastname']); ?>', '<?php echo htmlspecialchars($employee['position']); ?>')"
+                                        <?php echo in_array($employee['e_id'], $evaluatedEmployees) ? 'disabled' : ''; ?>>
+                                        <?php echo in_array($employee['e_id'], $evaluatedEmployees) ? 'Evaluated' : 'Evaluate'; ?>
+                                    </button>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <tr><td class="text-light text-center" colspan="4">No employees found for evaluation in Human Resource Department.</td></tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- Evaluation Modal -->
-    <div class="modal" id="evaluationModal" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
+    <div class="modal fade" id="evaluationModal" tabindex="-1" role="dialog" aria-labelledby="evaluationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h6 id="employeeDetails"></h6>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="employeeDetails"></h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -113,8 +117,8 @@ $conn->close();
         let currentEmployeeName;  
         let currentEmployeePosition; 
 
-        function evaluateEmployee(employeeId, employeeName, employeePosition) {
-            currentEmployeeId = employeeId; 
+        function evaluateEmployee(e_id, employeeName, employeePosition) {
+            currentEmployeeId = e_id; 
             currentEmployeeName = employeeName; 
             currentEmployeePosition = employeePosition; 
 
@@ -206,61 +210,66 @@ $conn->close();
         }
 
         function submitEvaluation() {
-            const evaluations = [];
-            const questionsDiv = document.getElementById('questions');
+    const evaluations = [];
+    const questionsDiv = document.getElementById('questions');
 
-            questionsDiv.querySelectorAll('input[type="radio"]:checked').forEach(input => {
-                evaluations.push({
-                    question: input.name,  
-                    rating: input.value    
-                });
-            });
+    questionsDiv.querySelectorAll('input[type="radio"]:checked').forEach(input => {
+        evaluations.push({
+            question: input.name,  
+            rating: input.value    
+        });
+    });
 
-            const totalQuestions = questionsDiv.querySelectorAll('.star-rating').length;
+    const totalQuestions = questionsDiv.querySelectorAll('.star-rating').length;
 
-            if (evaluations.length !== totalQuestions) {
-                alert('Please complete the evaluation before submitting.');
-                return;
+    if (evaluations.length !== totalQuestions) {
+        alert('Please complete the evaluation before submitting.');
+        return;
+    }
+
+    const categoryAverages = {
+        QualityOfWork: calculateAverage('Quality of Work', evaluations),
+        CommunicationSkills: calculateAverage('Communication Skills', evaluations),
+        Teamwork: calculateAverage('Teamwork', evaluations),
+        Punctuality: calculateAverage('Punctuality', evaluations),
+        Initiative: calculateAverage('Initiative', evaluations)
+    };
+
+    console.log('Category Averages:', categoryAverages);
+
+    // Get admin ID from the hidden input field
+    const adminId = document.getElementById('a_id').value;
+
+    // Pass the department value (Human Resource Department in this case)
+    const department = 'Human Resource Department'; 
+
+    $.ajax({
+        type: 'POST',
+        url: '../db/submit_hr.php',
+        data: {
+            e_id: currentEmployeeId,
+            employeeName: currentEmployeeName,
+            employeePosition: currentEmployeePosition,
+            categoryAverages: categoryAverages,
+            adminId: adminId,
+            department: department  // Include department in the AJAX request
+        },
+        success: function (response) {
+            console.log(response); 
+            if (response === 'You have already evaluated this employee.') {
+                alert(response); 
+            } else {
+                $('#evaluationModal').modal('hide');
+                alert('Evaluation submitted successfully!');
             }
-
-            const categoryAverages = {
-                QualityOfWork: calculateAverage('Quality of Work', evaluations),
-                CommunicationSkills: calculateAverage('Communication Skills', evaluations),
-                Teamwork: calculateAverage('Teamwork', evaluations),
-                Punctuality: calculateAverage('Punctuality', evaluations),
-                Initiative: calculateAverage('Initiative', evaluations)
-            };
-
-            console.log('Category Averages:', categoryAverages);
-
-            // Get admin ID from the hidden input field
-            const adminId = document.getElementById('a_id').value;
-
-            $.ajax({
-                type: 'POST',
-                url: '../db/submit_hr.php',
-                data: {
-                    employeeId: currentEmployeeId,
-                    employeeName: currentEmployeeName,
-                    employeePosition: currentEmployeePosition,
-                    categoryAverages: categoryAverages,
-                    adminId: adminId
-                },
-                success: function (response) {
-                    console.log(response); 
-                    if (response === 'You have already evaluated this employee.') {
-                        alert(response); 
-                    } else {
-                        $('#evaluationModal').modal('hide');
-                        alert('Evaluation submitted successfully!');
-                    }
-                },
-                error: function (err) {
-                    console.error(err);
-                    alert('An error occurred while submitting the evaluation.');
-                }
-            });
+        },
+        error: function (err) {
+            console.error(err);
+            alert('An error occurred while submitting the evaluation.');
         }
+    });
+}
+
     </script>
 </body>
 
