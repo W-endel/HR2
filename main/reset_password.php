@@ -1,6 +1,6 @@
 <?php
 require '../db/db_conn.php'; // Ensure this is the correct file for the database connection
-require '../vendor/autoload.php'; // Ensure PHPMailer is properly loaded
+require '../phpmailer/vendor/autoload.php'; // Ensure PHPMailer is properly loaded
 
 $message = ''; // Initialize a variable to hold the message
 $expiresAt = null;

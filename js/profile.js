@@ -6,27 +6,6 @@ function confirmLogout(event) {
     }
 }
 
-//EDIT PFP
-document.getElementById('editPictureButton').addEventListener('click', function() {
-    const fileInput = document.getElementById('profilePictureInput');
-    fileInput.click(); // Simulate a click on the file input
-
-    fileInput.onchange = function() {
-        const file = fileInput.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                document.querySelector('.card-body img').src = e.target.result; // Update image preview
-            }
-            reader.readAsDataURL(file);
-        }
-    };
-});
-
-
-
-
-
 //EDIT INFORMATION
 let originalValues = []; // Declare this outside the event listener
 

@@ -75,7 +75,10 @@ $conn->close();
                         <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
                             <li class="nav-item dropdown text">
                                 <a class="nav-link dropdown-toggle text-light d-flex justify-content-center ms-4" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <img src="../img/defaultpfp.png" class="rounded-circle border border-dark" width="120" height="120" />
+                                    <img src="<?php echo (!empty($adminInfo['pfp']) && $adminInfo['pfp'] !== 'defaultpfp.png') 
+                                        ? htmlspecialchars($adminInfo['pfp']) 
+                                        : '../img/defaultpfp.png'; ?>" 
+                                        class="rounded-circle border border-light" width="120" height="120" alt="Profile Picture" />
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                                     <li><a class="dropdown-item" href="../main/profile.php">Profile</a></li>
@@ -196,11 +199,42 @@ $conn->close();
                                 <h5 class="card-title text-center text-light">Profile Picture</h5>
                             </div>
                             <div class="card-body text-center bg-dark">
-                                <img src="<?php echo !empty($adminInfo['pfp']) ? htmlspecialchars($adminInfo['pfp']) : '../img/defaultpfp.png'; ?>" class="img-fluid rounded-circle border border-light" width="200" height="200" alt="Profile Picture">
-                                <a href="javascript:void(0);" id="editPictureButton">
-                                    <i class="text-light me-0 fas fa-edit"></i>
-                                </a>
-                                <input type="file" id="profilePictureInput" name="profile_picture" style="display:none;" accept="image/*">
+                                 <img src="<?php echo (!empty($adminInfo['pfp']) && $adminInfo['pfp'] !== 'defaultpfp.png') 
+                                    ? htmlspecialchars($adminInfo['pfp']) 
+                                    : '../img/defaultpfp.png'; ?>" 
+                                    class="rounded-circle border border-light" width="200" height="200" alt="Profile Picture" />
+
+                                    <button class="btn btn-outline-light" type="button" id="editPictureDropdown" 
+                                            data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                
+                                <!-- Dropdown for editing the profile picture -->
+                                <div class="dropdown mt-3">
+                                    <ul class="dropdown-menu" aria-labelledby="editPictureDropdown">
+                                        <li>
+                                            <!-- Trigger file input for changing the profile picture -->
+                                            <a class="dropdown-item" href="javascript:void(0);" id="changePictureOption">Change Profile Picture</a>
+                                        </li>
+                                        <li>
+                                            <!-- Form to handle profile picture deletion -->
+                                        <form action="../main/delete_pfp.php" method="post">
+                                            <!-- Hidden input to send the admin_id to the backend -->
+                                            <input type="hidden" name="adminId" value="<?php echo $adminInfo['a_id']; ?>">
+                                            
+                                            <button class="dropdown-item" type="submit" onclick="return confirm('Are you sure you want to delete your profile picture?');">
+                                                Delete Profile Picture
+                                            </button>
+                                        </form>
+                                        </li>
+                                    </ul>
+                                </div>
+                                
+                                <!-- Hidden file input to upload a new profile picture -->
+                                <form action="../main/update_pfp.php" method="post" enctype="multipart/form-data" id="profilePictureForm" style="display:none;">
+                                    <input type="file" id="profilePictureInput" name="profile_picture" accept="image/*" onchange="document.getElementById('profilePictureForm').submit();">
+                                </form>
+
                                 <table class="table text-light mt-3 text-start">
                                     <tr>
                                         <td>Name:</td>
@@ -378,6 +412,11 @@ $conn->close();
         setCurrentTime();
         setInterval(setCurrentTime, 1000);
         //TIME END
+
+        // Trigger file input when user clicks on "Change Profile Picture"
+document.getElementById('changePictureOption').addEventListener('click', function() {
+    document.getElementById('profilePictureInput').click();
+});
 </script>
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'> </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>

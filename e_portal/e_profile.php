@@ -50,7 +50,7 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <meta name="description" content="User Profile Dashboard" />
     <meta name="author" content="Your Name" />
-    <title>User Profile - Dashboard</title>
+    <title>My Profile | HR2</title>
     <link href="../css/styles.css" rel="stylesheet" />
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
     <link href="../css/calendar.css" rel="stylesheet"/>
@@ -92,7 +92,10 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                         <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
                             <li class="nav-item dropdown text">
                                 <a class="nav-link dropdown-toggle text-light d-flex justify-content-center ms-4" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <img src="../img/defaultpfp.png" class="rounded-circle border border-dark" width="120" height="120" />
+                                    <img src="<?php echo (!empty($employeeInfo['pfp']) && $employeeInfo['pfp'] !== 'defaultpfp.png') 
+                                        ? htmlspecialchars($employeeInfo['pfp']) 
+                                        : '../img/defaultpfp.png'; ?>" 
+                                        class="rounded-circle border border-light" width="120" height="120" alt="Profile Picture" />
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                                     <li><a class="dropdown-item" href="../e_portal/e_profile.php">Profile</a></li>
@@ -108,7 +111,7 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                                         if ($employeeInfo) {
                                         echo htmlspecialchars($employeeInfo['firstname'] . ' ' . $employeeInfo['middlename'] . ' ' . $employeeInfo['lastname']);
                                         } else {
-                                        echo "Admin information not available.";
+                                        echo "Employee information not available.";
                                         }
                                     ?>
                                 </span>      
@@ -117,7 +120,7 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                                         if ($employeeInfo) {
                                         echo htmlspecialchars($employeeInfo['role']);
                                         } else {
-                                        echo "User information not available.";
+                                        echo "Employee information not available.";
                                         }
                                     ?>
                                 </span>
@@ -200,7 +203,7 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                         </div>
                 </div>   
                 <div class="container-fluid px-4 bg-black">
-                    <h1 class="big mt-4 text-light">My Profile</h1>
+                    <h1 class="big mb-4 text-light">My Profile</h1>
                     <div class="row">
                         <div class="col-md-4">
                             <div class="card mb-4 border border-light">
@@ -208,11 +211,42 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                                     <h5 class="card-title text-center">Profile Picture</h5>
                                 </div>
                                 <div class="card-body text-center bg-dark">
-                                    <img src="<?php echo !empty($employeeInfo['pfp']) ? htmlspecialchars($employeeInfo['pfp']) : '../img/defaultpfp.png'; ?>" class="img-fluid rounded-circle border border-light" width="200" height="200" alt="Profile Picture">
-                                    <a href="javascript:void(0);" id="editPictureButton">
-                                        <i class="text-light me-0 fas fa-edit"></i>
-                                    </a>
-                                    <input type="file" id="profilePictureInput" name="profile_picture" style="display:none;" accept="image/*">
+                                    <img src="<?php echo (!empty($employeeInfo['pfp']) && $employeeInfo['pfp'] !== 'defaultpfp.png') 
+                                        ? htmlspecialchars($employeeInfo['pfp']) 
+                                        : '../img/defaultpfp.png'; ?>" 
+                                        class="rounded-circle border border-light" width="200" height="200" alt="Profile Picture" />
+
+                                        <button class="btn btn-outline-light" type="button" id="editPictureDropdown" 
+                                                data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    
+                                    <!-- Dropdown for editing the profile picture -->
+                                    <div class="dropdown mt-3">
+                                        <ul class="dropdown-menu" aria-labelledby="editPictureDropdown">
+                                            <li>
+                                                <!-- Trigger file input for changing the profile picture -->
+                                                <a class="dropdown-item" href="javascript:void(0);" id="changePictureOption">Change Profile Picture</a>
+                                            </li>
+                                            <li>
+                                                <!-- Form to handle profile picture deletion -->
+                                            <form action="../e_portal/e_deletepfp.php" method="post">
+                                                <!-- Hidden input to send the admin_id to the backend -->
+                                                <input type="hidden" name="employeeId" value="<?php echo $employeeInfo['e_id']; ?>">
+                                                
+                                                <button class="dropdown-item" type="submit" onclick="return confirm('Are you sure you want to delete your profile picture?');">
+                                                    Delete Profile Picture
+                                                </button>
+                                            </form>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <!-- Hidden file input to upload a new profile picture -->
+                                    <form action="../e_portal/e_updatepfp.php" method="post" enctype="multipart/form-data" id="profilePictureForm" style="display:none;">
+                                        <input type="file" id="profilePictureInput" name="profile_picture" accept="image/*" onchange="document.getElementById('profilePictureForm').submit();">
+                                    </form>
+
                                     <table class="table text-light mt-3 text-start">
                                         <tr>
                                             <td>Name:</td>
@@ -238,14 +272,12 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                                             <td>Email:</td>
                                             <td><?php echo htmlspecialchars($employeeInfo['email']); ?></td>
                                         </tr>
-                                        
                                     </table>
-                                     <button type="button" class="btn btn-warning btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#qrCodeModal">Show QR Code</button>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-8">
-                            <div class="card mb-4 border border-light">
+                            <div class="card mb-2 border border-light">
                                 <div class="card-header bg-dark border-bottom border-1 border-warning text-light">
                                     <h5 class="card-title text-center">My Information</h5>
                                 </div>
@@ -294,8 +326,8 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                                             </div>
                                         </div>
                                         <div class="d-flex justify-content-between">
-                                            <button type="submit" class="btn btn-warning border border-light d-none">Save Changes</button>
-                                            <button type="button" id="editButton" class="btn btn-warning border border-light">Update Information</button>
+                                            <button type="submit" class="btn btn-primary d-none">Save Changes</button>
+                                            <button type="button" id="editButton" class="btn btn-primary">Update Information</button>
                                         </div>
                                     </form>
                                 </div>
@@ -412,6 +444,11 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
         setCurrentTime();
         setInterval(setCurrentTime, 1000);
         //TIME END
+
+         // Trigger file input when user clicks on "Change Profile Picture"
+        document.getElementById('changePictureOption').addEventListener('click', function() {
+            document.getElementById('profilePictureInput').click();
+        });
 </script>
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'> </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>

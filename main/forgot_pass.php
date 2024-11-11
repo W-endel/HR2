@@ -5,7 +5,7 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
-require '../vendor/autoload.php';
+require '../phpmailer/vendor/autoload.php';
 require '../db/db_conn.php'; // Ensure this includes your database connection
 
 $message = '';

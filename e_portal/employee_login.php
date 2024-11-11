@@ -83,7 +83,7 @@ $conn->close();
                                                 Password</label>
                                         </div>
                                         <div class="d-flex align-items-center justify-content-between mt-4 mb-0">
-                                            <a class="small" href="../main/password.php">Forgot Password?</a>
+                                            <a class="small" href="../e_portal/e_forgot_pass.php">Forgot Password?</a>
                                             <button type="submit" class="btn btn-primary">Login</button>
                                         </div>
                                     </form>
@@ -111,7 +111,6 @@ $conn->close();
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
         crossorigin="anonymous"></script>
-    <script src="../js/scripts.js"></script>
 </body>
 
 </html>

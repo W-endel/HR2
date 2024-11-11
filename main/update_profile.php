@@ -25,24 +25,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $phone_number = $_POST['phone_number'];
     $address = $_POST['address'];
 
-    // Handle profile picture upload
-    if (isset($_FILES['profile_picture']) && $_FILES['profile_picture']['error'] == UPLOAD_ERR_OK) {
-        $profilePicture = $_FILES['profile_picture'];
-        $targetDir = "../uploads/"; // Ensure this directory exists and is writable
-        $targetFile = $targetDir . basename($profilePicture['name']);
-        
-        // Move the uploaded file
-        if (move_uploaded_file($profilePicture['tmp_name'], $targetFile)) {
-            // Prepare to update the profile picture path in the database
-            $stmtPic = $conn->prepare("UPDATE registeradmin_db SET pfp = ? WHERE a_id = ?");
-            $stmtPic->bind_param("si", $targetFile, $userId);
-            $stmtPic->execute();
-            $stmtPic->close();
-        } else {
-            echo "Error uploading profile picture.";
-        }
-    }
-
     // Execute the statement to update user information
     if ($stmt->execute()) {
         // Set success message

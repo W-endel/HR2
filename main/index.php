@@ -89,7 +89,10 @@ $conn->close();
                         <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
                             <li class="nav-item dropdown text">
                                 <a class="nav-link dropdown-toggle text-light d-flex justify-content-center ms-4" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <img src="../img/defaultpfp.png" class="rounded-circle border border-dark" width="120" height="120" />
+                                    <img src="<?php echo (!empty($adminInfo['pfp']) && $adminInfo['pfp'] !== 'defaultpfp.png') 
+                                        ? htmlspecialchars($adminInfo['pfp']) 
+                                        : '../img/defaultpfp.png'; ?>" 
+                                        class="rounded-circle border border-light" width="120" height="120" alt="Profile Picture" />
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                                     <li><a class="dropdown-item" href="../main/profile.php">Profile</a></li>

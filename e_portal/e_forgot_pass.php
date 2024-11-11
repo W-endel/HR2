@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $mail->setFrom('microfinancehr2@gmail.com', 'Microfinance');
             $mail->addAddress($email);
             $mail->Subject = 'Password Reset Request';
-            $resetLink = "http://localhost/HR2/main/reset_password.php?token=$token";
+            $resetLink = "http://localhost/HR2/e_portal/e_reset_password.php?token=$token";
             $mail->isHTML(true);
 
             // Email body with inline styles
@@ -101,7 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <title>Change Password | HR2</title>
+    <title>Password Recovery</title>
     <link href="../css/styles.css" rel="stylesheet" />
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
 </head>
@@ -114,7 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <div class="col-lg-5">
                             <div class="card shadow-lg border-0 rounded-lg mt-3 bg-dark">
                                 <div class="card-header border-bottom border-1 border-warning">
-                                    <h3 class="text-center text-light font-weight-light my-4">Change Password</h3>
+                                    <h3 class="text-center text-light font-weight-light my-4">Password Recovery</h3>
                                     <?php
                                     // Display message if set in session
                                     if (isset($_SESSION['message'])) {
@@ -125,7 +125,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 </div>
                                 <div class="card-body">
                                     <div class="small mb-3 text-light">Enter your email address and we will send you a
-                                        link to your Gmail to change your password.</div>
+                                        link to your Gmail to reset your password.</div>
                                     <form method="POST" action="">
                                         <div class="form-floating mb-3">
                                             <input class="form-control" id="inputEmail" name="email" type="email" placeholder="name@example.com" required />
@@ -134,7 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                         <div class="d-flex align-items-center justify-content-end mt-4 mb-2">
                                             <button type="submit" class="btn btn-primary align-items-center w-100">Send Link</button>
                                         </div>
-                                        <div class="text-center mt-3 mb-2"> <a class="btn border-secondary w-100 text-light border border-1" href="../main/profile.php">Back</a></div>
+                                        <div class="text-center mt-3 mb-2"> <a class="btn border-secondary w-100 text-light border border-1" href="../e_portal/employee_login.php">Back</a></div>
                                     </form>
                                 </div>
                                 <div class="card-footer text-center border-top border-1 border-warning">
@@ -162,5 +162,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="/js/scripts.js"></script>
 </body>
 </html>

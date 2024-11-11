@@ -12,7 +12,7 @@ include '../db/db_conn.php';
 $adminId = $_SESSION['a_id'];
 
 // Fetch the admin's info
-$sql = "SELECT a_id, firstname, middlename, lastname, role FROM admin_register WHERE a_id = ?";
+$sql = "SELECT a_id, firstname, middlename, lastname, birthdate, email, role, position, department, phone_number, address, pfp FROM admin_register WHERE a_id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $adminId);
 $stmt->execute();
@@ -92,7 +92,10 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                         <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
                             <li class="nav-item dropdown text">
                                 <a class="nav-link dropdown-toggle text-light d-flex justify-content-center ms-4" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <img src="../img/defaultpfp.png" class="rounded-circle border border-dark" width="120" height="120" />
+                                    <img src="<?php echo (!empty($adminInfo['pfp']) && $adminInfo['pfp'] !== 'defaultpfp.png') 
+                                        ? htmlspecialchars($adminInfo['pfp']) 
+                                        : '../img/defaultpfp.png'; ?>" 
+                                        class="rounded-circle border border-light" width="120" height="120" alt="Profile Picture" />
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                                     <li><a class="dropdown-item" href="../main/profile.php">Profile</a></li>
@@ -226,7 +229,7 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                                     <div class="text-center mb-3">
                                         <span class="badge badge-primary mx-1">Total Employees: <?php echo $financeData['total']; ?></span>
                                         <span class="badge badge-success mx-1">Evaluated: <?php echo $financeData['evaluated']; ?></span>
-                                        <span class="badge badge-warning mx-1">Pending Evaluation: <?php echo $financeData['pending']; ?></span>
+                                        <span class="badge badge-warning mx-1">Pending: <?php echo $financeData['pending']; ?></span>
                                     </div>
                                     <div class="progress mb-2">
                                     <?php if ($financeData['total'] > 0): ?>
@@ -274,7 +277,7 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                                     <div class="text-center mb-3">
                                         <span class="badge badge-primary mx-1">Total Employees: <?php echo $hrData['total']; ?></span>
                                         <span class="badge badge-success mx-1">Evaluated: <?php echo $hrData['evaluated']; ?></span>
-                                        <span class="badge badge-warning mx-1">Pending Evaluation: <?php echo $hrData['pending']; ?></span>
+                                        <span class="badge badge-warning mx-1">Pending: <?php echo $hrData['pending']; ?></span>
                                     </div>
                                     <div class="progress mb-2">
                                     <?php if ($hrData['total'] > 0): ?>
@@ -322,7 +325,7 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                                     <div class="text-center mb-3">
                                         <span class="badge badge-primary mx-1">Total Employees: <?php echo $administrationData['total']; ?></span>
                                         <span class="badge badge-success mx-1">Evaluated: <?php echo $administrationData['evaluated']; ?></span>
-                                        <span class="badge badge-warning mx-1">Pending Evaluation: <?php echo $administrationData['pending']; ?></span>
+                                        <span class="badge badge-warning mx-1">Pending: <?php echo $administrationData['pending']; ?></span>
                                     </div>
                                     <div class="progress mb-2">
                                     <?php if ($administrationData['total'] > 0): ?>
@@ -370,7 +373,7 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                                     <div class="text-center mb-3">
                                         <span class="badge badge-primary mx-1">Total Employees: <?php echo $salesData['total']; ?></span>
                                         <span class="badge badge-success mx-1">Evaluated: <?php echo $salesData['evaluated']; ?></span>
-                                        <span class="badge badge-warning mx-1">Pending Evaluation: <?php echo $salesData['pending']; ?></span>
+                                        <span class="badge badge-warning mx-1">Pending: <?php echo $salesData['pending']; ?></span>
                                     </div>
                                     <div class="progress mb-2">
                                     <?php if ($salesData['total'] > 0): ?>
@@ -418,7 +421,7 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                                     <div class="text-center mb-3">
                                         <span class="badge badge-primary mx-1">Total Employees: <?php echo $creditData['total']; ?></span>
                                         <span class="badge badge-success mx-1">Evaluated: <?php echo $creditData['evaluated']; ?></span>
-                                        <span class="badge badge-warning mx-1">Pending Evaluation: <?php echo $creditData['pending']; ?></span>
+                                        <span class="badge badge-warning mx-1">Pending: <?php echo $creditData['pending']; ?></span>
                                     </div>
                                     <div class="progress mb-2">
                                     <?php if ($creditData['total'] > 0): ?>
@@ -466,7 +469,7 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                                     <div class="text-center mb-3">
                                         <span class="badge badge-primary mx-1">Total Employees: <?php echo $itData['total']; ?></span>
                                         <span class="badge badge-success mx-1">Evaluated: <?php echo $itData['evaluated']; ?></span>
-                                        <span class="badge badge-warning mx-1">Pending Evaluation: <?php echo $itData['pending']; ?></span>
+                                        <span class="badge badge-warning mx-1">Pending: <?php echo $itData['pending']; ?></span>
                                     </div>
                                     <div class="progress mb-2">
                                     <?php if ($itData['total'] > 0): ?>
