@@ -94,7 +94,7 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                                 <a class="nav-link dropdown-toggle text-light d-flex justify-content-center ms-4" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     <img src="<?php echo (!empty($employeeInfo['pfp']) && $employeeInfo['pfp'] !== 'defaultpfp.png') 
                                         ? htmlspecialchars($employeeInfo['pfp']) 
-                                        : '../img/defaultpfp.png'; ?>" 
+                                        : '../img/defaultpfp.jpg'; ?>" 
                                         class="rounded-circle border border-light" width="120" height="120" alt="Profile Picture" />
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
@@ -102,7 +102,7 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                                     <li><a class="dropdown-item" href="#!">Settings</a></li>
                                     <li><a class="dropdown-item" href="#!">Activity Log</a></li>
                                     <li><hr class="dropdown-divider" /></li>
-                                    <li><a class="dropdown-item" href="../e_portal/employeelogout.php">Logout</a></li>
+                                    <li><a class="dropdown-item" href="../e_portal/employeelogout.php" onclick="confirmLogout(event)">Logout</a></li>
                                 </ul>
                             </li>
                             <li class="nav-item text-light d-flex ms-3 flex-column align-items-center text-center">
@@ -213,7 +213,7 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                                 <div class="card-body text-center bg-dark">
                                     <img src="<?php echo (!empty($employeeInfo['pfp']) && $employeeInfo['pfp'] !== 'defaultpfp.png') 
                                         ? htmlspecialchars($employeeInfo['pfp']) 
-                                        : '../img/defaultpfp.png'; ?>" 
+                                        : '../img/defaultpfp.jpg'; ?>" 
                                         class="rounded-circle border border-light" width="200" height="200" alt="Profile Picture" />
 
                                         <button class="btn btn-outline-light" type="button" id="editPictureDropdown" 

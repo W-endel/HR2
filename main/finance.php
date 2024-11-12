@@ -57,7 +57,7 @@ $conn->close();
             <table class="table table-striped table-hover text-dark">
                 <thead class="thead-dark">
                     <tr>
-                        <th>Full Name</th>
+                        <th>Name</th>
                         <th>Position</th>
                         <th>Role</th>
                         <th>Evaluation</th>
