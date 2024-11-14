@@ -52,7 +52,7 @@ $conn->close();
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
 </head>
 
-<body class="sb-nav-fixed">
+<body class="sb-nav-fixed bg-black">
     <nav class="sb-topnav navbar navbar-expand navbar-dark border-bottom border-1 border-warning bg-dark">
         <a class="navbar-brand ps-3 text-muted" href="../main/index.php">Admin Portal</a>
         <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars text-light"></i></button>
@@ -98,7 +98,7 @@ $conn->close();
                                     <li><a class="dropdown-item" href="../main/profile.php">Profile</a></li>
                                     <li><a class="dropdown-item" href="#!">Settings</a></li>
                                     <li><a class="dropdown-item" href="#!">Activity Log</a></li>
-                                    <li><hr class="dropdown-divider" /></li>
+                                    <li><hr class="dropdown-divider border-light" /></li>
                                     <li><a class="dropdown-item" href="../main/adminlogout.php" onclick="confirmLogout(event)">Logout</a></li>
                                 </ul>
                             </li>

@@ -4,60 +4,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Selection</title>
-    <link href="../css/styles.css" rel="stylesheet">
+    <link rel="stylesheet" href="../css/styles.css"> <!-- External CSS file -->
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: black;
-            padding: 50px;
-        }
-        h1 {
-            margin-bottom: 30px;
-        }
-        .button-container {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-top: 170px;
-            justify-content: space-between;
-            margin-left: 250px;
-            margin-right: 250px;
-        }
-        .login-button {
-            padding: 20px 50px;
-            font-size: 18px;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-        .login-button:hover {
-            background-color: #0056b3;
-        }
-        .login-button.admin {
-            background-color: #28a745;
-        }
-        .login-button.admin:hover {
-            background-color: #218838;
-        }
-        .login-button.employee {
-            background-color: #ffc107;
-        }
-        .login-button.employee:hover {
-            background-color: #e0a800;
-        }
-    </style>
-</head>
-<body>
+    /* Make the buttons long */
+    #admin-login-btn, #employee-login-btn {
+        width: 700px; /* Set button width to 300px for both */
+        height: 100px;
+        padding: 15px 0; /* Increase vertical padding */
+        font-size: 40px;    
+        text-align: center;
+    }
+</style>
 
-    <h1 class="text-light">Login as?</h1>
-    <div class="button-container">
-        <button class="login-button admin mt-4" onclick="location.href='../main/adminlogin.php'">Admin Login</button>
-        <button class="login-button employee mt-4" onclick="location.href='../e_portal/employee_login.php'">Employee Login</button>
+</head>
+<body class="d-flex justify-content-center align-items-center vh-100 bg-black text-light">
+
+<div class="container-fluid">
+    <!-- Header text at the top -->
+    <div class="text-center mt-5">
+        <h1 class="display-4 mb-3">Select Your Login</h1>
+        <p class="lead">Please choose the appropriate login option to access your portal.</p>
     </div>
 
+    <!-- Center the buttons in the middle of the screen -->
+    <div class="d-flex justify-content-center align-items-center" style="height: 60vh;">
+        <div class="d-flex justify-content-center gap-4">
+            <a href="../main/adminlogin.php" class="btn btn-primary btn-lg px-5 py-3 rounded-pill shadow-lg" id="admin-login-btn">Admin Login</a>
+            <a href="../e_portal/employee_login.php" class="btn btn-primary btn-lg px-5 py-3 rounded-pill shadow-lg" id="employee-login-btn">Employee Login</a>
+        </div>
+    </div>
+</div>
+
+
+
+    </div>
+
+    <!-- Bootstrap JS (optional) -->
 </body>
 </html>

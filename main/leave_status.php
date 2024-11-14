@@ -127,6 +127,8 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
     <link href="../css/calendar.css" rel="stylesheet"/>
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 
 <body class="sb-nav-fixed bg-black">
@@ -348,13 +350,9 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
                                                         (htmlspecialchars($row['status']) === 'Pending' ? 'text-warning font-weight-bold' : ''));?>">
                                             <?php echo htmlspecialchars($row['status']); ?>
                                     </td>
-                                    <td>
-                                        <div class="col row no-gutters">
+                                    <td class="d-flex justify-content-between">
                                             <button class="btn btn-success btn-block" onclick="confirmAction('approve', <?php echo $row['leave_id']; ?>)">Approve</button>
-                                        </div>
-                                        <div class="col row no-gutters">
-                                                <button class="btn btn-danger btn-block" onclick="confirmAction('deny', <?php echo $row['leave_id']; ?>)">Deny</button>
-                                        </div>
+                                            <button class="btn btn-danger btn-block" onclick="confirmAction('deny', <?php echo $row['leave_id']; ?>)">Deny</button>
                                     </td>
                                 </tr>
                                 <?php endwhile; ?>
@@ -456,17 +454,106 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
         setInterval(setCurrentTime, 1000);
         //TIME END
 
-        //LEAVE STATUS ACTION
+        //LEAVE STATUS 
         function confirmAction(action, requestId) {
             let confirmation = confirm(`Are you sure you want to ${action} this leave request?`);
                 if (confirmation) {
                 window.location.href = `leave_status.php?leave_id=${requestId}&status=${action}`;
                 }
         }
-        //LEAVE STATUS ACTION END
+        //LEAVE STATUS END
+
+        $(document).ready(function() {
+    var table = $('.table').DataTable({
+        "paging": true,
+        "searching": true,
+        "ordering": true,
+        "info": true,
+        "autoWidth": false,
+        "responsive": true,
+        "language": {
+            "search": "Search:",  // Custom search label
+            "lengthMenu": "Display _MENU_ records per page",  // Custom display records label
+            "zeroRecords": "No matching records found",
+            "info": "Showing _START_ to _END_ of _TOTAL_ records",  // Custom info label
+            "infoEmpty": "No records available",
+            "infoFiltered": "(filtered from _MAX_ total records)"
+        },
+        "lengthMenu": [
+            [5, 10, 25, 50, -1],
+            ['5', '10', '25', '50', 'All']
+        ]
+    });
+
+    // Apply styles to the "Display X records per page" text
+    $('.dataTables_length label').css({
+        'color': '#007bff',  // Change text color to blue
+        'font-weight': 'bold'  // Make the text bold
+    });
+
+    // Apply styles to the "Search:" label
+    $('.dataTables_filter label').css({
+        'color': '#007bff',  // Change text color to blue
+        'font-weight': 'bold'  // Make the text bold
+    });
+
+    // Apply styles to the "Showing X to X of X records" text
+    $('.dataTables_info').css({
+        'color': '#007bff',  // Change text color to blue
+        'font-weight': 'bold'  // Make the text bold
+    });
+
+    // Apply styles to the "Search" input box
+    $('.dataTables_filter input').css({
+        'background-color': '#343a40',  // Dark background
+        'color': 'white',  // White text
+        'border': '1px solid #ddd'  // Light border
+    });
+
+    // Apply styles to the "Display records per page" select dropdown
+    $('.dataTables_length select').css({
+        'background-color': '#343a40',  // Dark background
+        'color': 'white',  // White text
+        'border': '1px solid #ddd'  // Light border
+    });
+
+        function applyPaginationStyles() {
+        // Pagination button styles
+        $('.dataTables_paginate .paginate_button').css({
+            'background-color': 'white',
+            'color': 'red',
+            'border': '1px solid #ddd'
+        });
+
+        // Hover state for pagination buttons
+        $('.dataTables_paginate .paginate_button:hover').css({
+            'background-color': 'blue',
+            'color': 'white',
+            'border': '2px solid #007bff'
+        });
+
+        // Active page button styles
+        $('.dataTables_paginate .paginate_button.current').css({
+            'background-color': 'white',
+            'color': 'green',
+            'border': '2px solid #28a745'
+        });
+    }
+
+    // Apply the styles immediately after the table is drawn (including pagination)
+    table.on('draw', function() {
+        applyPaginationStyles();  // Apply styles after each page redraw
+    });
+
+    // Apply styles on initial load
+    applyPaginationStyles();
+});
+
+
 </script>
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'> </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="../js/admin.js"></script>
 </body>
 </html>

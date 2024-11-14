@@ -25,6 +25,13 @@ if ($password !== $confirm_password) {
     exit();
 }
 
+// Password strength validation
+$pattern = '/^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/';
+if (!preg_match($pattern, $password)) {
+    echo json_encode(['error' => 'Password must be at least 8 characters long and contain at least one number, special character, uppercase and lowercase letter.']);
+    exit();
+}
+
 // Check if the email already exists
 $sql = "SELECT COUNT(*) FROM admin_register WHERE email = ?";
 $stmt = $conn->prepare($sql);

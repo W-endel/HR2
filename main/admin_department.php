@@ -126,7 +126,7 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                                 </span>
                             </li>
                         </ul>
-                        <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-warning mt-3"><?php echo $adminId ?></div>
+                        <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-warning mt-3">Admin Dashboard</div>
                         <a class="nav-link text-light" href="../main/index.php">
                             <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
                             Dashboard

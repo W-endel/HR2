@@ -50,7 +50,7 @@ $conn->close();
 
 <body class="bg-dark text-light">
     <div class="container mt-5">
-        <h2 class="text-center text-primary mb-4">Human Resource Department Employee Evaluation</h2>
+        <h2 class="text-center text-primary mb-4">Human Resource Department Evaluation | HR2</h2>
 
         <!-- Employee Evaluation Table -->
         <div class="table-responsive">

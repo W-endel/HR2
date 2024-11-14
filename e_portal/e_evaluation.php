@@ -199,7 +199,7 @@ $conn->close();
                 <h1 class="big mb-4 text-light">Evaluation Ratings</h1>
                 <div class="container" id="calendarContainer" 
                     style="position: fixed; top: 9%; right: 0; z-index: 1050; 
-                    width: 700px; display: none;">
+                    width: 700px; height: 300px; display: none;">
                         <div class="row">
                             <div class="col-md-12">
                                 <div id="calendar" class="p-2"></div>
@@ -210,7 +210,7 @@ $conn->close();
                     <p>Total number of evaluations: <?php echo htmlspecialchars($evaluation['total_evaluations']); ?></p>
                     
                     <div class="bg-dark bordered">
-                        <canvas id="evaluationChart" width="600" height="400"></canvas>
+                        <canvas id="evaluationChart" width="700" height="400"></canvas>
                     </div>
 
                     <table class="table table-bordered mt-3 text-light table-dark">

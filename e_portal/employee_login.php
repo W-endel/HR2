@@ -45,26 +45,25 @@ $conn->close();
     <link href="../css/styles.css" rel="stylesheet" />
 </head>
 
-<body class="bg-dark">
+<body class="bg-black">
     <div id="layoutAuthentication">
         <div id="layoutAuthentication_content">
             <main>
-                <div class="container">
+                <div class="container mt-5">
                     <div class="row justify-content-center">
                         <div class="col-lg-5">
-                            <div class="card shadow-lg border-0 rounded-lg mt-5">
-                                <div class="card-header">
-                                    <h3 class="text-center font-weight-light my-4">Employee Login</h3>
+                            <div class="card shadow-lg border-0 rounded-lg mt-5 mb-2 bg-dark">
+                                <div class="card-header border-bottom border-1 border-warning"> 
+                                    <h3 class="text-center text-light font-weight-light mt-2 mb-4">Employee Login</h3>
                                     <i class="fa-solid fa-house"></i>
-                                    <!-- Display error message if it exists -->
                                     <?php if (isset($_GET['error'])): ?>
-                                        <div class="alert alert-danger text-center" role="alert">
+                                        <div class="alert alert-danger text-center my-2" role="alert">
                                             <?php echo htmlspecialchars(urldecode($_GET['error'])); ?>
                                         </div>
                                     <?php endif; ?>
                                 </div>
-                                <div class="card-body">
-                                    <form action="../e_portal/employeelogin_conn.php" method="post">
+                                <div class="card-body bg-dark">
+                                    <form action="../db/employeelogin_conn.php" method="post">
                                         <div class="form-floating mb-3">
                                             <input class="form-control" id="inputEmail" type="email" name="email"
                                                 placeholder="name@example.com" required />  
@@ -76,17 +75,23 @@ $conn->close();
                                                 placeholder="Password" required />
                                                 <label for="inputPassword">Password:</label>
                                         </div>
-                                        <div class="form-check mb-3">
-                                            <input class="form-check-input" id="inputRememberPassword" type="checkbox"
-                                                name="remember" value="" />
-                                            <label class="form-check-label" for="inputRememberPassword">Remember
-                                                Password</label>
+                                        <div class="d-flex justify-content-between align-items-center mt-1 mb-2">
+                                            <div class="d-flex align-items-center">
+                                                <input class="form-check-input" id="inputRememberPassword" type="checkbox" name="remember" value="" />
+                                                <label class="form-check-label text-light ms-2" for="inputRememberPassword">Remember Password</label>
+                                            </div>
+                                                <a class="small text-info" href="../e_portal/e_forgot_pass.php">Forgot Password?</a>
                                         </div>
-                                        <div class="d-flex align-items-center justify-content-between mt-4 mb-0">
-                                            <a class="small" href="../e_portal/e_forgot_pass.php">Forgot Password?</a>
-                                            <button type="submit" class="btn btn-primary">Login</button>
+                                        <div class="d-flex align-items-center justify-content-between mt-2 mb-2">
+                                            <button type="submit" class="btn btn-primary w-100">Login</button>
+                                        </div>
+                                        <div class="text-center">
+                                            <div class="text-center mt-3 mb-0"> <a class="btn border-secondary w-100 text-light border border-1" href="../main/front.php">Back</a></div>
                                         </div>
                                     </form>
+                                </div>
+                                <div class="card-footer text-center border-top border-1 border-warning">
+                                    <div class="text-center text-muted">Human Resource 2</a></div>
                                 </div>
                             </div>
                         </div>
@@ -95,7 +100,7 @@ $conn->close();
             </main>
         </div>
         <div id="layoutAuthentication_footer">
-            <footer class="py-4 bg-light mt-auto">
+            <footer class="py-4 bg-dark mt-auto">
                 <div class="container-fluid px-4">
                     <div class="d-flex align-items-center justify-content-between small">
                         <div class="text-muted">Copyright &copy; Your Website 2023</div>

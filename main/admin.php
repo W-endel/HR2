@@ -229,7 +229,7 @@ $result = $conn->query($sql);
                     </tbody>
                 </table>
                 <div class="d-flex justify-content-center mt-4 mb-0">
-                    <a class="btn btn-primary text-light" href="../main/registeradmin.php">Create Employee</a>
+                    <a class="btn btn-primary text-light" href="../main/registeradmin.php">Create Admin</a>
                 </div>
 
                 <div class="modal fade" id="updateEmployeeModal" tabindex="-1" aria-labelledby="updateEmployeeModalLabel" aria-hidden="true">
@@ -394,7 +394,7 @@ $result = $conn->query($sql);
         function deleteEmployee(id) {
             if (confirm('Are you sure you want to delete this employee?')) {
                 const formData = new FormData();
-                formData.append('e_id', id);
+                formData.append('a_id', id);
 
                 fetch('../db/delete_admin.php', {
                     method: 'POST',
