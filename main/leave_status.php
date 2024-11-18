@@ -17,11 +17,12 @@ $stmt->execute();
 $result = $stmt->get_result();
 $adminInfo = $result->fetch_assoc();
 
-// Fetch all leave requests (always fetch this for displaying the table)
+// Fetch all pending leave requests
 $sql = "SELECT lr.leave_id, e.e_id, e.firstname, e.lastname, e.available_leaves, lr.start_date, lr.end_date, lr.leave_type, lr.status
         FROM leave_requests lr
         JOIN employee_register e ON lr.e_id = e.e_id
-        WHERE lr.status = 'Pending'";
+        WHERE lr.status = 'Pending'";  // Add this WHERE clause to only fetch pending requests
+
 
 $stmt = $conn->prepare($sql);
 $stmt->execute();
@@ -275,7 +276,7 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
     <div id="layoutSidenav_content">
         <main>
             <div class="container-fluid position-relative px-4">
-                <h1 class="mb-4 text-light">All Leave Requests</h1>
+                <h1 class="mb-4 text-light">Leave Requests</h1>
                 <div class="container" id="calendarContainer" 
                     style="position: fixed; top: 9%; right: 0; z-index: 1050; 
                     width: 700px; display: none;">
@@ -285,25 +286,28 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
                             </div>
                         </div>
                 </div>                     
-                <div class="container">
+                <div class="container py-4">
                     <?php if (isset($_GET['status'])): ?>
-                        <?php if ($_GET['status'] === 'success'): ?>
-                            <div class="alert alert-success" role="alert">
+                        <div id="status-alert" class="alert 
+                            <?php if ($_GET['status'] === 'success'): ?>
+                                alert-success
+                            <?php elseif ($_GET['status'] === 'error'): ?>
+                                alert-danger
+                            <?php elseif ($_GET['status'] === 'not_exist'): ?>
+                                alert-warning
+                            <?php elseif ($_GET['status'] === 'insufficient_balance'): ?>
+                                alert-warning
+                            <?php endif; ?>" role="alert">
+                            <?php if ($_GET['status'] === 'success'): ?>
                                 Leave request status updated successfully.
-                            </div>
-                        <?php elseif ($_GET['status'] === 'error'): ?>
-                            <div class="alert alert-danger" role="alert">
+                            <?php elseif ($_GET['status'] === 'error'): ?>
                                 Error updating leave request status. Please try again.
-                            </div>
-                        <?php elseif ($_GET['status'] === 'not_exist'): ?>
-                            <div class="alert alert-warning" role="alert">
+                            <?php elseif ($_GET['status'] === 'not_exist'): ?>
                                 The leave request ID does not exist or could not be found.
-                            </div>
-                        <?php elseif ($_GET['status'] === 'insufficient_balance'): ?>
-                            <div class="alert alert-warning" role="alert">
+                            <?php elseif ($_GET['status'] === 'insufficient_balance'): ?>
                                 Insufficient leave balance. The request cannot be approved.
-                            </div>
-                        <?php endif; ?>
+                            <?php endif; ?>
+                        </div>
                     <?php endif; ?>
 
                     <table class="table table-bordered mt-3 text-center text-light table-dark">
@@ -316,7 +320,6 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
                                 <th>Duration of Leave</th>
                                 <th>Deduction Leave</th>
                                 <th>Reason</th>
-                                <th>Status</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -344,12 +347,8 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
                                     <td><?php echo htmlspecialchars($row['leave_id']); ?></td>
                                     <td><?php echo htmlspecialchars($row['available_leaves']); ?></td>
                                     <td><?php echo htmlspecialchars($row['start_date'] . ' / ' . $row['end_date']); ?></td>
-                                    <td><?php echo htmlspecialchars($leave_days); ?></td>
+                                    <td><?php echo htmlspecialchars($leave_days); ?> day/s</td>
                                     <td><?php echo htmlspecialchars($row['leave_type']); ?></td>
-                                    <td class="<?php echo htmlspecialchars($row['status']) === 'Approved' ? 'text-success font-weight-bold' : (htmlspecialchars($row['status']) === 'Denied' ? 'text-danger font-weight-bold' : 
-                                                        (htmlspecialchars($row['status']) === 'Pending' ? 'text-warning font-weight-bold' : ''));?>">
-                                            <?php echo htmlspecialchars($row['status']); ?>
-                                    </td>
                                     <td class="d-flex justify-content-between">
                                             <button class="btn btn-success btn-block" onclick="confirmAction('approve', <?php echo $row['leave_id']; ?>)">Approve</button>
                                             <button class="btn btn-danger btn-block" onclick="confirmAction('deny', <?php echo $row['leave_id']; ?>)">Deny</button>
@@ -521,22 +520,14 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
         // Pagination button styles
         $('.dataTables_paginate .paginate_button').css({
             'background-color': 'white',
-            'color': 'red',
+            'color': 'black',
             'border': '1px solid #ddd'
-        });
-
-        // Hover state for pagination buttons
-        $('.dataTables_paginate .paginate_button:hover').css({
-            'background-color': 'blue',
-            'color': 'white',
-            'border': '2px solid #007bff'
         });
 
         // Active page button styles
         $('.dataTables_paginate .paginate_button.current').css({
             'background-color': 'white',
-            'color': 'green',
-            'border': '2px solid #28a745'
+            'border': '2px solid red'
         });
     }
 
@@ -548,6 +539,20 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
     // Apply styles on initial load
     applyPaginationStyles();
 });
+
+
+    // Automatically hide the alert after 10 seconds (10,000 milliseconds)
+    setTimeout(function() {
+        var alertElement = document.getElementById('status-alert');
+        if (alertElement) {
+            alertElement.style.transition = "opacity 1s ease"; // Add transition for smooth fade-out
+            alertElement.style.opacity = 0; // Set the opacity to 0 (fade out)
+            
+            setTimeout(function() {
+                alertElement.remove(); // Remove the element from the DOM after fade-out
+            }, 1000); // Wait 1 second after fade-out to remove the element completely
+        }
+    }, 5000); // 10 seconds delay
 
 
 </script>

@@ -5,6 +5,7 @@ require '../phpmailer/vendor/autoload.php'; // Ensure PHPMailer is properly load
 $message = ''; // Initialize a variable to hold the message
 $expiresAt = null;
 $resetSuccessful = false; // Track success of the reset
+$formError = ''; // Initialize a variable to store form validation errors
 
 if (isset($_GET['token'])) {
     $token = $_GET['token'];
@@ -39,8 +40,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $newPassword = $_POST['new_password'];
             $confirmNewPassword = $_POST['confirm_new_password'];
             
-            // Check if passwords match
-            if ($newPassword === $confirmNewPassword) {
+            // Validate password strength (at least 8 characters, contains a number, an uppercase, and a special character)
+            if (!preg_match('/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/', $newPassword)) {
+                $formError = "Password must be at least 8 characters long, include an uppercase letter, a number, and a special character.";
+            } elseif ($newPassword !== $confirmNewPassword) {
+                $formError = "Passwords do not match.";
+            } else {
                 // Proceed with password update
                 $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
                 
@@ -51,8 +56,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
                 $message = "<div class='alert alert-success text-center'>Password reset successfully.</div>";
                 $resetSuccessful = true; // Set to true after successful reset
-            } else {
-                $message = "<div class='alert alert-danger text-center'>Passwords do not match.</div>";
             }
         }
     }
@@ -148,13 +151,16 @@ if (isset($_POST['resend_token'])) {
                 <div class="card shadow-lg border-0 rounded-lg mt-5 bg-dark">
                     <div class="card-header border-bottom border-1 border-warning">
                         <h3 class="text-center text-light font-weight-light my-4">Reset Your Password</h3>
-                        <?php if (!empty($message)) echo $message; ?>
+                            <?php if (!empty($message)) echo $message; ?>
+                            <?php if (!empty($formError)): ?>
+                                <div class="alert alert-danger text-center"><?php echo $formError; ?></div>
+                            <?php endif; ?>
                     </div>
                     <div class="card-body">
                         <?php if (!$resetSuccessful): ?>
                             <p class="small mb-3 text-light">Token expires in: <span id="countdown"></span></p>
                             <p class="small text-info text-center">Change your password immediately before the token expires.</p>
-                            <form method="POST" action="" onsubmit="return validatePasswords()" id="resetForm">
+                            <form method="POST" action="" id="resetForm">
                                 <input type="hidden" name="token" value="<?php echo htmlspecialchars($token); ?>" />
 
                                 <div class="form-floating mb-3">
@@ -185,7 +191,6 @@ if (isset($_POST['resend_token'])) {
             </div>
         </div>
     </div>
-
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             var resetSuccessful = <?php echo json_encode($resetSuccessful); ?>;

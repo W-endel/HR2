@@ -168,7 +168,8 @@ $conn->close();
                         </a>
                         <div class="collapse" id="collapseSR" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link text-light" href="../main/rating.php">View Ratings</a>
+                                <a class="nav-link text-light" href="../main/award.php">View Ratings</a>
+                                <a class="nav-link text-light" href="../main/recognition.php">View Recognition</a>
                             </nav>
                         </div>
                         <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-warning">Account Management</div>

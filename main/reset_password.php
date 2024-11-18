@@ -192,7 +192,6 @@ if (isset($_POST['resend_token'])) {
         </div>
     </div>
     <script>
-        +
         document.addEventListener('DOMContentLoaded', function () {
             var resetSuccessful = <?php echo json_encode($resetSuccessful); ?>;
             if (!resetSuccessful) {

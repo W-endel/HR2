@@ -58,7 +58,7 @@ $conn->close();
                                     <h3 class="text-center text-light font-weight-light mt-2 mb-4">Admin Login</h3>
                                     <i class="fa-solid fa-house"></i>
                                     <?php if (isset($_GET['error'])): ?>
-                                        <div class="alert alert-danger text-center my-2" role="alert">
+                                        <div id="error-alert" class="alert alert-danger text-center my-2" role="alert">
                                             <?php echo htmlspecialchars(urldecode($_GET['error'])); ?>
                                         </div>
                                     <?php endif; ?>
@@ -115,7 +115,22 @@ $conn->close();
             </footer>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
+
+<script>
+    // Automatically hide the error alert after 10 seconds (10,000 milliseconds)
+    setTimeout(function() {
+        var errorAlertElement = document.getElementById('error-alert');
+        if (errorAlertElement) {
+            errorAlertElement.style.transition = "opacity 1s ease"; // Smooth fade-out
+            errorAlertElement.style.opacity = 0; // Set the opacity to 0 (fade out)
+
+            setTimeout(function() {
+                errorAlertElement.remove(); // Remove the element from the DOM after fade-out
+            }, 1000); // Wait 1 second after fade-out to remove the element completely
+        }
+    }, 10000); // 10 seconds delay
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
         crossorigin="anonymous"></script>
 </body>
 
