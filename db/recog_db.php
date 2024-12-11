@@ -16,7 +16,7 @@ include '../db/db_conn.php';
 
         if ($stmt->execute()) {
             echo '<div class="alert alert-success" role="alert">Recognition submitted successfully!</div>';
-        header("Location: ../main/recognitions.php");
+        header("Location: ../admin/recognitions.php");
         exit();
         } else {
             echo '<div class="alert alert-danger" role="alert">Error: ' . $stmt->error . '</div>';

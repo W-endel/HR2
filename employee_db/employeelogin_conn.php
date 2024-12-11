@@ -10,7 +10,7 @@ $inputPassword = isset($_POST['password']) ? trim($_POST['password']) : '';
 // Basic validation
 if (empty($inputEmail) || empty($inputPassword)) {
     $error = urlencode("Email and password fields are required.");
-    header("Location: ../admin/login.php?error=$error");
+    header("Location: ../employee/login.php?error=$error");
     exit();
 }
 
@@ -18,12 +18,12 @@ if (empty($inputEmail) || empty($inputPassword)) {
 $passwordPattern = "/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[\W_]).+$/";
 if (!preg_match($passwordPattern, $inputPassword)) {
     $error = urlencode("Password must be at least 8 characters long and contain at least one number, special character, uppercase and lowercase letter.");
-    header("Location: ../admin/login.php?error=$error");
+    header("Location: ../employee/login.php?error=$error");
     exit();
 }
 
 // Prepare and execute SQL statement
-$sql = "SELECT a_id, password FROM admin_register WHERE email = ?";
+$sql = "SELECT e_id, password FROM employee_register WHERE email = ?";
 $stmt = $conn->prepare($sql);
 
 if ($stmt === false) {
@@ -35,28 +35,27 @@ $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows > 0) {
-    $adminData = $result->fetch_assoc(); // Fetch admin data
+    $employeeData = $result->fetch_assoc();
     
     // Verify the password
-    if (password_verify($inputPassword, $adminData['password'])) {
-        // Set session variables for the logged-in admin
-        $_SESSION['a_id'] = $adminData['a_id']; // Store admin ID in session
+    if (password_verify($inputPassword, $employeeData['password'])) {
+        $_SESSION['e_id'] = $employeeData['e_id']; 
         $stmt->close();
         $conn->close();
-        header("Location: ../admin/dashboard.php"); // Redirect to main dashboard
+        header("Location: ../employee/dashboard.php"); // Redirect to main dashboard
         exit();
     } else {
         $error = urlencode("Invalid email or password.");
         $stmt->close();
         $conn->close();
-        header("Location: ../admin/login.php?error=$error");
+        header("Location: ../employee/login.php?error=$error");
         exit();
     }
 } else {
     $error = urlencode("Invalid email or password.");
     $stmt->close();
     $conn->close();
-    header("Location: ../admin/login.php?error=$error");
+    header("Location: ../employee/login.php?error=$error");
     exit();
 }
 ?>

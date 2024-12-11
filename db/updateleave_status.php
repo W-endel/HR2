@@ -23,24 +23,24 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
     if ($stmt->execute()) {
         if ($stmt->affected_rows > 0) {
             // Redirect to the main page with a success message
-            header("Location: ../main/leave_status.php?status=success");
+            header("Location: ../admin/leave_status.php?status=success");
         } else {
     // No rows affected (request_id may not exist)
-    header("Location: ../main/leave_status.php?status=not_exist");
+    header("Location: ../adminleave_status.php?status=not_exist");
     exit;  // Stop further execution after header redirection
 }
 
     } else {
         // Log SQL error for debugging
         error_log("SQL Error: " . $stmt->error);
-        header("Location: ../main/leave_status.php?status=error");
+        header("Location: ../admin/leave_status.php?status=error");
     }
 
     // Close the statement
     $stmt->close();
 } else {
     // Redirect if parameters are missing
-    header("Location: ../main/leave_status.php?status=error");
+    header("Location: ../admin/leave_status.php?status=error");
 }
 
 // Close the database connection

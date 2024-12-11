@@ -6,15 +6,6 @@
     // 
 // Scripts
 // 
-
-//FOR LOGOUT CONFIRMATION
-function confirmLogout(event) {
-    event.preventDefault();
-    if (confirm("Are you sure you want to log out?")) {
-        window.location.href = "../e_portal/employee_login.php";
-    }
-}
-
 window.addEventListener('DOMContentLoaded', event => {
 
     // Toggle the side navigation
