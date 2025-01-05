@@ -1,11 +1,11 @@
 <?php
 session_start();
 if (!isset($_SESSION['e_id']))  {
-    header("Location: ../employee/login.php"); // Redirect to login if not logged in
+    header("Location: ../../employee/login.php"); // Redirect to login if not logged in
     exit();
 }
 
-include '../db/db_conn.php';
+include '../../db/db_conn.php';
 
 // Fetch user info
 $employeeId = $_SESSION['e_id'];
@@ -18,7 +18,7 @@ $employeeInfo = $result->fetch_assoc();
 $stmt->close();
 $conn->close();
 
-$profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['profile_picture'] : '../img/defaultpfp.png';
+$profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['profile_picture'] : '../../img/defaultpfp.png';
 ?>
 
 <!DOCTYPE html>
@@ -30,15 +30,15 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
     <meta name="description" content="" />
     <meta name="author" content="" />
     <title>Employee Dashboard | HR2</title>
-    <link href="../css/styles.css" rel="stylesheet" />
-    <link href="../css/calendar.css" rel="stylesheet"/>
+    <link href="../../css/styles.css" rel="stylesheet" />
+    <link href="../../css/calendar.css" rel="stylesheet"/>
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
 </head>
 
 <body class="sb-nav-fixed bg-black">
     <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark border-bottom border-1 border-warning">
-        <a class="navbar-brand ps-3 text-muted" href="../employee/dashboard.php">Employee Portal</a>
+        <a class="navbar-brand ps-3 text-muted" href="../../employee/supervisor/dashboard.php">Employee Portal</a>
         <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars text-light"></i></button>
         <div class="d-flex ms-auto me-0 me-md-3 my-2 my-md-0 align-items-center">
             <div class="text-light me-3 p-2 rounded shadow-sm bg-gradient" id="currentTimeContainer" 
@@ -73,15 +73,15 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
                                 <a class="nav-link dropdown-toggle text-light d-flex justify-content-center ms-4" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     <img src="<?php echo (!empty($employeeInfo['pfp']) && $employeeInfo['pfp'] !== 'defaultpfp.png') 
                                         ? htmlspecialchars($employeeInfo['pfp']) 
-                                        : '../img/defaultpfp.jpg'; ?>" 
-                                        class="rounded-circle border border-light" width="120" height="120" alt="Profile Picture" />
+                                        : '../../img/defaultpfp.jpg'; ?>" 
+                                        class="rounded-circle border border-light" width="120" height="120" alt="" />
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                    <li><a class="dropdown-item" href="../employee/profile.php">Profile</a></li>
+                                    <li><a class="dropdown-item" href="../../employee/supervisor/profile.php">Profile</a></li>
                                     <li><a class="dropdown-item" href="#!">Settings</a></li>
                                     <li><a class="dropdown-item" href="#!">Activity Log</a></li>
                                     <li><hr class="dropdown-divider" /></li>
-                                    <li><a class="dropdown-item" href="../employee/logout.php" onclick="confirmLogout(event)">Logout</a></li>
+                                    <li><a class="dropdown-item" href="../../employee/supervisor/logout.php" onclick="confirmLogout(event)">Logout</a></li>
                                 </ul>
                             </li>
                             <li class="nav-item text-light d-flex ms-3 flex-column align-items-center text-center">
@@ -94,7 +94,7 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
                             </li>
                         </ul>
                         <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-warning mt-3">Employee Dashboard</div>
-                        <a class="nav-link text-light" href="../employee/dashboard.php">
+                        <a class="nav-link text-light" href="../../employee/supervisor/dashboard.php">
                             <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
                             Dashboard
                         </a>           
@@ -105,9 +105,8 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
                         </a>
                         <div class="collapse" id="collapseTAD" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link text-light" href="../employee/attendance.php">Attendance Scanner</a>
+                                <a class="nav-link text-light" href="../../employee/supervisor/attendance.php">Attendance Scanner</a>
                                 <a class="nav-link text-light" href="">View Attendance Record</a>
-                                <a class="nav-link text-light" href="../admin/timeout.php">out</a>
                             </nav>
                         </div>
                         <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLM" aria-expanded="false" aria-controls="collapseLM">
@@ -117,8 +116,8 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
                         </a>
                         <div class="collapse" id="collapseLM" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link text-light" href="../employee/leave_request.php">File Leave Request</a>
-                                <a class="nav-link text-light" href="../employee/leave_balance.php">View Remaining Leave</a>
+                                <a class="nav-link text-light" href="../../employee/supervisor/leave_file.php">File Leave</a>
+                                <a class="nav-link text-light" href="../../employee/supervisor/leave_request.php">Leave Request</a>
                             </nav>
                         </div>
                         <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePM" aria-expanded="false" aria-controls="collapsePM">
@@ -128,7 +127,7 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
                         </a>
                         <div class="collapse" id="collapsePM" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link text-light" href="../employee/evaluation.php">Evaluation</a>
+                                <a class="nav-link text-light" href="../../employee/supervisor/evaluation.php">Evaluation</a>
                             </nav>
                         </div>
                         <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseSR" aria-expanded="false" aria-controls="collapseSR">
@@ -221,7 +220,7 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
                     },
                     height: 440,  // Set the height of the calendar to make it small
                     events: {
-                        url: '../db/holiday.php',  // Endpoint for fetching events
+                        url: '../../db/holiday.php',  // Endpoint for fetching events
                         method: 'GET',
                         failure: function() {
                             alert('There was an error fetching events!');
@@ -285,8 +284,8 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
             setInterval(setCurrentTime, 1000);
     </script>
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'> </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-    <script src="../js/employee.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../js/employee.js"></script>
 
 
 

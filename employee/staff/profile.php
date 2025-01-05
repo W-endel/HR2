@@ -1,10 +1,10 @@
 <?php
 session_start();
-include '../db/db_conn.php';
-include '../phpqrcode/qrlib.php'; // Include phpqrcode library
+include '../../db/db_conn.php';
+include '../../phpqrcode/qrlib.php'; // Include phpqrcode library
 
 if (!isset($_SESSION['e_id'])) {
-    header("Location: ../employee/login.php");
+    header("Location: ../../employee/login.php");
     exit();
 }
 
@@ -51,15 +51,15 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
     <meta name="description" content="User Profile Dashboard" />
     <meta name="author" content="Your Name" />
     <title>My Profile | HR2</title>
-    <link href="../css/styles.css" rel="stylesheet" />
+    <link href="../../css/styles.css" rel="stylesheet" />
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
-    <link href="../css/calendar.css" rel="stylesheet"/>
+    <link href="../../css/calendar.css" rel="stylesheet"/>
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body class="sb-nav-fixed bg-black">
     <nav class="sb-topnav navbar navbar-expand navbar-dark border-bottom border-1 border-warning bg-dark">
-        <a class="navbar-brand ps-3 text-muted" href="../employee/dashboard.php">Employee Portal</a>
+        <a class="navbar-brand ps-3 text-muted" href="../../employee/staff/dashboard.php">Employee Portal</a>
         <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars text-light"></i></button>
             <div class="d-flex ms-auto me-0 me-md-3 my-2 my-md-0 align-items-center">
                 <div class="text-light me-3 p-2 rounded shadow-sm bg-gradient" id="currentTimeContainer" 
@@ -94,15 +94,15 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                                 <a class="nav-link dropdown-toggle text-light d-flex justify-content-center ms-4" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     <img src="<?php echo (!empty($employeeInfo['pfp']) && $employeeInfo['pfp'] !== 'defaultpfp.png') 
                                         ? htmlspecialchars($employeeInfo['pfp']) 
-                                        : '../img/defaultpfp.jpg'; ?>" 
-                                        class="rounded-circle border border-light" width="120" height="120" alt="Profile Picture" />
+                                        : '../../img/defaultpfp.jpg'; ?>" 
+                                        class="rounded-circle border border-light" width="120" height="120" alt="" />
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                    <li><a class="dropdown-item" href="../employee/profile.php">Profile</a></li>
+                                    <li><a class="dropdown-item" href="../../employee/staff/profile.php">Profile</a></li>
                                     <li><a class="dropdown-item" href="#!">Settings</a></li>
                                     <li><a class="dropdown-item" href="#!">Activity Log</a></li>
                                     <li><hr class="dropdown-divider" /></li>
-                                    <li><a class="dropdown-item" href="../employee/employeelogout.php" onclick="confirmLogout(event)">Logout</a></li>
+                                    <li><a class="dropdown-item" href="../../employee/staff/employeelogout.php" onclick="confirmLogout(event)">Logout</a></li>
                                 </ul>
                             </li>
                             <li class="nav-item text-light d-flex ms-3 flex-column align-items-center text-center">
@@ -118,7 +118,7 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                                 <span class="big text-light">
                                     <?php
                                         if ($employeeInfo) {
-                                        echo htmlspecialchars($employeeInfo['role']);
+                                        echo htmlspecialchars($employeeInfo['position']);
                                         } else {
                                         echo "Employee information not available.";
                                         }
@@ -127,7 +127,7 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                             </li>
                         </ul>
                         <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-warning mt-3">Employee Dashboard</div>
-                        <a class="nav-link text-light" href="../employee/dashboard.php">
+                        <a class="nav-link text-light" href="../../employee/staff/dashboard.php">
                             <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
                             Dashboard
                         </a>
@@ -138,7 +138,7 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                         </a>
                         <div class="collapse" id="collapseTAD" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link text-light" href="../employee/attendance.php">Attendance Scanner</a>
+                                <a class="nav-link text-light" href="../../employee/staff/attendance.php">Attendance Scanner</a>
                                 <a class="nav-link text-light" href="">Timesheet</a>
                             </nav>
                         </div>
@@ -149,8 +149,8 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                         </a>
                         <div class="collapse" id="collapseLM" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                            <a class="nav-link text-light" href="../employee/leave_request.php">File Leave Request</a>
-                            <a class="nav-link text-light" href="../employee/leave_balance.php">View Remaining Leave</a>
+                            <a class="nav-link text-light" href="../../employee/staff/leave_request.php">File Leave Request</a>
+                            <a class="nav-link text-light" href="../../employee/staff/leave_balance.php">View Remaining Leave</a>
                             </nav>
                         </div>
                         <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePM" aria-expanded="false" aria-controls="collapsePM">
@@ -160,7 +160,7 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                         </a>
                         <div class="collapse" id="collapsePM" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                            <a class="nav-link text-light" href="../employee/evaluation.php">Evaluation</a>
+                            <a class="nav-link text-light" href="../../employee/staff/evaluation.php">Evaluation</a>
                             </nav>
                         </div>
                         <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseSR" aria-expanded="false" aria-controls="collapseSR">
@@ -170,7 +170,7 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                         </a>
                         <div class="collapse" id="collapseSR" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link text-light" href="../employee/recognitions.php">View Your Rating</a>
+                                <a class="nav-link text-light" href="../../employee/staff/recognitions.php">View Your Rating</a>
                             </nav>
                         </div>
                         <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-warning mt-3">Feedback</div> 
@@ -196,25 +196,25 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                 <div class="container" id="calendarContainer" 
                     style="position: fixed; top: 9%; right: 0; z-index: 1050; 
                     width: 700px; display: none;">
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div id="calendar" class="p-2"></div>
-                            </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div id="calendar" class="p-2"></div>
                         </div>
+                    </div>
                 </div>   
                 <div class="container-fluid px-4 bg-black">
                     <h1 class="big mb-4 text-light">My Profile</h1>
                     <div class="row">
                         <div class="col-md-4">
-                            <div class="card mb-4 border border-light">
+                            <div class="card mb-4">
                                 <div class="card-header bg-dark border-1 border-bottom border-warning text-light">
                                     <h5 class="card-title text-center">Profile Picture</h5>
                                 </div>
                                 <div class="card-body text-center bg-dark">
                                     <img src="<?php echo (!empty($employeeInfo['pfp']) && $employeeInfo['pfp'] !== 'defaultpfp.png') 
                                         ? htmlspecialchars($employeeInfo['pfp']) 
-                                        : '../img/defaultpfp.jpg'; ?>" 
-                                        class="rounded-circle border border-light" width="200" height="200" alt="Profile Picture" />
+                                        : '../../img/defaultpfp.jpg'; ?>" 
+                                        class="rounded-circle border border-light" width="200" height="200" alt="" />
 
                                         <button class="btn btn-outline-light" type="button" id="editPictureDropdown" 
                                                 data-bs-toggle="dropdown" aria-expanded="false">
@@ -230,7 +230,7 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                                             </li>
                                             <li>
                                                 <!-- Form to handle profile picture deletion -->
-                                            <form action="../db/delete_employee_pfp.php" method="post">
+                                            <form action="../../employee_db/delete_employee_pfp.php" method="post">
                                                 <!-- Hidden input to send the admin_id to the backend -->
                                                 <input type="hidden" name="employeeId" value="<?php echo $employeeInfo['e_id']; ?>">
                                                 
@@ -243,7 +243,7 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                                     </div>
                                     
                                     <!-- Hidden file input to upload a new profile picture -->
-                                    <form action="../employee_db/update_employee_pfp.php" method="post" enctype="multipart/form-data" id="profilePictureForm" style="display:none;">
+                                    <form action="../../employee_db/update_employee_pfp.php" method="post" enctype="multipart/form-data" id="profilePictureForm" style="display:none;">
                                         <input type="file" id="profilePictureInput" name="profile_picture" accept="image/*" onchange="document.getElementById('profilePictureForm').submit();">
                                     </form>
 
@@ -278,12 +278,12 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                             </div>
                         </div>
                         <div class="col-md-8">
-                            <div class="card mb-2 border border-light">
+                            <div class="card mb-2">
                                 <div class="card-header bg-dark border-bottom border-1 border-warning text-light">
                                     <h5 class="card-title text-center">My Information</h5>
                                 </div>
                                 <div class="card-body bg-dark">
-                                    <form id="infoForm" action="../employee_db/update_profile.php" method="post">
+                                    <form id="infoForm" action="../../employee_db/update_profile.php" method="post">
                                         <div class="row mb-3">
                                             <label for="inputfName" class="col-sm-2 col-form-label text-light">First Name:</label>
                                             <div class="col-sm-9">
@@ -333,7 +333,7 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                                     </form>
                                 </div>
                             </div>
-                            <a href="../employee/change_pass.php" class="btn btn-primary mt-4">Change Password</a>
+                            <a href="../../employee/staff/change_pass.php" class="btn btn-primary mt-4">Change Password</a>
                         </div>
                     </div>
                 </div>
@@ -416,7 +416,7 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                     },
                     height: 440,  
                     events: {
-                    url: '../db/holiday.php',  
+                    url: '../../db/holiday.php',  
                     method: 'GET',
                     failure: function() {
                     alert('There was an error fetching events!');
@@ -472,7 +472,7 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
 </script>
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'> </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-    <script src="../js/employee.js"></script>
-    <script src="../js/profile.js"></script>
+    <script src="../../js/employee.js"></script>
+    <script src="../../js/profile.js"></script>
 </body>
 </html>

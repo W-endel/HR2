@@ -67,61 +67,76 @@ if (!isset($_SESSION['a_id'])) {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="form-floating mb-3">
-                                            <input class="form-control" id="inputEmail" type="email"
-                                            name="email" placeholder="name@example.com" autocomplete="email" required />
-                                            <label for="inputEmail">Email address</label>
-                                        </div>
-                                            <div class="row mb-3">
-                                                <div class="col-md-6">
-                                                    <div class="form-floating mb-3 mb-md-0">
-                                                        <input class="form-control" id="inputPassword" type="password"
-                                                        name="password" placeholder="Create a password" autocomplete="new-password" required />
-                                                        <label for="inputPassword">Password</label>
-                                                    </div>
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <div class="form-floating">
+                                                    <input class="form-control" id="inputEmail" type="email"
+                                                    name="email" placeholder="name@example.com" autocomplete="email" required />
+                                                    <label for="inputEmail">Email address</label>
                                                 </div>
-                                                <div class="col-md-6">
-                                                    <div class="form-floating mb-3 mb-md-0">
-                                                        <input class="form-control" id="inputPasswordConfirm"
-                                                        type="password" name="confirm_password" placeholder="Confirm password" autocomplete="new-password" required />
-                                                        <label for="inputPasswordConfirm">Confirm Password</label>
-                                                    </div>
-                                                </div> 
                                             </div>
-                                            <div class="row mb-3">
-                                                <div class="col-md-6">
-                                                    <div class="form-floating mb-3 mb-md-0">
-                                                        <select id="inputRole" name="role" class="form-select" autocomplete="organization-title" required>
+                                            <div class="col-md-6">
+                                                <div class="form-floating mb-md-0">
+                                                    <select id="inputGender" name="gender" class="form-select" required>
+                                                        <option value="" disabled selected>Select gender</option>
+                                                        <option value="Male">Male</option>
+                                                        <option value="Female">Female</option>
+                                                        <option value="Other">Other</option>
+                                                    </select>
+                                                    <label for="inputGender">Select Gender</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <div class="form-floating mb-3 mb-md-0">
+                                                    <input class="form-control" id="inputPassword" type="password"
+                                                    name="password" placeholder="Create a password" autocomplete="new-password" required />
+                                                    <label for="inputPassword">Password</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-floating mb-3 mb-md-0">
+                                                    <input class="form-control" id="inputPasswordConfirm"
+                                                    type="password" name="confirm_password" placeholder="Confirm password" autocomplete="new-password" required />
+                                                    <label for="inputPasswordConfirm">Confirm Password</label>
+                                                </div>
+                                            </div> 
+                                        </div>
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <div class="form-floating mb-3 mb-md-0">
+                                                    <select id="inputRole" name="role" class="form-select" autocomplete="organization-title" required>
                                                             <option value="" disabled selected>Select a role</option>
                                                             <option value="Admin">Admin</option>
                                                             <option value="Employee">Employee</option>
                                                             <option value="Manager">Manager</option>
                                                             <option value="HR">HR</option>
-                                                        </select>
-                                                        <label for="inputRole">Select Role</label>
-                                                    </div>
-                                                    </div>
-                                                <div class="col-md-6">
-                                                    <div class="form-floating mb-3 mb-md-0">
-                                                        <input class="form-control" id="inputPhoneNumber"
-                                                        type="tel" name="phone_number" placeholder="Phone number" autocomplete="tel" required />
-                                                        <label for="inputPhoneNumber">Phone Number</label>
-                                                    </div>
+                                                    </select>
+                                                    <label for="inputRole">Select Role</label>
                                                 </div>
                                             </div>
-                                                    <div class="form-floating mb-3">
-                                                        <input class="form-control" id="inputAddress" type="text"
-                                                        name="address" placeholder="Address" autocomplete="street-address" required />
-                                                        <label for="inputAddress">Address</label>
-                                                    </div>
-                                            <div class="mt-4 mb-0">
-                                                <div class="d-grid">
-                                                    <button class="btn btn-primary btn-block" type="submit">Create Account</button>
+                                            <div class="col-md-6">
+                                                <div class="form-floating mb-3 mb-md-0">
+                                                    <input class="form-control" id="inputPhoneNumber"
+                                                    type="tel" name="phone_number" placeholder="Phone number" autocomplete="tel" required />
+                                                    <label for="inputPhoneNumber">Phone Number</label>
                                                 </div>
-                                                <div class="text-center">
-                                                    <div class="text-center mt-2 mb-2"> <a class="btn border-secondary w-100 text-light" href="../admin/admin.php">Back</a></div>
-                                                </div>  
-                                            </div> 
+                                            </div>
+                                        </div>
+                                        <div class="form-floating mb-3">
+                                            <input class="form-control" id="inputAddress" type="text"
+                                            name="address" placeholder="Address" autocomplete="street-address" required />
+                                            <label for="inputAddress">Address</label>
+                                        </div>
+                                        <div class="mt-4 mb-0">
+                                            <div class="d-grid">
+                                                <button class="btn btn-primary btn-block" type="submit">Create Account</button>
+                                            </div>
+                                            <div class="text-center">
+                                                <div class="text-center mt-2 mb-2"> <a class="btn border-secondary w-100 text-light" href="../admin/admin.php">Back</a></div>
+                                            </div>  
+                                        </div> 
                                     </form>
                                 </div>
                                 <div class="card-footer text-center border-top border-1 border-warning">

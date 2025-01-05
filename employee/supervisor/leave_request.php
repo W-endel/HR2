@@ -1,29 +1,30 @@
 <?php
 session_start();
 
-if (!isset($_SESSION['a_id'])) {
-    header("Location: ../admin/login.php");
+if (!isset($_SESSION['e_id'])) {
+    header("Location: ../../employee/login.php");
     exit();
 }
 
-include '../db/db_conn.php';
+include '../../db/db_conn.php';
 
-// Fetch admin's ID from the session (assuming the admin is logged in)
-$adminId = $_SESSION['a_id']; // Admin's ID should be stored in session
+// Fetch supervisor's ID from the session (assuming the supervisor is logged in)
+$supervisorId = $_SESSION['e_id']; // Assuming the supervisor's ID is stored in the session when logged in
 
-// Fetch admin info
-$sql = "SELECT a_id, firstname, middlename, lastname, birthdate, email, role, position, department, phone_number, address, pfp FROM admin_register WHERE a_id = ?";
+// Fetch user info
+$employeeId = $_SESSION['e_id'];
+$sql = "SELECT e_id, firstname, middlename, lastname, birthdate, email, role, position, department, phone_number, address, pfp FROM employee_register WHERE e_id = ?";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $adminId);
+$stmt->bind_param("i", $employeeId);
 $stmt->execute();
 $result = $stmt->get_result();
 $adminInfo = $result->fetch_assoc();
 
-// Fetch all leave requests that have been approved or denied by the supervisor
+// Fetch all pending leave requests for supervisors to handle
 $sql = "SELECT lr.leave_id, e.e_id, e.firstname, e.lastname, e.department, e.available_leaves, lr.start_date, lr.end_date, lr.leave_type, lr.proof, lr.status
         FROM leave_requests lr
         JOIN employee_register e ON lr.e_id = e.e_id
-        WHERE lr.supervisor_approval = 'Supervisor Approved' AND lr.status = 'Supervisor Approved'";
+        WHERE lr.status = 'Pending'";  // Fetch only Pending requests
 
 $stmt = $conn->prepare($sql);
 $stmt->execute();
@@ -39,7 +40,7 @@ while ($holiday_row = $holiday_result->fetch_assoc()) {
     $holidays[] = $holiday_row['date']; // Store holidays in an array
 }
 
-// Handle approve/deny actions by the admin
+// Handle approve/deny actions by supervisor
 if (isset($_GET['leave_id']) && isset($_GET['status'])) {
     $leave_id = $_GET['leave_id'];
     $status = $_GET['status'];
@@ -73,61 +74,55 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
             $current_date = strtotime("+1 day", $current_date); // Move to the next day
         }
 
-        // Handle Admin Approve action
+        // Check if leave request is still pending before approving or denying
+        if ($row['status'] != 'Pending') {
+            header("Location: ../../employee/supervisor/leave_request.php?status=already_processed");
+            exit();
+        }
+
         if ($status === 'approve') {
-            // Check if the employee has enough leave balance
-            if ($leave_days > $available_leaves) {
-                // Not enough leave balance
-                header("Location: ../admin/leave_requests.php?status=insufficient_balance");
-                exit();
+            // Update the leave request status to 'Supervisor Approved' and set the supervisor_id
+            $update_sql = "UPDATE leave_requests SET status = 'Supervisor Approved', supervisor_approval = 'Supervisor Approved', supervisor_id = ? WHERE leave_id = ?";
+            $update_stmt = $conn->prepare($update_sql);
+            $update_stmt->bind_param("ii", $supervisorId, $leave_id);
+
+            if ($update_stmt->execute()) {
+                // After supervisor approval, redirect to supervisor's leave balance page
+                header("Location: ../../employee/supervisor/leave_request.php?status=success");
             } else {
-                // Update leave request status to 'Admin Approved' and subtract days from available leave balance
-                $new_balance = $available_leaves - $leave_days;
-
-                $update_sql = "UPDATE leave_requests lr 
-                JOIN employee_register e ON lr.e_id = e.e_id
-                SET lr.status = 'Approved', lr.admin_approval = 'Admin Approved', lr.admin_id = ?, e.available_leaves = ? 
-                WHERE lr.leave_id = ?";
-
-                $update_stmt = $conn->prepare($update_sql);
-                $update_stmt->bind_param("iii", $adminId, $new_balance, $leave_id);
-
-                if ($update_stmt->execute()) {
-                    header("Location: ../admin/leave_requests.php?");
-                } else {
-                    error_log("Error updating leave balance: " . $conn->error); // Log the error
-                    header("Location: ../admin/leave_requests.php?");
-                }
+                header("Location: ../../employee/supervisor/leave_request.php?status=error");
             }
         } elseif ($status === 'deny') {
-            // Deny the leave request and record the admin ID
-            $deny_sql = "UPDATE leave_requests SET status = 'Denied', admin_approval = 'Admin Denied', admin_id = ? WHERE leave_id = ?";
-            $deny_stmt = $conn->prepare($deny_sql);
-            $deny_stmt->bind_param("ii", $adminId, $leave_id);
+            // Deny the leave request and delete it
+            $delete_sql = "UPDATE leave_requests SET status = 'Denied', supervisor_approval = 'Supervisor Denied', admin_approval = 'Supervisor Denied', supervisor_id = ? WHERE leave_id = ?";
+            $delete_stmt = $conn->prepare($delete_sql);
+            $delete_stmt->bind_param("ii", $supervisorId, $leave_id);
 
-            if ($deny_stmt->execute()) {
-                header("Location: ../admin/leave_requests.php?");
+            if ($delete_stmt->execute()) {
+                // After denial, redirect to supervisor's leave balance page
+                header("Location: ../../employee/supervisor/leave_request.php?status=success");
             } else {
-                header("Location: ../admin/leave_requests.php?");
+                header("Location: ../../employee/supervisor/leave_request.php?status=error");
             }
         }
     } else {
         // Leave request not found
-        header("Location: ../admin/leave_requests.php?");
+        header("Location: ../../employee/supervisor/leave_request.php?status=not_exist");
     }
     exit();
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <link rel="icon" type="image/png" href="../img/logo.png">
+    <link rel="icon" type="image/png" href="../../img/logo.png">
     <title>Leave Requests</title>
-    <link href="../css/styles.css" rel="stylesheet" />
-    <link href="../css/calendar.css" rel="stylesheet"/>
+    <link href="../../css/styles.css" rel="stylesheet" />
+    <link href="../../css/calendar.css" rel="stylesheet"/>
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' /> <!-- calendar -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
@@ -146,7 +141,7 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
 
 <body class="sb-nav-fixed bg-black">
     <nav class="sb-topnav navbar navbar-expand navbar-dark border-bottom border-1 border-warning bg-dark">
-        <a class="navbar-brand ps-3 text-muted" href="../admin/dashboard.php">Microfinance</a>
+        <a class="navbar-brand ps-3 text-muted" href="../../employee/supervisor/dashboard.php">Microfinance</a>
         <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars text-light"></i></button>
     
     <!-- Flex container to hold both time/date and search form -->
@@ -173,7 +168,7 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
         </div>
     </nav>
     <div id="layoutSidenav">
-        <div id="layoutSidenav_nav">
+    <div id="layoutSidenav_nav">
             <nav class="sb-sidenav accordion bg-dark" id="sidenavAccordion">
                 <div class="sb-sidenav-menu ">
                     <div class="nav">
@@ -187,11 +182,11 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
                                         class="rounded-circle border border-light" width="120" height="120" alt="Profile Picture" />
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                    <li><a class="dropdown-item" href="../admin/profile.php">Profile</a></li>
+                                    <li><a class="dropdown-item" href="../../employee/supervisor/profile.php">Profile</a></li>
                                     <li><a class="dropdown-item" href="#!">Settings</a></li>
                                     <li><a class="dropdown-item" href="#!">Activity Log</a></li>
                                     <li><hr class="dropdown-divider" /></li>
-                                    <li><a class="dropdown-item" href="../admin/logout.php" onclick="confirmLogout(event)">Logout</a></li>
+                                    <li><a class="dropdown-item" href="../../employee/supervisor/logout.php" onclick="confirmLogout(event)">Logout</a></li>
                                 </ul>
                             </li>
                             <li class="nav-item text-light d-flex ms-3 flex-column align-items-center text-center">
@@ -207,7 +202,7 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
                                 <span class="big text-light">
                                     <?php
                                         if ($adminInfo) {
-                                        echo htmlspecialchars($adminInfo['role']);
+                                        echo htmlspecialchars($adminInfo['position']);
                                         } else {
                                         echo "User information not available.";
                                         }
@@ -215,8 +210,8 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
                                 </span>
                             </li>
                         </ul>
-                        <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-warning mt-3">Admin Dashboard</div>
-                        <a class="nav-link text-light" href="../admin/dashboard.php">
+                        <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-warning mt-3">Employee Dashboard</div>
+                        <a class="nav-link text-light" href="../../employee/supervisor/dashboard.php">
                             <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
                             Dashboard
                         </a>
@@ -227,8 +222,8 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
                         </a>
                         <div class="collapse" id="collapseTAD" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link text-light" href="../admin/attendance.php">Attendance</a>
-                                <a class="nav-link text-light" href="../admin/timesheet.php">Timesheet</a>
+                                <a class="nav-link text-light" href="../../employee/supervisor/attendance.php">Attendance</a>
+                                <a class="nav-link text-light" href="">Timesheet</a>
                             </nav>
                         </div>
                         <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLM" aria-expanded="false" aria-controls="collapseLM">
@@ -238,9 +233,8 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
                         </a>
                         <div class="collapse" id="collapseLM" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link text-light" href="../admin/leave_requests.php">Leave Requests</a>
-                                <a class="nav-link text-light" href="../admin/leave_history.php">Leave History</a>
-                                <a class="nav-link text-light"  href="../admin/leave_allocation.php">Set Leave</a>
+                                <a class="nav-link text-light" href="../../employee/supervisor/leave_file.php">File Leave</a>
+                                <a class="nav-link text-light" href="../../employee/supervisor/leave_request.php">Leave Request</a>
                             </nav>
                         </div>
                         <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePM" aria-expanded="false" aria-controls="collapsePM">
@@ -250,7 +244,7 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
                         </a>
                         <div class="collapse" id="collapsePM" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link text-light" href="../admin/evaluation.php">Evaluation</a>
+                                <a class="nav-link text-light" href="../../employee/supervisor/evaluation.php">Evaluation</a>
                             </nav>
                         </div>
                         <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseSR" aria-expanded="false" aria-controls="collapseSR">
@@ -260,25 +254,22 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
                         </a>
                         <div class="collapse" id="collapseSR" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                              <a class="nav-link text-light" href="../admin/awardee.php">Awardee</a>
-                              <a class="nav-link text-light" href="../admin/recognition.php">Generate Certificate</a>
-                            </nav>
-                        </div>
-                        <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-warning">Account Management</div>
-                        <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
-                            <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
-                            Accounts
-                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                        </a>
-                        <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
-                            <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link text-light" href="../admin/calendar.php">Calendar</a>
-                                <a class="nav-link text-light" href="../admin/admin.php">Admin Accounts</a>
-                                <a class="nav-link text-light" href="../admin/employee.php">Employee Accounts</a>
+                              <a class="nav-link text-light" href="">Awardee</a>
                             </nav>
                         </div>
                         <div class="collapse" id="collapsePages" aria-labelledby="headingTwo" data-bs-parent="#sidenavAccordion">
                         </div>
+                        <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-warning mt-3">Feedback</div> 
+                        <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseFB" aria-expanded="false" aria-controls="collapseFB">
+                            <div class="sb-nav-link-icon"><i class="fas fa-exclamation-circle"></i></div>
+                            Report Issue
+                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                        </a>
+                        <div class="collapse" id="collapseFB" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                            <nav class="sb-sidenav-menu-nested nav">
+                                <a class="nav-link text-light" href="">Report Issue</a>
+                            </nav>
+                        </div> 
                     </div>
                 </div>
                 <div class="sb-sidenav-footer bg-black text-light border-top border-1 border-warning">
@@ -451,54 +442,11 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
                                         <?php endwhile; ?>
                                             <?php else: ?>
                                         <tr>
-                                            <td colspan="9" class="text-center">No leave requests found.</td>
+                                            <td colspan="9" class="text-center">No pending request found.</td>
                                         </tr>
                                     <?php endif; ?>
                                 </tbody>
                             </table>
-                        </div>
-                    </div>
-                    <div class="container">
-                        <div class="text-center">
-                            <a href="#" class="text-light btn btn-primary mt-2" data-toggle="modal" data-target="#setLeaveModal">Set Leave Credit</a>
-                        </div>
-                        <div class="modal fade" id="setLeaveModal" tabindex="-1" aria-labelledby="setLeaveModalLabel" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content bg-dark">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title text-light" id="setLeaveModalLabel">Set Leave Allocations</h5>
-                                        <button type="button" class="close text-light bg-dark" data-dismiss="modal" aria-label="Close">
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <form method="POST" action="../db/set_leave.php">
-                                            <div class="form-group">
-                                                <label class="text-light mt-3 mb-1" for="employee_leaves">Leave Days for Employees:</label>
-                                                <input type="number" name="employee_leaves" id="employee_leaves" class="form-control" required>
-                                            </div>
-                                            <div class="form-group">
-                                                <label class="text-light mt-3 mb-1" for="employee_id">Select Employee:</label>
-                                                <select name="employee_id" id="employee_id" class="form-control">
-                                                    <option value="all">All Employees</option>
-                                                    <?php
-                                                    // Fetch employees from the database for the dropdown
-                                                    $employees_sql = "SELECT e_id, firstname, lastname FROM employee_register";
-                                                    $employees_result = $conn->query($employees_sql);
-                                                    while ($employee = $employees_result->fetch_assoc()) {
-                                                        echo "<option value='" . $employee['e_id'] . "'>" . $employee['firstname'] . " " . $employee['lastname'] . "</option>";
-                                                    }
-                                                    ?>
-                                                </select>
-                                            </div>
-                                            <button type="submit" class="btn btn-primary mt-3">Set Allocations</button>
-                                        </form>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -543,7 +491,7 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
                     },
                     height: 440,  
                     events: {
-                    url: '../db/holiday.php',  
+                    url: '../../db/holiday.php',  
                     method: 'GET',
                     failure: function() {
                     alert('There was an error fetching events!');
@@ -699,6 +647,6 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'> </script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    <script src="../js/admin.js"></script>
+<script src="../../js/employee.js"></script>
 </body>
 </html>

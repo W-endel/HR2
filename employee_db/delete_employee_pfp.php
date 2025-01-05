@@ -13,7 +13,7 @@ $stmt->bind_param('i', $employeeId); // Use 'i' for integer
 
 if ($stmt->execute()) {
     // Redirect back to the profile page after deletion
-    header('Location: ../employee/e_profile.php');
+    header('Location: ../employee/staff/profile.php');
     exit(); // Ensure to stop script execution after redirect
 } else {
     echo "Error deleting profile picture: " . $stmt->error;

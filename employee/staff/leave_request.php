@@ -1,10 +1,10 @@
 <?php
 session_start();
-include '../db/db_conn.php';
+include '../../db/db_conn.php';
 
-// Check if the user is logged in and get the employee's ID from the session
 if (!isset($_SESSION['e_id'])) {
-    die("Error: User is not logged in.");
+    header("Location: ../../employee/login.php");
+    exit();
 }
 
 // Fetch user info
@@ -49,15 +49,15 @@ $conn->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Leave Request Form</title>
-    <link href="../css/styles.css" rel="stylesheet" />
+    <link href="../../css/styles.css" rel="stylesheet" />
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
-    <link href="../css/calendar.css" rel="stylesheet"/>
+    <link href="../../css/calendar.css" rel="stylesheet"/>
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body class="sb-nav-fixed bg-black">
     <nav class="sb-topnav navbar navbar-expand navbar-dark border-bottom border-1 border-warning bg-dark">
-        <a class="navbar-brand ps-3 text-muted" href="../employee/dashboard.php">Employee Portal</a>
+        <a class="navbar-brand ps-3 text-muted" href="../../employee/staff/dashboard.php">Employee Portal</a>
         <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars text-light"></i></button>
             <div class="d-flex ms-auto me-0 me-md-3 my-2 my-md-0 align-items-center">
                 <div class="text-light me-3 p-2 rounded shadow-sm bg-gradient" id="currentTimeContainer" 
@@ -92,15 +92,15 @@ $conn->close();
                                 <a class="nav-link dropdown-toggle text-light d-flex justify-content-center ms-4" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     <img src="<?php echo (!empty($employeeInfo['pfp']) && $employeeInfo['pfp'] !== 'defaultpfp.png') 
                                         ? htmlspecialchars($employeeInfo['pfp']) 
-                                        : '../img/defaultpfp.jpg'; ?>" 
-                                        class="rounded-circle border border-light" width="120" height="120" alt="Profile Picture" />
+                                        : '../../img/defaultpfp.jpg'; ?>" 
+                                        class="rounded-circle border border-light" width="120" height="120" alt="" />
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                    <li><a class="dropdown-item" href="../employee/profile.php">Profile</a></li>
+                                    <li><a class="dropdown-item" href="../../employee/staff/profile.php">Profile</a></li>
                                     <li><a class="dropdown-item" href="#!">Settings</a></li>
                                     <li><a class="dropdown-item" href="#!">Activity Log</a></li>
                                     <li><hr class="dropdown-divider" /></li>
-                                    <li><a class="dropdown-item" href="../employee/employeelogout.php" onclick="confirmLogout(event)">Logout</a></li>
+                                    <li><a class="dropdown-item" href="../../employee/staff/employeelogout.php" onclick="confirmLogout(event)">Logout</a></li>
                                 </ul>
                             </li>
                             <li class="nav-item text-light d-flex ms-3 flex-column align-items-center text-center">
@@ -125,7 +125,7 @@ $conn->close();
                             </li>
                         </ul>
                         <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-warning mt-3">Employee Dashboard</div>
-                        <a class="nav-link text-light" href="../employee/dashboard.php">
+                        <a class="nav-link text-light" href="../../employee/staff/dashboard.php">
                             <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
                             Dashboard
                         </a>
@@ -136,7 +136,7 @@ $conn->close();
                         </a>
                         <div class="collapse" id="collapseTAD" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link text-light" href="../employee/attendance.php">Attendance Scanner</a>
+                                <a class="nav-link text-light" href="../../employee/staff/attendance.php">Attendance Scanner</a>
                                 <a class="nav-link text-light" href="">Timesheet</a>
                             </nav>
                         </div>
@@ -147,8 +147,8 @@ $conn->close();
                         </a>
                         <div class="collapse" id="collapseLM" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                            <a class="nav-link text-light" href="../employee/leave_request.php">File Leave Request</a>
-                            <a class="nav-link text-light" href="../employee/leave_balance.php">View Remaining Leave</a>
+                            <a class="nav-link text-light" href="../../employee/staff/leave_request.php">File Leave Request</a>
+                            <a class="nav-link text-light" href="../../employee/staff/leave_balance.php">View Remaining Leave</a>
                             </nav>
                         </div>
                         <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePM" aria-expanded="false" aria-controls="collapsePM">
@@ -158,7 +158,7 @@ $conn->close();
                         </a>
                         <div class="collapse" id="collapsePM" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                            <a class="nav-link text-light" href="../employee/evaluation.php">Evaluation</a>
+                            <a class="nav-link text-light" href="../../employee/staff/evaluation.php">Evaluation</a>
                             </nav>
                         </div>
                         <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseSR" aria-expanded="false" aria-controls="collapseSR">
@@ -168,7 +168,7 @@ $conn->close();
                         </a>
                         <div class="collapse" id="collapseSR" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link text-light" href="../admin/rating.php">View Ratings</a>
+                                <a class="nav-link text-light" href="../../employee/staff/rating.php">View Ratings</a>
                             </nav>
                         </div>
                         <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-warning mt-3">Feedback</div> 
@@ -227,7 +227,7 @@ $conn->close();
                             </div>
                         </div>
                     </div>
-                <form id="leave-request-form" action="../employee_db/leave_conn.php" method="POST" enctype="multipart/form-data">
+                <form id="leave-request-form" action="../../employee_db/leave_conn.php" method="POST" enctype="multipart/form-data">
                     <div class="row">
                         <div class="col-md-12">
                             <div class="card leave-form text bg-dark text-light">
@@ -324,7 +324,7 @@ $conn->close();
                         },
                         height: 440,  
                         events: {
-                        url: '../db/holiday.php',  
+                        url: '../../db/holiday.php',  
                         method: 'GET',
                         failure: function() {
                         alert('There was an error fetching events!');
@@ -402,6 +402,6 @@ $conn->close();
 </script>
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'> </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-    <script src="../js/employee.js"></script>
+    <script src="../../js/employee.js"></script>
 </body>
 </html>

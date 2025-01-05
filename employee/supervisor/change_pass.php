@@ -1,18 +1,12 @@
 <?php
 session_start(); // Start the session
 
-if (!isset($_SESSION['a_id'])) {
-    // Redirect to login page if admin is not logged in
-    header("Location: ../admin/login.php");
-    exit();
-}
-
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
-require '../phpmailer/vendor/autoload.php';
-require '../db/db_conn.php'; // Ensure this includes your database connection
+require '../../phpmailer/vendor/autoload.php';
+require '../../db/db_conn.php'; // Ensure this includes your database connection
 
 $message = '';
 
@@ -22,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     try {
         // Check if the email exists in the admin_register table
-        $sql = "SELECT firstname, lastname FROM admin_register WHERE email = ?";
+        $sql = "SELECT firstname, lastname FROM employee_register WHERE email = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param('s', $email);
         $stmt->execute();
@@ -56,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $mail->setFrom('microfinancehr2@gmail.com', 'Microfinance');
             $mail->addAddress($email);
             $mail->Subject = 'Password Reset Request';
-            $resetLink = "http://localhost/HR2/admin/reset_password.php?token=$token";
+            $resetLink = "http://localhost/HR2/employee/staff/reset_password.php?token=$token";
             $mail->isHTML(true);
 
             // Email body with inline styles
@@ -108,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <title>Change Password | HR2</title>
-    <link href="../css/styles.css" rel="stylesheet" />
+    <link href="../../css/styles.css" rel="stylesheet" />
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
 </head>
 <body class="bg-black">
@@ -140,7 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                         <div class="d-flex align-items-center justify-content-end mt-4 mb-2">
                                             <button type="submit" class="btn btn-primary align-items-center w-100">Send Link</button>
                                         </div>
-                                        <div class="text-center mt-3 mb-2"> <a class="btn border-secondary w-100 text-light border border-1" href="../admin/profile.php">Back</a></div>
+                                        <div class="text-center mt-3 mb-2"> <a class="btn border-secondary w-100 text-light border border-1" href="../employee/profile.php">Back</a></div>
                                     </form>
                                 </div>
                                 <div class="card-footer text-center border-top border-1 border-warning">

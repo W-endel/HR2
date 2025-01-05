@@ -5,8 +5,8 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
-require '../phpmailer/vendor/autoload.php';
-require '../db/db_conn.php'; // Ensure this includes your database connection
+require '../../phpmailer/vendor/autoload.php';
+require '../../db/db_conn.php'; // Ensure this includes your database connection
 
 $message = '';
 
@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $mail->setFrom('microfinancehr2@gmail.com', 'Microfinance');
             $mail->addAddress($email);
             $mail->Subject = 'Password Reset Request';
-            $resetLink = "http://localhost/HR2/employee/reset_password.php?token=$token";
+            $resetLink = "http://localhost/HR2/employee/staff/reset_password.php?token=$token";
             $mail->isHTML(true);
 
             // Email body with inline styles
@@ -102,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <title>Change Password | HR2</title>
-    <link href="../css/styles.css" rel="stylesheet" />
+    <link href="../../css/styles.css" rel="stylesheet" />
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
 </head>
 <body class="bg-black">

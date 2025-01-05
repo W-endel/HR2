@@ -1,6 +1,6 @@
 <?php
-require '../db/db_conn.php'; // Ensure this is the correct file for the database connection
-require '../phpmailer/vendor/autoload.php'; // Ensure PHPMailer is properly loaded
+require '../../db/db_conn.php'; // Ensure this is the correct file for the database connection
+require '../../phpmailer/vendor/autoload.php'; // Ensure PHPMailer is properly loaded
 
 $message = ''; // Initialize a variable to hold the message
 $expiresAt = null;
@@ -102,7 +102,7 @@ if (isset($_POST['resend_token'])) {
         $mail->setFrom('microfinancehr2@gmail.com', 'Microfinance');
         $mail->addAddress($email);
         $mail->Subject = 'Password Reset Request';
-        $resetLink = "http://localhost/HR2/employee/reset_password.php?token=$newToken"; // Update the URL with the new token
+        $resetLink = "http://localhost/HR2/employee/staff/reset_password.php?token=$newToken"; // Update the URL with the new token
         $mail->isHTML(true);
 
         $mail->Body = '
@@ -142,7 +142,7 @@ if (isset($_POST['resend_token'])) {
 <head>
     <meta charset="utf-8" />
     <title>Reset Password</title>
-    <link href="../css/styles.css" rel="stylesheet" />
+    <link href="../../css/styles.css" rel="stylesheet" />
 </head>
 <body class="bg-black">
     <div class="container">
@@ -184,7 +184,7 @@ if (isset($_POST['resend_token'])) {
                         <?php endif; ?>
 
                         <div class="text-center mt-3 mb-0">
-                            <a class="btn border-secondary w-100 text-light border border-1" href="../employee/login.php">Back</a>
+                            <a class="btn border-secondary w-100 text-light border border-1" href="../../employee/login.php">Back</a>
                         </div>
                     </div>
                 </div>

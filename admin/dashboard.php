@@ -172,7 +172,7 @@ $conn->close();
                                 <a class="nav-link text-light" href="../admin/recognition.php">Generate Certificate</a>
                             </nav>
                         </div>
-                        <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-warning">Account Management</div>
+                        <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-warning mt-3">Account Management</div>
                         <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
                             <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
                             Accounts
@@ -195,162 +195,159 @@ $conn->close();
             </nav>
         </div>
         <div id="layoutSidenav_content">
-    <main class="bg-black">
-        <div class="container-fluid position-relative px-4">
-            <h1 class="mb-4 text-light">Dashboard</h1>
-                <div class="container" id="calendarContainer" 
-                    style="position: fixed; top: 9%; right: 0; z-index: 1050; 
-                    width: 700px; display: none;">
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div id="calendar" class="p-2"></div>
+        <main class="bg-black">
+            <div class="container-fluid position-relative px-4">
+                <h1 class="mb-4 text-light">Dashboard</h1>
+                    <div class="container" id="calendarContainer" 
+                        style="position: fixed; top: 9%; right: 0; z-index: 1050; 
+                        width: 700px; display: none;">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div id="calendar" class="p-2"></div>
+                            </div>
                         </div>
                     </div>
-                </div>
-        <!-- Leave Request Status Section -->
-                <div class="col-xl-3">
-                    <div class="card mb-4">
-                        <div class="card-header bg-black text-light border-bottom border-1 border-warning">
-                            <i class="fas fa-chart-pie me-1"></i> 
-                            Leave Request Status
+            <!-- Leave Request Status Section -->
+                    <div class="col-xl-3">
+                        <div class="card mb-4">
+                            <div class="card-header bg-dark text-light border-bottom border-1 border-warning">
+                                <i class="fas fa-chart-pie me-1"></i> 
+                                <a class="text-light" href="../admin/leave_requests.php">Leave Request Status </a>
+                            </div>
+                            <div class="card-body bg-dark">
+                                <canvas id="leaveStatusChart" width="300" height="300"></canvas>
+                            </div>
                         </div>
-                        <div class="card-body bg-dark">
-                            <canvas id="leaveStatusChart" width="300" height="300"></canvas>
+                    </div>
+                    
+                    <div class="card mb-4 bg-dark text-light">
+                        <div class="card-header border-bottom border-1 border-warning">
+                            <i class="fas fa-table me-1"></i>
+                            DataTable Example
+                        </div>
+                        <div class="card-body">
+                            <table id="datatablesSimple" class="table text-light">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Position</th>
+                                        <th>Office</th>
+                                        <th>Age</th>
+                                        <th>Start date</th>
+                                        <th>Salary</th>
+                                    </tr>
+                                </thead>
+                                <tfoot>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Position</th>
+                                        <th>Office</th>
+                                        <th>Age</th>
+                                        <th>Start date</th>
+                                        <th>Salary</th>
+                                    </tr>
+                                </tfoot>
+                                <tbody>
+                                    <tr>
+                                        <td>Zorita Serrano</td>
+                                        <td>Software Engineer</td>
+                                        <td>San Francisco</td>
+                                        <td>56</td>
+                                        <td>2012/06/01</td>
+                                        <td>$115,000</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Jennifer Acosta</td>
+                                        <td>Junior Javascript Developer</td>
+                                        <td>Edinburgh</td>
+                                        <td>43</td>
+                                        <td>2013/02/01</td>
+                                        <td>$75,650</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Cara Stevens</td>
+                                        <td>Sales Assistant</td>
+                                        <td>New York</td>
+                                        <td>46</td>
+                                        <td>2011/12/06</td>
+                                        <td>$145,600</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Hermione Butler</td>
+                                        <td>Regional Director</td>
+                                        <td>London</td>
+                                        <td>47</td>
+                                        <td>2011/03/21</td>
+                                        <td>$356,250</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Lael Greer</td>
+                                        <td>Systems Administrator</td>
+                                        <td>London</td>
+                                        <td>21</td>
+                                        <td>2009/02/27</td>
+                                        <td>$103,500</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Jonas Alexander</td>
+                                        <td>Developer</td>
+                                        <td>San Francisco</td>
+                                        <td>30</td>
+                                        <td>2010/07/14</td>
+                                        <td>$86,500</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Shad Decker</td>
+                                        <td>Regional Director</td>
+                                        <td>Edinburgh</td>
+                                        <td>51</td>
+                                        <td>2008/11/13</td>
+                                        <td>$183,000</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Michael Bruce</td>
+                                        <td>Javascript Developer</td>
+                                        <td>Singapore</td>
+                                        <td>29</td>
+                                        <td>2011/06/27</td>
+                                        <td>$183,000</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Donna Snider</td>
+                                        <td>Customer Support</td>
+                                        <td>New York</td>
+                                        <td>27</td>
+                                        <td>2011/01/25</td>
+                                        <td>$112,000</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                </div>
-                
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <i class="fas fa-table me-1"></i>
-                        DataTable Example
-                    </div>
-                    <div class="card-body">
-                        <table id="datatablesSimple" class="table">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Position</th>
-                                    <th>Office</th>
-                                    <th>Age</th>
-                                    <th>Start date</th>
-                                    <th>Salary</th>
-                                </tr>
-                            </thead>
-                            <tfoot>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Position</th>
-                                    <th>Office</th>
-                                    <th>Age</th>
-                                    <th>Start date</th>
-                                    <th>Salary</th>
-                                </tr>
-                            </tfoot>
-                            <tbody>
-                                <tr>
-                                    <td>Zorita Serrano</td>
-                                    <td>Software Engineer</td>
-                                    <td>San Francisco</td>
-                                    <td>56</td>
-                                    <td>2012/06/01</td>
-                                    <td>$115,000</td>
-                                </tr>
-                                <tr>
-                                    <td>Jennifer Acosta</td>
-                                    <td>Junior Javascript Developer</td>
-                                    <td>Edinburgh</td>
-                                    <td>43</td>
-                                    <td>2013/02/01</td>
-                                    <td>$75,650</td>
-                                </tr>
-                                <tr>
-                                    <td>Cara Stevens</td>
-                                    <td>Sales Assistant</td>
-                                    <td>New York</td>
-                                    <td>46</td>
-                                    <td>2011/12/06</td>
-                                    <td>$145,600</td>
-                                </tr>
-                                <tr>
-                                    <td>Hermione Butler</td>
-                                    <td>Regional Director</td>
-                                    <td>London</td>
-                                    <td>47</td>
-                                    <td>2011/03/21</td>
-                                    <td>$356,250</td>
-                                </tr>
-                                <tr>
-                                    <td>Lael Greer</td>
-                                    <td>Systems Administrator</td>
-                                    <td>London</td>
-                                    <td>21</td>
-                                    <td>2009/02/27</td>
-                                    <td>$103,500</td>
-                                </tr>
-                                <tr>
-                                    <td>Jonas Alexander</td>
-                                    <td>Developer</td>
-                                    <td>San Francisco</td>
-                                    <td>30</td>
-                                    <td>2010/07/14</td>
-                                    <td>$86,500</td>
-                                </tr>
-                                <tr>
-                                    <td>Shad Decker</td>
-                                    <td>Regional Director</td>
-                                    <td>Edinburgh</td>
-                                    <td>51</td>
-                                    <td>2008/11/13</td>
-                                    <td>$183,000</td>
-                                </tr>
-                                <tr>
-                                    <td>Michael Bruce</td>
-                                    <td>Javascript Developer</td>
-                                    <td>Singapore</td>
-                                    <td>29</td>
-                                    <td>2011/06/27</td>
-                                    <td>$183,000</td>
-                                </tr>
-                                <tr>
-                                    <td>Donna Snider</td>
-                                    <td>Customer Support</td>
-                                    <td>New York</td>
-                                    <td>27</td>
-                                    <td>2011/01/25</td>
-                                    <td>$112,000</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-<!-- for leaveStatusChart -->
-    <?php
+                <!-- for leaveStatusChart -->
+                <?php
 
-        include '../db/db_conn.php';
+                    include '../db/db_conn.php';
 
-// Fetch leave status counts
-        $sql = "SELECT status, COUNT(*) as count FROM leave_requests GROUP BY status";
-        $result = $conn->query($sql);
+                    $sql = "SELECT status, COUNT(*) as count FROM leave_requests GROUP BY status";
+                    $result = $conn->query($sql);
 
-// Initialize counts
-        $status_counts = [
-            'Approved' => 0,
-            'Pending' => 0,
-            'Denied' => 0,
-        ];
+                    $status_counts = [
+                        'Approved' => 0,
+                        'Supervisor Approved' => 0,
+                        'Denied' => 0,
+                    ];
+                    while ($row = $result->fetch_assoc()) {
+                        $status = $row['status'];
+                        if (isset($status_counts[$status])) {
+                            $status_counts[$status] = $row['count'];
+                        }
+                    }
 
-        while ($row = $result->fetch_assoc()) {
-            $status = $row['status'];
-            if (isset($status_counts[$status])) {
-                $status_counts[$status] = $row['count'];
-            }
-        }
-
-        $conn->close();
-    ?>
-        </div>
-    </main>
+                    $conn->close();
+                ?>
+            </div>
+        </main>
         <footer class="py-4 bg-dark mt-auto border-top border-1 border-warning">
             <div class="container-fluid px-4">
                 <div class="d-flex align-items-center justify-content-between small">
@@ -374,7 +371,7 @@ $conn->close();
             datasets: [{
                 data: [
                     <?php echo $status_counts['Approved']; ?>,
-                    <?php echo $status_counts['Pending']; ?>,
+                    <?php echo $status_counts['Supervisor Approved']; ?>,
                     <?php echo $status_counts['Denied']; ?>
                 ],
                 backgroundColor: ['#28a745', '#ffc107', '#dc3545']
@@ -536,7 +533,7 @@ setInterval(setCurrentTime, 1000);
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'> </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <script src="../js/admin.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script> 
     <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js" crossorigin="anonymous"></script>
     <script src="../js/datatables-simple-demo.js"></script>
 

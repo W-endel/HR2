@@ -1,12 +1,3 @@
-<?php
-session_start();
-
-if (!isset($_SESSION['a_id'])) {
-    header("Location: ../admin/adminlogin.php");
-    exit();
-}
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -50,7 +41,7 @@ if (!isset($_SESSION['a_id'])) {
                                     <div id="form-feedback" class="alert text-center" style="display: none;"></div>
                                 </div>
                                 <div class="card-body">
-                                    <form id="registrationForm">
+                                    <form id="registrationForm" action="../db/registeremployee_db.php" method="POST">
                                         <div class="row mb-3">
                                             <div class="col-md-6">
                                                 <div class="form-floating mb-3 mb-md-0">
@@ -91,9 +82,9 @@ if (!isset($_SESSION['a_id'])) {
                                         <div class="row mb-3">
                                             <div class="col-md-6">
                                                 <div class="form-floating mb-3 mb-md-0">
-                                                    <input type="hidden" id="inputRole" name="role" value="Employee">
-                                                   <input class="form-control" type="text" id="displayRole" value="Employee" disabled>
-                                                    <label for="displayRole">Role</label>
+                                                    <input type="hidden" id="inputRoleHidden" name="role" value="Employee">
+                                                    <input class="form-control" type="text" id="inputRole" value="Employee" disabled>
+                                                    <label for="inputRole">Role</label>
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
@@ -160,12 +151,12 @@ if (!isset($_SESSION['a_id'])) {
     <!-- JavaScript for dynamic position filtering based on department -->
     <script>
         const positionsByDepartment = {
-            "Finance Department": ["Financial Controller", "Accountant", "Credit Analyst", "Staff"],
-            "Administration Department": ["Facilities Manager", "Operations Manager", "Customer Service Representative", "Staff"],
-            "Sales Department": ["Sales Manager", "Sales Representative", "Marketing Coordinator", "Staff"],
-            "Credit Department": ["Loan Officer", "Loan Collection Officer", "Credit Risk Analyst", "Staff"],
-            "Human Resource Department": ["HR Manager", "Recruitment Specialists", "Training Coordinator", "Staff"],
-            "IT Department": ["IT Manager", "Network Administrator", "System Administrator", "IT Support Specialist"]
+            "Finance Department": ["Financial Controller", "Accountant", "Credit Analyst", "Supervisor", "Staff"],
+            "Administration Department": ["Facilities Manager", "Operations Manager", "Customer Service Representative", "Supervisor", "Staff"],
+            "Sales Department": ["Sales Manager", "Sales Representative", "Marketing Coordinator", "Supervisor", "Staff"],
+            "Credit Department": ["Loan Officer", "Loan Collection Officer", "Credit Risk Analyst", "Supervisor", "Staff"],
+            "Human Resource Department": ["HR Manager", "Recruitment Specialists", "Training Coordinator", "Supervisor", "Staff"],
+            "IT Department": ["IT Manager", "Network Administrator", "System Administrator", "IT Support Specialist", "Supervisor", "Staff"]
         };
 
         function filterPositions() {
@@ -189,37 +180,6 @@ if (!isset($_SESSION['a_id'])) {
 
         // Attach event listener to department dropdown
         document.getElementById("inputDepartment").addEventListener("change", filterPositions);
-
-
-        
-        document.getElementById("registrationForm").addEventListener("submit", function (event) {
-    event.preventDefault();
-    
-    const formData = new FormData(this);
-
-    fetch('../db/registeremployee_db.php', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        const feedbackElement = document.getElementById('form-feedback');
-        feedbackElement.style.display = 'block';
-        
-        if (data.error) {
-            feedbackElement.classList.remove('alert-success');
-            feedbackElement.classList.add('alert-danger');
-            feedbackElement.textContent = data.error;
-        } else {
-            feedbackElement.classList.remove('alert-danger');
-            feedbackElement.classList.add('alert-success');
-            feedbackElement.textContent = data.success;
-            
-            // Clear the form fields if registration was successful
-            document.getElementById("registrationForm").reset();
-        }
-    })
-});
     </script>
 </body>
 

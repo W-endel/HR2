@@ -42,7 +42,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($stmt->execute()) {
         // Set success message
         $_SESSION['update_success'] = "Your information has been updated successfully.";
-        header("Location: ../employee/profile.php");
+        header("Location: ../employee/staff/profile.php");
         exit();
     } else {
         echo "Error updating profile: " . $stmt->error;

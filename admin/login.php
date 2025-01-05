@@ -1,27 +1,3 @@
-<?php
-session_start();
-include '../db/db_conn.php'; // Include your database connection file
-
-// Retrieve form input
-$email = $_POST['email'] ?? '';
-$password = $_POST['password'] ?? '';
-
-// Initialize login success as false by default
-$loginSuccessful = false;
-
-// Prepare and execute the query to check credentials
-$sql = "SELECT a_id, password FROM admin_register WHERE email = ? AND role = 'admin'";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("s", $email);
-$stmt->execute();
-$result = $stmt->get_result();
-
-$stmt->close();
-$conn->close();
-?>
-
-
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -43,9 +19,9 @@ $conn->close();
                     <div class="row justify-content-center">
                         <div class="col-lg-5">
                             <div class="card shadow-lg border-0 rounded-lg mt-5 mb-2 bg-dark">
-                                <div class="card-header border-bottom border-1 border-warning"> 
+                                <div class="card-header border-bottom border-1 border-warning">
                                     <h3 class="text-center text-light font-weight-light mt-2 mb-4">Admin Login</h3>
-                                    <i class="fa-solid fa-house"></i>
+                                    <!-- Display error message if exists -->
                                     <?php if (isset($_GET['error'])): ?>
                                         <div id="error-alert" class="alert alert-danger text-center my-2" role="alert">
                                             <?php echo htmlspecialchars(urldecode($_GET['error'])); ?>
@@ -56,21 +32,20 @@ $conn->close();
                                     <form action="../db/adminlogin_conn.php" method="post">
                                         <div class="form-floating mb-3">
                                             <input class="form-control" id="inputEmail" type="email" name="email"
-                                                placeholder="name@example.com" required />  
-                                                <label for="inputEmail">Email address:</label>                                          
+                                                placeholder="name@example.com" required />
+                                            <label for="inputEmail">Email address:</label>
                                         </div>
                                         <div class="form-floating mb-3">
-
                                             <input class="form-control" id="inputPassword" type="password" name="password"
                                                 placeholder="Password" required />
-                                                <label for="inputPassword">Password:</label>
+                                            <label for="inputPassword">Password:</label>
                                         </div>
                                         <div class="d-flex justify-content-between align-items-center mt-1 mb-2">
                                             <div class="d-flex align-items-center">
                                                 <input class="form-check-input" id="inputRememberPassword" type="checkbox" name="remember" value="" />
                                                 <label class="form-check-label text-light ms-2" for="inputRememberPassword">Remember Password</label>
                                             </div>
-                                                <a class="small text-info" href="../admin/forgot_pass.php">Forgot Password?</a>
+                                            <a class="small text-info" href="../admin/forgot_pass.php">Forgot Password?</a>
                                         </div>
                                         <div class="d-flex align-items-center justify-content-between mt-2 mb-2">
                                             <button type="submit" class="btn btn-primary w-100">Login</button>
@@ -81,7 +56,7 @@ $conn->close();
                                     </form>
                                 </div>
                                 <div class="card-footer text-center border-top border-1 border-warning">
-                                    <div class="text-center text-muted">Human Resource 2</a></div>
+                                    <div class="text-center text-muted">Human Resource 2</div>
                                 </div>
                             </div>
                         </div>

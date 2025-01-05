@@ -4,68 +4,49 @@ session_start();
 include '../db/db_conn.php';
 include '../phpqrcode/qrlib.php';  // Include the QR code library
 
-// Get form data with validation
-$firstName = isset($_POST['firstname']) ? trim($_POST['firstname']) : '';
-$lastName = isset($_POST['lastname']) ? trim($_POST['lastname']) : '';
-$Email = isset($_POST['email']) ? trim($_POST['email']) : '';
-$password = isset($_POST['password']) ? trim($_POST['password']) : '';
-$confirm_password = isset($_POST['confirm_password']) ? trim($_POST['confirm_password']) : '';
-$role = isset($_POST['role']) ? trim($_POST['role']) : '';
-$position = isset($_POST['position']) ? trim($_POST['position']) : '';
-$department = isset($_POST['department']) ? trim($_POST['department']) : '';
+// Get form inputs
+$firstname = $_POST['firstname'];
+$lastname = $_POST['lastname'];
+$email = $_POST['email'];
+$password = $_POST['password'];
+$confirm_password = $_POST['confirm_password'];
+$role = "Employee"; // Static role value as requested
+$department = $_POST['department'];
+$position = $_POST['position'];
 
-// Basic validation
-if (empty($firstName) || empty($lastName) || empty($Email) || empty($password) || empty($confirm_password) || empty($role) || empty($position) || empty($department)) {
-    echo json_encode(['error' => 'All fields are required.']);
-    exit();
-}
-
-// Check if passwords match
+// Password validation
 if ($password !== $confirm_password) {
-    echo json_encode(['error' => 'Passwords do not match.']);
+    echo "<script>alert('Passwords do not match. Please try again.'); window.history.back();</script>";
     exit();
 }
 
-// Check if the email already exists
-$sql = "SELECT COUNT(*) FROM employee_register WHERE email = ?";
-$stmt = $conn->prepare($sql);
+// Hash the password before storing it
+$hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-if (!$stmt) {
-    echo json_encode(['error' => 'Prepare failed: ' . $conn->error]);
-    exit();
-}
-
-$stmt->bind_param("s", $Email);
+// Check if the email already exists in the database
+$email_check_query = "SELECT * FROM employee_register WHERE email = ?";
+$stmt = $conn->prepare($email_check_query);
+$stmt->bind_param("s", $email);
 $stmt->execute();
-$stmt->bind_result($count);
-$stmt->fetch();
-$stmt->close();
+$result = $stmt->get_result();
 
-if ($count > 0) {
-    echo json_encode(['error' => 'This email is already registered.']);
+if ($result->num_rows > 0) {
+    echo "<script>alert('Email already exists. Please use a different email.'); window.history.back();</script>";
     exit();
 }
 
-// Hash the password
-$hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-
-// Prepare and execute SQL statement to insert employee data
-$sql = "INSERT INTO employee_register (firstname, lastname, email, password, role, position, department) VALUES (?, ?, ?, ?, ?, ?, ?)";
-$stmt = $conn->prepare($sql);
-
-if (!$stmt) {
-    echo json_encode(['error' => 'Prepare failed: ' . $conn->error]);
-    exit();
-}
-
-$stmt->bind_param("sssssss", $firstName, $lastName, $Email, $hashedPassword, $role, $position, $department);
+// Insert data into the employee_register table
+$insert_query = "INSERT INTO employee_register (firstname, lastname, email, password, role, department, position) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?)";
+$stmt = $conn->prepare($insert_query);
+$stmt->bind_param("sssssss", $firstname, $lastname, $email, $hashed_password, $role, $department, $position);
 
 if ($stmt->execute()) {
     // Get the last inserted employee ID for QR code generation
     $employeeId = $stmt->insert_id;
 
     // Define QR code content (using employee ID or email)
-    $codeContents = 'Employee ID: ' . $employeeId . ' | Email: ' . $Email;
+    $codeContents = 'Employee ID: ' . $employeeId . ' | Email: ' . $email;
 
     // Define the directory for QR codes
     $tempDir = "C:/xampp/htdocs/HR2/QR/";
@@ -90,12 +71,12 @@ if ($stmt->execute()) {
     $updateStmt->execute();
     $updateStmt->close();
 
-    echo json_encode(['success' => 'Registration successful!']);
+    echo "<script>alert('Employee account created successfully!'); window.location.href='../admin/employee.php';</script>";
 } else {
-    echo json_encode(['error' => 'Error: ' . $stmt->error]);
+    echo "<script>alert('Error: " . $stmt->error . "'); window.history.back();</script>";
 }
 
-// Close connection
+// Close the prepared statement and connection
 $stmt->close();
 $conn->close();
 ?>

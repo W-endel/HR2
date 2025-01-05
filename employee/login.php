@@ -5,14 +5,15 @@ include '../db/db_conn.php'; // Include your database connection file
 // Retrieve form input
 $email = $_POST['email'] ?? '';
 $password = $_POST['password'] ?? '';
+$position = $_POST['position'] ?? '';
 
 // Initialize login success as false by default
 $loginSuccessful = false;
 
-// Prepare and execute the query to check credentials
-$sql = "SELECT e_id, password FROM employee_register WHERE email = ? AND role = 'employee'";
+// Prepare and execute the query to check credentials and position
+$sql = "SELECT e_id, password, position FROM employee_register WHERE email = ? AND role = 'employee' AND position = ?";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("s", $email);
+$stmt->bind_param("ss", $email, $position); // Bind only the email parameter
 $stmt->execute();
 $result = $stmt->get_result();
 
@@ -30,7 +31,7 @@ $conn->close();
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <meta name="description" content="" />
     <meta name="author" content="" />
-    <title>Login - HR2</title>
+    <title>Employee Login</title>
     <link href="../css/styles.css" rel="stylesheet" />
 </head>
 
@@ -56,20 +57,19 @@ $conn->close();
                                         <div class="form-floating mb-3">
                                             <input class="form-control" id="inputEmail" type="email" name="email"
                                                 placeholder="name@example.com" required />  
-                                                <label for="inputEmail">Email address:</label>                                          
+                                            <label for="inputEmail">Email address:</label>                                          
                                         </div>
                                         <div class="form-floating mb-3">
-
                                             <input class="form-control" id="inputPassword" type="password" name="password"
                                                 placeholder="Password" required />
-                                                <label for="inputPassword">Password:</label>
+                                            <label for="inputPassword">Password:</label>
                                         </div>
                                         <div class="d-flex justify-content-between align-items-center mt-1 mb-2">
                                             <div class="d-flex align-items-center">
                                                 <input class="form-check-input" id="inputRememberPassword" type="checkbox" name="remember" value="" />
                                                 <label class="form-check-label text-light ms-2" for="inputRememberPassword">Remember Password</label>
                                             </div>
-                                                <a class="small text-info" href="../employee/forgot_pass.php">Forgot Password?</a>
+                                            <a class="small text-info" href="../employee/forgot_pass.php">Forgot Password?</a>
                                         </div>
                                         <div class="d-flex align-items-center justify-content-between mt-2 mb-2">
                                             <button type="submit" class="btn btn-primary w-100">Login</button>
@@ -80,7 +80,7 @@ $conn->close();
                                     </form>
                                 </div>
                                 <div class="card-footer text-center border-top border-1 border-warning">
-                                    <div class="text-center text-muted">Human Resource 2</a></div>
+                                    <div class="text-center text-muted">Human Resource 2</div>
                                 </div>
                             </div>
                         </div>
@@ -118,8 +118,7 @@ $conn->close();
         }
     }, 10000); // 10 seconds delay
 </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
-        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    crossorigin="anonymous"></script>
 </body>
-
 </html>

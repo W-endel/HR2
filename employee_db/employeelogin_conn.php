@@ -22,8 +22,7 @@ if (!preg_match($passwordPattern, $inputPassword)) {
     exit();
 }
 
-// Prepare and execute SQL statement
-$sql = "SELECT e_id, password FROM employee_register WHERE email = ?";
+$sql = "SELECT e_id, password, position FROM employee_register WHERE email = ?";
 $stmt = $conn->prepare($sql);
 
 if ($stmt === false) {
@@ -40,10 +39,27 @@ if ($result->num_rows > 0) {
     // Verify the password
     if (password_verify($inputPassword, $employeeData['password'])) {
         $_SESSION['e_id'] = $employeeData['e_id']; 
-        $stmt->close();
-        $conn->close();
-        header("Location: ../employee/dashboard.php"); // Redirect to main dashboard
-        exit();
+        $_SESSION['position'] = $employeeData['position']; // Store the user's position in the session
+        
+        // Redirect based on position
+        if ($employeeData['position'] === 'Staff') {
+            $stmt->close();
+            $conn->close();
+            header("Location: ../employee/staff/dashboard.php"); // Redirect to staff dashboard
+            exit();
+        } elseif ($employeeData['position'] === 'Supervisor') {
+            $stmt->close();
+            $conn->close();
+            header("Location: ../employee/supervisor/dashboard.php"); // Redirect to supervisor dashboard
+            exit();
+        } else {
+            // Handle other positions or unknown positions
+            $error = urlencode("Invalid position detected.");
+            $stmt->close();
+            $conn->close();
+            header("Location: ../employee/login.php?error=$error");
+            exit();
+        }
     } else {
         $error = urlencode("Invalid email or password.");
         $stmt->close();
