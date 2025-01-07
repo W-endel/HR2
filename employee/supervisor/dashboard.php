@@ -81,7 +81,7 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
                                     <li><a class="dropdown-item" href="#!">Settings</a></li>
                                     <li><a class="dropdown-item" href="#!">Activity Log</a></li>
                                     <li><hr class="dropdown-divider" /></li>
-                                    <li><a class="dropdown-item" href="../../employee/supervisor/logout.php" onclick="confirmLogout(event)">Logout</a></li>
+                                    <li><a class="dropdown-item" href="../../employee/logout.php" onclick="confirmLogout(event)">Logout</a></li>
                                 </ul>
                             </li>
                             <li class="nav-item text-light d-flex ms-3 flex-column align-items-center text-center">

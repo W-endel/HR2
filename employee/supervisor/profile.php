@@ -59,7 +59,7 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
 </head>
 <body class="sb-nav-fixed bg-black">
     <nav class="sb-topnav navbar navbar-expand navbar-dark border-bottom border-1 border-warning bg-dark">
-        <a class="navbar-brand ps-3 text-muted" href="../../employee/staff/dashboard.php">Employee Portal</a>
+        <a class="navbar-brand ps-3 text-muted" href="../../employee/supervisor/dashboard.php">Employee Portal</a>
         <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars text-light"></i></button>
             <div class="d-flex ms-auto me-0 me-md-3 my-2 my-md-0 align-items-center">
                 <div class="text-light me-3 p-2 rounded shadow-sm bg-gradient" id="currentTimeContainer" 
@@ -98,11 +98,11 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                                         class="rounded-circle border border-light" width="120" height="120" alt="" />
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                    <li><a class="dropdown-item" href="../../employee/staff/profile.php">Profile</a></li>
+                                    <li><a class="dropdown-item" href="../../employee/supervisor/profile.php">Profile</a></li>
                                     <li><a class="dropdown-item" href="#!">Settings</a></li>
                                     <li><a class="dropdown-item" href="#!">Activity Log</a></li>
                                     <li><hr class="dropdown-divider" /></li>
-                                    <li><a class="dropdown-item" href="../../employee/staff/employeelogout.php" onclick="confirmLogout(event)">Logout</a></li>
+                                    <li><a class="dropdown-item" href="../../employee/supervisor/employeelogout.php" onclick="confirmLogout(event)">Logout</a></li>
                                 </ul>
                             </li>
                             <li class="nav-item text-light d-flex ms-3 flex-column align-items-center text-center">
@@ -127,7 +127,7 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                             </li>
                         </ul>
                         <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-warning mt-3">Employee Dashboard</div>
-                        <a class="nav-link text-light" href="../../employee/staff/dashboard.php">
+                        <a class="nav-link text-light" href="../../employee/supervisor/dashboard.php">
                             <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
                             Dashboard
                         </a>
@@ -138,7 +138,7 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                         </a>
                         <div class="collapse" id="collapseTAD" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link text-light" href="../../employee/staff/attendance.php">Attendance Scanner</a>
+                                <a class="nav-link text-light" href="../../employee/supervisor/attendance.php">Attendance Scanner</a>
                                 <a class="nav-link text-light" href="">Timesheet</a>
                             </nav>
                         </div>
@@ -149,8 +149,8 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                         </a>
                         <div class="collapse" id="collapseLM" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                            <a class="nav-link text-light" href="../../employee/staff/leave_request.php">File Leave Request</a>
-                            <a class="nav-link text-light" href="../../employee/staff/leave_balance.php">View Remaining Leave</a>
+                            <a class="nav-link text-light" href="../../employee/supervisor/leave_file.php">File Leave</a>
+                            <a class="nav-link text-light" href="../../employee/supervisor/leave_request.php">Endorse Leave</a>
                             </nav>
                         </div>
                         <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePM" aria-expanded="false" aria-controls="collapsePM">
@@ -160,7 +160,7 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                         </a>
                         <div class="collapse" id="collapsePM" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                            <a class="nav-link text-light" href="../../employee/staff/evaluation.php">Evaluation</a>
+                            <a class="nav-link text-light" href="../../employee/supervisor/evaluation.php">Evaluation</a>
                             </nav>
                         </div>
                         <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseSR" aria-expanded="false" aria-controls="collapseSR">
@@ -170,7 +170,7 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                         </a>
                         <div class="collapse" id="collapseSR" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link text-light" href="../../employee/staff/recognitions.php">View Your Rating</a>
+                                <a class="nav-link text-light" href="../../employee/supervisor/recognitions.php">View Your Rating</a>
                             </nav>
                         </div>
                         <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-warning mt-3">Feedback</div> 
@@ -220,33 +220,67 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                                                 data-bs-toggle="dropdown" aria-expanded="false">
                                             <i class="fas fa-edit"></i>
                                         </button>
-                                    
-                                    <!-- Dropdown for editing the profile picture -->
                                     <div class="dropdown mt-3">
                                         <ul class="dropdown-menu" aria-labelledby="editPictureDropdown">
                                             <li>
-                                                <!-- Trigger file input for changing the profile picture -->
                                                 <a class="dropdown-item" href="javascript:void(0);" id="changePictureOption">Change Profile Picture</a>
                                             </li>
                                             <li>
-                                                <!-- Form to handle profile picture deletion -->
-                                            <form action="../../employee_db/delete_employee_pfp.php" method="post">
-                                                <!-- Hidden input to send the admin_id to the backend -->
-                                                <input type="hidden" name="employeeId" value="<?php echo $employeeInfo['e_id']; ?>">
-                                                
-                                                <button class="dropdown-item" type="submit" onclick="return confirm('Are you sure you want to delete your profile picture?');">
-                                                    Delete Profile Picture
-                                                </button>
-                                            </form>
+                                                <form action="../../employee_db/supervisor/delete_employee_pfp.php" method="post">
+                                                    <input type="hidden" name="employeeId" value="<?php echo $employeeInfo['e_id']; ?>">
+                                                    <button class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#deleteProfilePictureModal">
+                                                        Delete Profile Picture
+                                                    </button>
+                                                </form>
+                                                <div class="modal fade" id="deleteProfilePictureModal" tabindex="-1" aria-labelledby="deleteProfilePictureLabel" aria-hidden="true">
+                                                    <div class="modal-dialog modal-dialog-centered">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title" id="deleteProfilePictureLabel">Delete Profile Picture</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body text-center">
+                                                                <p>Are you sure you want to delete your profile picture?</p>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <form action="../../employee_db/supervisor/delete_employee_pfp.php" method="post">
+                                                                    <input type="hidden" name="employeeId" value="<?php echo $employeeInfo['e_id']; ?>">
+                                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </li>
                                         </ul>
                                     </div>
-                                    
-                                    <!-- Hidden file input to upload a new profile picture -->
-                                    <form action="../../employee_db/update_employee_pfp.php" method="post" enctype="multipart/form-data" id="profilePictureForm" style="display:none;">
-                                        <input type="file" id="profilePictureInput" name="profile_picture" accept="image/*" onchange="document.getElementById('profilePictureForm').submit();">
+                                    <form action="../../employee_db/supervisor/update_employee_pfp.php" method="post" enctype="multipart/form-data" id="profilePictureForm" style="display:none;">
+                                        <input type="file" id="profilePictureInput" name="profile_picture" accept="image/*" onchange="showConfirmationModal();">
                                     </form>
-
+                                    <div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content bg-dark text-light" style="width: 500px; height: 400px;">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="confirmationModalLabel">Confirm Profile Picture Update</h5>
+                                                    <button type="button" class="close text-light bg-dark" data-bs-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>Are you sure you want to update your profile picture with the selected image?</p>
+                                                    <!-- Center the image in the modal -->
+                                                    <div class="d-flex justify-content-center align-items-center">
+                                                        <img id="modalProfilePicturePreview" src="#" alt="Selected Profile Picture" style="max-width: 150px; max-height: 150px;">
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                    <button type="button" class="btn btn-primary" onclick="submitProfilePictureForm()">Update</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                     <table class="table text-light mt-3 text-start">
                                         <tr>
                                             <td>Name:</td>
@@ -283,7 +317,7 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                                     <h5 class="card-title text-center">My Information</h5>
                                 </div>
                                 <div class="card-body bg-dark">
-                                    <form id="infoForm" action="../../employee_db/update_profile.php" method="post">
+                                    <form id="infoForm" action="../../employee_db/supervisor/update_profile.php" method="post">
                                         <div class="row mb-3">
                                             <label for="inputfName" class="col-sm-2 col-form-label text-light">First Name:</label>
                                             <div class="col-sm-9">
@@ -333,61 +367,59 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                                     </form>
                                 </div>
                             </div>
-                            <a href="../../employee/staff/change_pass.php" class="btn btn-primary mt-4">Change Password</a>
+                            <a href="../../employee/supervisor/change_pass.php" class="btn btn-primary mt-4">Change Password</a>
                         </div>
                     </div>
                 </div>
-                </main>
-                    <div class="modal fade" id="qrCodeModal" tabindex="-1" aria-labelledby="qrCodeModalLabel" aria-hidden="true">
-                        <div class="modal-dialog">
-                            <div class="modal-content bg-dark text-light">
-                                <div class="modal-header boder-1 border-warning">
-                                    <h5 class="modal-title" id="qrCodeModalLabel">Employee QR Code</h5>
-                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body text-center">
-                                    <!-- Display the generated QR code -->
-                                    <img src="<?php echo $qrImagePath; ?>" alt="QR Code" class="img-fluid border border-light" width="200">
-                                    <p class="mt-3">Employee ID: <?php echo htmlspecialchars($employeeInfo['e_id']); ?></p>
-                                    <p>Name: <?php echo htmlspecialchars($employeeInfo['firstname'] . ' ' . $employeeInfo['middlename'] . ' ' . $employeeInfo['lastname']); ?></p>
-                                </div>
-                                <div class="modal-footer boder-1 border-warning">
-                                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
-                                </div>
+            </main>
+                <div class="modal fade" id="qrCodeModal" tabindex="-1" aria-labelledby="qrCodeModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content bg-dark text-light">
+                            <div class="modal-header boder-1 border-warning">
+                                <h5 class="modal-title" id="qrCodeModalLabel">Employee QR Code</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body text-center">
+                                <img src="<?php echo $qrImagePath; ?>" alt="QR Code" class="img-fluid border border-light" width="200">
+                                <p class="mt-3">Employee ID: <?php echo htmlspecialchars($employeeInfo['e_id']); ?></p>
+                                <p>Name: <?php echo htmlspecialchars($employeeInfo['firstname'] . ' ' . $employeeInfo['middlename'] . ' ' . $employeeInfo['lastname']); ?></p>
+                            </div>
+                            <div class="modal-footer boder-1 border-warning">
+                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
                             </div>
                         </div>
                     </div>
-                <footer class="py-4 bg-dark text-light mt-auto border-top border-warning">
-                    <div class="container-fluid px-4">
-                        <div class="d-flex align-items-center justify-content-between small">
-                            <div class="text-muted">Copyright &copy; Your Website 2024</div>
-                            <div>
-                                <a href="#">Privacy Policy</a>
-                                &middot;
-                                <a href="#">Terms & Conditions</a>
-                            </div>
+                </div>
+            <footer class="py-4 bg-dark text-light mt-auto border-top border-warning">
+                <div class="container-fluid px-4">
+                    <div class="d-flex align-items-center justify-content-between small">
+                        <div class="text-muted">Copyright &copy; Your Website 2024</div>
+                        <div>
+                            <a href="#">Privacy Policy</a>
+                            &middot;
+                            <a href="#">Terms & Conditions</a>
                         </div>
                     </div>
-                </footer>
-                    <div class="modal fade" id="qrCodeModal" tabindex="-1" aria-labelledby="qrCodeModalLabel" aria-hidden="true">
-                        <div class="modal-dialog">
-                            <div class="modal-content bg-dark text-light">
-                                <div class="modal-header boder-1 border-warning">
-                                    <h5 class="modal-title" id="qrCodeModalLabel">Employee QR Code</h5>
-                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body text-center">
-                                    <!-- Display the generated QR code -->
-                                    <img src="<?php echo $qrImagePath; ?>" alt="QR Code" class="img-fluid border border-light" width="200">
-                                    <p class="mt-3">Employee ID: <?php echo htmlspecialchars($employeeInfo['e_id']); ?></p>
-                                    <p>Name: <?php echo htmlspecialchars($employeeInfo['firstname'] . ' ' . $employeeInfo['middlename'] . ' ' . $employeeInfo['lastname']); ?></p>
-                                </div>
-                                <div class="modal-footer boder-1 border-warning">
-                                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
-                                </div>
-                            </div>
+                </div>
+            </footer>
+            <div class="modal fade" id="qrCodeModal" tabindex="-1" aria-labelledby="qrCodeModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content bg-dark text-light">
+                        <div class="modal-header boder-1 border-warning">
+                            <h5 class="modal-title" id="qrCodeModalLabel">Employee QR Code</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body text-center">
+                            <img src="<?php echo $qrImagePath; ?>" alt="QR Code" class="img-fluid border border-light" width="200">
+                            <p class="mt-3">Employee ID: <?php echo htmlspecialchars($employeeInfo['e_id']); ?></p>
+                            <p>Name: <?php echo htmlspecialchars($employeeInfo['firstname'] . ' ' . $employeeInfo['middlename'] . ' ' . $employeeInfo['lastname']); ?></p>
+                        </div>
+                        <div class="modal-footer boder-1 border-warning">
+                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
                         </div>
                     </div>
+                </div>
+            </div>
         </div>
     </div>
 <script>
@@ -464,11 +496,6 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
         setCurrentTime();
         setInterval(setCurrentTime, 1000);
         //TIME END
-
-         // Trigger file input when user clicks on "Change Profile Picture"
-        document.getElementById('changePictureOption').addEventListener('click', function() {
-            document.getElementById('profilePictureInput').click();
-        });
 </script>
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'> </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>

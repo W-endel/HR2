@@ -46,10 +46,7 @@ if ($result->num_rows > 0) {
 
     // Verify the password
     if (password_verify($inputPassword, $adminData['password'])) {
-        // Reset failed login attempts upon successful login
         resetLoginAttempts($conn, $inputEmail);
-        
-        // Set session variables for the logged-in admin
         $_SESSION['a_id'] = $adminData['a_id']; // Store admin ID in session
         $stmt->close();
         $conn->close();

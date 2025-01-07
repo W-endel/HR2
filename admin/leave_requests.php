@@ -329,7 +329,7 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
                             Pending Request
                         </div>
                         <div class="card-body">
-                            <table class=" col-md-12 table table-bordered mt-3 text-center text-light table-dark mx-auto"> 
+                            <table id="table" class=" col-md-12 table table-bordered mt-3 text-center text-light table-dark mx-auto"> 
                                 <thead>
                                     <tr>
                                         <th>Employee ID</th>
@@ -460,14 +460,14 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
                     </div>
                     <div class="container">
                         <div class="text-center">
-                            <a href="#" class="text-light btn btn-primary mt-2" data-toggle="modal" data-target="#setLeaveModal">Set Leave Credit</a>
+                            <a href="#" class="text-light btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#setLeaveModal">Set Leave Credit</a>
                         </div>
                         <div class="modal fade" id="setLeaveModal" tabindex="-1" aria-labelledby="setLeaveModalLabel" aria-hidden="true">
                             <div class="modal-dialog">
                                 <div class="modal-content bg-dark">
                                     <div class="modal-header">
                                         <h5 class="modal-title text-light" id="setLeaveModalLabel">Set Leave Allocations</h5>
-                                        <button type="button" class="close text-light bg-dark" data-dismiss="modal" aria-label="Close">
+                                        <button type="button" class="close text-light bg-dark" data-bs-dismiss="modal" aria-label="Close">
                                             <span aria-hidden="true">&times;</span>
                                         </button>
                                     </div>

@@ -1,13 +1,10 @@
 <?php
 session_start();
 
-// Unset all session variables
-$_SESSION = [];
+// Unset only admin-specific session variables
+unset($_SESSION['a_id']);
+unset($_SESSION['role']);
 
-// Destroy the session
-session_destroy();
-
-// Redirect to the login page
 header("Location: ../admin/login.php");
 exit();
 ?>

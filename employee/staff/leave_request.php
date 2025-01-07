@@ -227,7 +227,7 @@ $conn->close();
                             </div>
                         </div>
                     </div>
-                <form id="leave-request-form" action="../../employee_db/leave_conn.php" method="POST" enctype="multipart/form-data">
+                <form id="leave-request-form" action="../../employee_db/staff/leave_conn.php" method="POST" enctype="multipart/form-data">
                     <div class="row">
                         <div class="col-md-12">
                             <div class="card leave-form text bg-dark text-light">

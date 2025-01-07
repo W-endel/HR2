@@ -62,7 +62,7 @@ $conn->close();
 </head>
 <body class="sb-nav-fixed bg-black">
     <nav class="sb-topnav navbar navbar-expand navbar-dark border-bottom border-1 border-warning bg-dark">
-        <a class="navbar-brand ps-3 text-muted" href="../../employee/staff/dashboard.php">Employee Portal</a>
+        <a class="navbar-brand ps-3 text-muted" href="../../employee/supervisor/dashboard.php">Employee Portal</a>
         <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars text-light"></i></button>
             <div class="d-flex ms-auto me-0 me-md-3 my-2 my-md-0 align-items-center">
                 <div class="text-light me-3 p-2 rounded shadow-sm bg-gradient" id="currentTimeContainer" 
@@ -101,11 +101,11 @@ $conn->close();
                                         class="rounded-circle border border-light" width="120" height="120" alt="" />
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                    <li><a class="dropdown-item" href="../../employee/staff/profile.php">Profile</a></li>
+                                    <li><a class="dropdown-item" href="../../employee/supervisor/profile.php">Profile</a></li>
                                     <li><a class="dropdown-item" href="#!">Settings</a></li>
                                     <li><a class="dropdown-item" href="#!">Activity Log</a></li>
                                     <li><hr class="dropdown-divider" /></li>
-                                    <li><a class="dropdown-item" href="../../employee/staff/employeelogout.php" onclick="confirmLogout(event)">Logout</a></li>
+                                    <li><a class="dropdown-item" href="../../employee/supervisor/employeelogout.php" onclick="confirmLogout(event)">Logout</a></li>
                                 </ul>
                             </li>
                             <li class="nav-item text-light d-flex ms-3 flex-column align-items-center text-center">
@@ -121,7 +121,7 @@ $conn->close();
                                 <span class="big text-light">
                                     <?php
                                         if ($employeeInfo) {
-                                        echo htmlspecialchars($employeeInfo['role']);
+                                        echo htmlspecialchars($employeeInfo['position']);
                                         } else {
                                         echo "User information not available.";
                                         }
@@ -130,7 +130,7 @@ $conn->close();
                             </li>
                         </ul>
                         <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-warning mt-3">Employee Dashboard</div>
-                        <a class="nav-link text-light" href="../../employee/staff/dashboard.php">
+                        <a class="nav-link text-light" href="../../employee/supervisor/dashboard.php">
                             <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
                             Dashboard
                         </a>
@@ -141,7 +141,7 @@ $conn->close();
                         </a>
                         <div class="collapse" id="collapseTAD" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link text-light" href="../../employee/staff/attendance.php">Attendance Scanner</a>
+                                <a class="nav-link text-light" href="../../employee/supervisor/attendance.php">Attendance Scanner</a>
                                 <a class="nav-link text-light" href="">Timesheet</a>
                             </nav>
                         </div>
@@ -152,8 +152,8 @@ $conn->close();
                         </a>
                         <div class="collapse" id="collapseLM" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                            <a class="nav-link text-light" href="../../employee/staff/leave_request.php">File Leave Request</a>
-                            <a class="nav-link text-light" href="../../employee/staff/leave_balance.php">View Remaining Leave</a>
+                            <a class="nav-link text-light" href="../../employee/supervisor/leave_request.php">File Leave</a>
+                            <a class="nav-link text-light" href="../../employee/supervisor/leave_balance.php">VEndorse Leave</a>
                             </nav>
                         </div>
                         <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePM" aria-expanded="false" aria-controls="collapsePM">
@@ -163,7 +163,7 @@ $conn->close();
                         </a>
                         <div class="collapse" id="collapsePM" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                            <a class="nav-link text-light" href="../../employee/staff/evaluation.php">Evaluation</a>
+                            <a class="nav-link text-light" href="../../employee/supervisor/evaluation.php">Evaluation</a>
                             </nav>
                         </div>
                         <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseSR" aria-expanded="false" aria-controls="collapseSR">
@@ -173,7 +173,7 @@ $conn->close();
                         </a>
                         <div class="collapse" id="collapseSR" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link text-light" href="../../admin/rating.php">View Ratings</a>
+                                <a class="nav-link text-light" href="../../employee/supervisor/awardee.php">Awardee</a>
                             </nav>
                         </div>
                         <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-warning mt-3">Feedback</div> 

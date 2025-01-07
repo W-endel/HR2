@@ -18,10 +18,10 @@ $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $employeeId);
 $stmt->execute();
 $result = $stmt->get_result();
-$adminInfo = $result->fetch_assoc();
+$employeeInfo = $result->fetch_assoc();
 
 // Fetch all pending leave requests for supervisors to handle
-$sql = "SELECT lr.leave_id, e.e_id, e.firstname, e.lastname, e.department, e.available_leaves, lr.start_date, lr.end_date, lr.leave_type, lr.proof, lr.status
+$sql = "SELECT lr.leave_id, e.e_id, e.firstname, e.lastname, e.department, e.available_leaves, lr.start_date, lr.end_date, lr.leave_type, lr.proof, lr.status, lr.created_at
         FROM leave_requests lr
         JOIN employee_register e ON lr.e_id = e.e_id
         WHERE lr.status = 'Pending'";  // Fetch only Pending requests
@@ -176,9 +176,9 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
                         <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
                             <li class="nav-item dropdown text">
                                 <a class="nav-link dropdown-toggle text-light d-flex justify-content-center ms-4" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <img src="<?php echo (!empty($adminInfo['pfp']) && $adminInfo['pfp'] !== 'defaultpfp.png') 
-                                        ? htmlspecialchars($adminInfo['pfp']) 
-                                        : '../img/defaultpfp.jpg'; ?>" 
+                                    <img src="<?php echo (!empty($employeeInfo['pfp']) && $employeeInfo['pfp'] !== 'defaultpfp.png') 
+                                        ? htmlspecialchars($employeeInfo['pfp']) 
+                                        : '../../img/defaultpfp.jpg'; ?>" 
                                         class="rounded-circle border border-light" width="120" height="120" alt="Profile Picture" />
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
@@ -192,17 +192,17 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
                             <li class="nav-item text-light d-flex ms-3 flex-column align-items-center text-center">
                                 <span class="big text-light mb-1">
                                     <?php
-                                        if ($adminInfo) {
-                                        echo htmlspecialchars($adminInfo['firstname'] . ' ' . $adminInfo['middlename'] . ' ' . $adminInfo['lastname']);
+                                        if ($employeeInfo) {
+                                        echo htmlspecialchars($employeeInfo['firstname'] . ' ' . $employeeInfo['middlename'] . ' ' . $employeeInfo['lastname']);
                                         } else {
-                                        echo "Admin information not available.";
+                                        echo "User information not available.";
                                         }
                                     ?>
                                 </span>      
                                 <span class="big text-light">
                                     <?php
-                                        if ($adminInfo) {
-                                        echo htmlspecialchars($adminInfo['position']);
+                                        if ($employeeInfo) {
+                                        echo htmlspecialchars($employeeInfo['position']);
                                         } else {
                                         echo "User information not available.";
                                         }
@@ -273,7 +273,7 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
                     </div>
                 </div>
                 <div class="sb-sidenav-footer bg-black text-light border-top border-1 border-warning">
-                    <div class="small">Logged in as: <?php echo htmlspecialchars($adminInfo['role']); ?></div>
+                    <div class="small">Logged in as: <?php echo htmlspecialchars($employeeInfo['role']); ?></div>
                 </div>
             </nav>
         </div>
@@ -320,7 +320,7 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
                             Pending Request
                         </div>
                         <div class="card-body">
-                            <table class=" col-md-12 table table-bordered mt-3 text-center text-light table-dark mx-auto"> 
+                            <table id="table" class=" col-md-12 table table-bordered mt-3 text-center text-light table-dark mx-auto"> 
                                 <thead>
                                     <tr>
                                         <th>Employee ID</th>
@@ -331,6 +331,7 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
                                         <th>Deduction Leave</th>
                                         <th>Reason</th>
                                         <th>Proof</th>
+                                        <th>Requested On</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -357,7 +358,7 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
                                             <td><?php echo htmlspecialchars($row['firstname'] . ' ' . $row['lastname']); ?></td>
                                             <td><?php echo htmlspecialchars($row['department']); ?></td>
                                             <td><?php echo htmlspecialchars($row['available_leaves']); ?></td>
-                                            <td><?php echo htmlspecialchars($row['start_date'] . ' / ' . $row['end_date']); ?></td>
+                                            <td><?php echo htmlspecialchars(date("F j, Y", strtotime($row['start_date']))) . ' <span class="text-warning"> until </span> ' . htmlspecialchars(date("F j, Y", strtotime($row['end_date']))); ?></td>
                                             <td><?php echo htmlspecialchars($leave_days); ?> day/s</td>
                                             <td><?php echo htmlspecialchars($row['leave_type']); ?></td>
                                             <td>
@@ -367,13 +368,22 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
                                                     No proof provided
                                                 <?php endif; ?>
                                             </td>
+                                            <td>
+                                                <?php 
+                                                    if (isset($row['created_at'])) {
+                                                        echo htmlspecialchars(date("F j, Y g:i A", strtotime($row['created_at'])));
+                                                    } else {
+                                                        echo "Not Available";
+                                                    }
+                                                ?>
+                                            </td>
                                             <div class="modal fade" id="proofModal<?php echo $row['proof']; ?>" tabindex="-1" aria-labelledby="proofModalLabel<?php echo $row['proof']; ?>" aria-hidden="true">
                                                 <div class="modal-dialog modal-dialog-centered">
                                                     <div class="modal-content bg-dark text-light" style="width: 600px; height: 500px;">
                                                         <div class="modal-header">
                                                             <h5 class="modal-title" id="proofModalLabel<?php echo $row['proof']; ?>">Proof of Leave</h5>
                                                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                </div>
+                                                        </div>
                                                         <div class="modal-body d-flex align-items-center justify-content-center" style="overflow-y: auto; height: calc(100% - 80px);">
                                                             <div id="proofCarousel<?php echo $row['proof']; ?>" class="carousel slide d-flex align-items-center justify-content-center" data-bs-ride="false">
                                                                 <div class="carousel-inner">
@@ -442,7 +452,7 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
                                         <?php endwhile; ?>
                                             <?php else: ?>
                                         <tr>
-                                            <td colspan="9" class="text-center">No pending request found.</td>
+                                            <td colspan="10" class="text-center">No pending request found.</td>
                                         </tr>
                                     <?php endif; ?>
                                 </tbody>
@@ -544,7 +554,7 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
         function confirmAction(action, requestId) {
             let confirmation = confirm(`Are you sure you want to ${action} this leave request?`);
                 if (confirmation) {
-                window.location.href = `leave_requests.php?leave_id=${requestId}&status=${action}`;
+                window.location.href = `leave_request.php?leave_id=${requestId}&status=${action}`;
                 }
         }
         //LEAVE STATUS END

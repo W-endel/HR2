@@ -1,6 +1,6 @@
 <?php
 session_start();
-include '../db/db_conn.php';
+include '../../db/db_conn.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (!isset($_SESSION['e_id'])) {
@@ -17,14 +17,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Validate required fields
     if (empty($startDate) || empty($endDate) || empty($leaveType)) {
         $_SESSION['status_message'] = "Please fill in all required fields.";
-        header("Location: ../employee/staff/leave_request.php");
+        header("Location: ../../employee/staff/leave_request.php");
         exit();
     }
 
     // Ensure the end date is not earlier than the start date
     if (strtotime($endDate) < strtotime($startDate)) {
         $_SESSION['status_message'] = "End date cannot be earlier than start date.";
-        header("Location: ../employee/staff/leave_request.php");
+        header("Location: ../../employee/staff/leave_request.php");
         exit();
     }
 
@@ -46,18 +46,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         if ($leaveDaysRequested > $availableLeaves) {
             $_SESSION['status_message'] = "You don't have enough leave days.";
-            header("Location: ../employee/staff/leave_request.php");
+            header("Location: ../../employee/staff/leave_request.php");
             exit();
         }
     } else {
         $_SESSION['status_message'] = "Employee not found.";
-        header("Location: ../employee/staff/leave_request.php");
+        header("Location: ../../employee/staff/leave_request.php");
         exit();
     }
 
     // Handle multiple file uploads and store file paths
     $proofFiles = [];  // Initialize an array to hold the file paths
-    $uploadDir = '../employee/proof/';  // Define the directory to store uploaded files
+    $uploadDir = '/employee/proof/';  // Define the directory to store uploaded files
 
     if (isset($_FILES['proof']) && !empty($_FILES['proof']['name'][0])) {
         $files = $_FILES['proof'];
@@ -78,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx', 'txt', 'xlsx', 'pptx'];
                 if (!in_array(strtolower($fileExtension), $allowedExtensions)) {
                     $_SESSION['status_message'] = "Invalid file type. Only images, PDFs, and documents are allowed.";
-                    header("Location: ../employee/staff/leave_request.php");
+                    header("Location: ../../employee/staff/leave_request.php");
                     exit();
                 }
 
@@ -88,12 +88,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $proofFiles[] = $destFilePath;  // Add the file path to the array
                 } else {
                     $_SESSION['status_message'] = "Error: Could not move the uploaded file.";
-                    header("Location: ../employee/staff/leave_request.php");
+                    header("Location: ../../employee/staff/leave_request.php");
                     exit();
                 }
             } else {
                 $_SESSION['status_message'] = "Error: File upload failed.";
-                header("Location: ../employee/staff/leave_request.php");
+                header("Location: ../../employee/staff/leave_request.php");
                 exit();
             }
         }
@@ -124,7 +124,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $stmt->close();
     $conn->close();
 
-    header("Location: ../employee/staff/leave_request.php");
+    header("Location: ../../employee/staff/leave_request.php");
     exit();
 }
 ?>
