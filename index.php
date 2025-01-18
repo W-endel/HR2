@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Selection</title>
-    <link rel="stylesheet" href="../css/styles.css"> <!-- External CSS file -->
+    <link rel="stylesheet" href="css/styles.css"> <!-- External CSS file -->
     <style>
     /* Make the buttons long */
     #admin-login-btn, #employee-login-btn {
@@ -25,19 +25,14 @@
         <h1 class="display-4 mb-3">Select Your Login</h1>
         <p class="lead">Please choose the appropriate login option to access your portal.</p>
     </div>
-
     <!-- Center the buttons in the middle of the screen -->
     <div class="d-flex justify-content-center align-items-center" style="height: 60vh;">
         <div class="d-flex justify-content-center gap-4">
-            <a href="../admin/login.php" class="btn btn-primary btn-lg px-5 py-3 rounded-pill shadow-lg" id="admin-login-btn">Admin Login</a>
-            <a href="../employee/login.php" class="btn btn-primary btn-lg px-5 py-3 rounded-pill shadow-lg" id="employee-login-btn">Employee Login</a>
+            <a href="admin/login.php" class="btn btn-primary btn-lg px-5 py-3 rounded-pill shadow-lg" id="admin-login-btn">Admin Login</a>
+            <a href="employee/login.php" class="btn btn-primary btn-lg px-5 py-3 rounded-pill shadow-lg" id="employee-login-btn">Employee Login</a>
         </div>
     </div>
 </div>
-
-
-
-    </div>
 
 
 </body>

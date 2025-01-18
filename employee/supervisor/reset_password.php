@@ -142,6 +142,7 @@ if (isset($_POST['resend_token'])) {
 <head>
     <meta charset="utf-8" />
     <title>Reset Password</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"/>
     <link href="../../css/styles.css" rel="stylesheet" />
 </head>
 <body class="bg-black">
@@ -166,10 +167,16 @@ if (isset($_POST['resend_token'])) {
                                 <div class="form-floating mb-3">
                                     <input class="form-control" id="new_password" name="new_password" type="password" placeholder="New Password" required />
                                     <label for="new_password">New Password</label>
+                                    <button type="button" class="btn position-absolute top-50 end-0 translate-middle-y me-2" id="toggleNewPassword">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
                                 </div>
                                 <div class="form-floating mb-3">
                                     <input class="form-control" id="confirm_new_password" name="confirm_new_password" type="password" placeholder="Confirm New Password" required />
                                     <label for="confirm_new_password">Confirm New Password</label>
+                                    <button type="button" class="btn position-absolute top-50 end-0 translate-middle-y me-2" id="toggleConfirmPassword">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
                                 </div>
                                 <div class="d-flex align-items-center justify-content-between mt-4 mb-0">
                                     <button type="submit" class="btn btn-primary w-100" id="submitButton">Reset Password</button>
@@ -220,6 +227,21 @@ if (isset($_POST['resend_token'])) {
                     }
                 }, 1000);
             }
+        });
+
+
+        const togglePassword = document.querySelector("#togglePassword");
+        const passwordField = document.querySelector("#inputPassword");
+        const icon = togglePassword.querySelector("i");
+
+        togglePassword.addEventListener("click", function () {
+            // Toggle the password field type
+            const type = passwordField.getAttribute("type") === "password" ? "text" : "password";
+            passwordField.setAttribute("type", type);
+
+            // Toggle the eye/eye-slash icon
+            icon.classList.toggle("fa-eye");
+            icon.classList.toggle("fa-eye-slash");
         });
     </script>
 </body>

@@ -131,27 +131,27 @@ function getTopEmployeesByCriterion($conn, $criterion, $criterionLabel, $index) 
     <nav class="sb-topnav navbar navbar-expand navbar-dark border-bottom border-1 border-warning bg-dark">
         <a class="navbar-brand ps-3 text-muted" href="../admin/dashboard.php">Microfinance</a>
         <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars text-light"></i></button>
-            <div class="d-flex ms-auto me-0 me-md-3 my-2 my-md-0 align-items-center">
-                <div class="text-light me-3 p-2 rounded shadow-sm bg-gradient" id="currentTimeContainer" 
-                    style="background: linear-gradient(45deg, #333333, #444444); border-radius: 5px;">
-                    <span class="d-flex align-items-center">
-                        <span class="pe-2">
-                            <i class="fas fa-clock"></i> 
-                            <span id="currentTime">00:00:00</span>
-                        </span>
-                        <button class="btn btn-outline-warning btn-sm ms-2" type="button" onclick="toggleCalendar()">
-                            <i class="fas fa-calendar-alt"></i>
-                            <span id="currentDate">00/00/0000</span>
-                        </button>
+        <div class="d-flex ms-auto me-0 me-md-3 my-2 my-md-0 align-items-center">
+            <div class="text-light me-3 p-2 rounded shadow-sm bg-gradient" id="currentTimeContainer" 
+                style="background: linear-gradient(45deg, #333333, #444444); border-radius: 5px;">
+                <span class="d-flex align-items-center">
+                    <span class="pe-2">
+                        <i class="fas fa-clock"></i> 
+                        <span id="currentTime">00:00:00</span>
                     </span>
-                </div>
-                <form class="d-none d-md-inline-block form-inline">
-                    <div class="input-group">
-                        <input class="form-control" type="text" placeholder="Search for..." aria-label="Search for..." aria-describedby="btnNavbarSearch" />
-                        <button class="btn btn-warning" id="btnNavbarSearch" type="button"><i class="fas fa-search"></i></button>
-                    </div>
-                </form>
+                    <button class="btn btn-outline-warning btn-sm ms-2" type="button" onclick="toggleCalendar()">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span id="currentDate">00/00/0000</span>
+                    </button>
+                </span>
             </div>
+            <form class="d-none d-md-inline-block form-inline">
+                <div class="input-group">
+                    <input class="form-control" type="text" placeholder="Search for..." aria-label="Search for..." aria-describedby="btnNavbarSearch" />
+                    <button class="btn btn-warning" id="btnNavbarSearch" type="button"><i class="fas fa-search"></i></button>
+                </div>
+            </form>
+        </div>
     </nav>
     <div id="layoutSidenav">
         <div id="layoutSidenav_nav">
@@ -172,7 +172,7 @@ function getTopEmployeesByCriterion($conn, $criterion, $criterionLabel, $index) 
                                     <li><a class="dropdown-item" href="#!">Settings</a></li>
                                     <li><a class="dropdown-item" href="#!">Activity Log</a></li>
                                     <li><hr class="dropdown-divider" /></li>
-                                    <li><a class="dropdown-item" href="../admin/logout.php" onclick="confirmLogout(event)">Logout</a></li>
+                                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">Logout</a></li>
                                 </ul>
                             </li>
                             <li class="nav-item text-light d-flex ms-3 flex-column align-items-center text-center">
@@ -267,47 +267,67 @@ function getTopEmployeesByCriterion($conn, $criterion, $criterionLabel, $index) 
                 </div>
             </nav>
         </div>
-    <div id="layoutSidenav_content">
-        <main class="container-fluid position-relative bg-black">
-            <div class="container" id="calendarContainer" 
-                style="position: fixed; top: 9%; right: 0; z-index: 1050; 
-                width: 700px; display: none;">
+        <div id="layoutSidenav_content">
+            <main class="container-fluid position-relative bg-black">
+                <div class="container" id="calendarContainer" 
+                    style="position: fixed; top: 9%; right: 0; z-index: 1050; 
+                    width: 700px; display: none;">
                     <div class="row">
                         <div class="col-md-12">
                             <div id="calendar" class="p-2"></div>
                         </div>
                     </div>
-            </div>   
-            <h1 class="mb-2 text-light ms-2">Outstanding Employees by Evaluation Criteria</h1>            
-            <div class="container text-light">
+                </div>   
+                <h1 class="mb-2 text-light ms-2">Outstanding Employees by Evaluation Criteria</h1>            
+                <div class="container text-light">
 
-                <!-- Top Employees for Different Criteria -->
-                <?php getTopEmployeesByCriterion($conn, 'quality', 'Quality of Work', 1); ?>
-                <?php getTopEmployeesByCriterion($conn, 'communication_skills', 'Communication Skills', 2); ?>
-                <?php getTopEmployeesByCriterion($conn, 'teamwork', 'Teamwork', 3); ?>
-                <?php getTopEmployeesByCriterion($conn, 'punctuality', 'Punctuality', 4); ?>
-                <?php getTopEmployeesByCriterion($conn, 'initiative', 'Initiative', 5); ?>
+                    <!-- Top Employees for Different Criteria -->
+                    <?php getTopEmployeesByCriterion($conn, 'quality', 'Quality of Work', 1); ?>
+                    <?php getTopEmployeesByCriterion($conn, 'communication_skills', 'Communication Skills', 2); ?>
+                    <?php getTopEmployeesByCriterion($conn, 'teamwork', 'Teamwork', 3); ?>
+                    <?php getTopEmployeesByCriterion($conn, 'punctuality', 'Punctuality', 4); ?>
+                    <?php getTopEmployeesByCriterion($conn, 'initiative', 'Initiative', 5); ?>
 
-                <!-- Navigation buttons for manually controlling the categories -->
-                <div class="text-center">
-                    <button class="btn btn-primary" onclick="showPreviousCategory()">Previous</button>
-                    <button class="btn btn-primary" onclick="showNextCategory()">Next</button>
+                    <!-- Navigation buttons for manually controlling the categories -->
+                    <div class="text-center">
+                        <button class="btn btn-primary" onclick="showPreviousCategory()">Previous</button>
+                        <button class="btn btn-primary" onclick="showNextCategory()">Next</button>
+                    </div>
                 </div>
-            </div>
             </main>
+                <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content bg-dark text-light">
+                            <div class="modal-header border-bottom border-warning">
+                                <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                Are you sure you want to log out?
+                            </div>
+                            <div class="modal-footer border-top border-warning">
+                                <button type="button" class="btn border-secondary text-light" data-bs-dismiss="modal">Cancel</button>
+                                <form action="../admin/logout.php" method="POST">
+                                    <button type="submit" class="btn btn-danger">Logout</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>  
             <footer class="py-4 bg-dark text-light mt-auto border-top border-warning">
                 <div class="container-fluid px-4">
                     <div class="d-flex align-items-center justify-content-between small">
                         <div class="text-muted">Copyright &copy; Your Website 2024</div>
                         <div>
                             <a href="#">Privacy Policy</a>
-                            &middot;
+                             &middot;
                             <a href="#">Terms & Conditions</a>
                         </div>
                     </div>
                 </div>
             </footer>
         </div>
+    </div>
 
     <script>
                 //CALENDAR 

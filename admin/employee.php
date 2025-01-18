@@ -28,11 +28,11 @@ $result = $conn->query($sql);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet">
     <link href="../css/styles.css" rel="stylesheet" />
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
     <link href="../css/calendar.css" rel="stylesheet"/>
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         .btn {
             transition: transform 0.3s ease;
@@ -46,7 +46,7 @@ $result = $conn->query($sql);
 </head>
 <body class="sb-nav-fixed bg-black">
     <nav class="sb-topnav navbar navbar-expand navbar-dark border-bottom border-1 border-warning bg-dark">
-        <a class="navbar-brand ps-3 text-muted" href="../admin/dashboard.php">Microfinance</a>
+        <a class="navbar-brand ps-3 text-muted" href="../admin/dashboard.php">Admin Portal</a>
         <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars text-light"></i></button>
             <div class="d-flex ms-auto me-0 me-md-3 my-2 my-md-0 align-items-center">
                 <div class="text-light me-3 p-2 rounded shadow-sm bg-gradient" id="currentTimeContainer" 
@@ -89,7 +89,7 @@ $result = $conn->query($sql);
                                     <li><a class="dropdown-item" href="#!">Settings</a></li>
                                     <li><a class="dropdown-item" href="#!">Activity Log</a></li>
                                     <li><hr class="dropdown-divider" /></li>
-                                    <li><a class="dropdown-item" href="../admin/logout.php" onclick="confirmLogout(event)">Logout</a></li>
+                                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">Logout</a></li>
                                 </ul>
                             </li>
                             <li class="nav-item text-light d-flex ms-3 flex-column align-items-center text-center">
@@ -162,7 +162,7 @@ $result = $conn->query($sql);
                                 <a class="nav-link text-light" href="../admin/recognition.php">Generate Certificate</a>
                             </nav>
                         </div>
-                        <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-warning">Account Management</div>
+                        <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-warning mt-3">Account Management</div>
                         <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
                             <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
                             Accounts
@@ -185,85 +185,92 @@ $result = $conn->query($sql);
             </nav>
         </div>
         <div id="layoutSidenav_content">
-        <main class="bg-black">
-            <div class="container-fluid position-relative px-4">
-                <h1 class="mb-4 text-light">Employee Account Management</h1>
-            </div>
-            <div class="container" id="calendarContainer" 
-                style="position: fixed; top: 9%; right: 0; z-index: 1050; 
-                width: 700px; display: none;">
-                <div class="row">
-                    <div class="col-md-12">
-                        <div id="calendar" class="p-2"></div>
+            <main class="bg-black">
+                <div class="container-fluid position-relative px-4">
+                    <h1 class="mb-4 text-light">Employees' Account Management</h1>
+                    <div class="container" id="calendarContainer" 
+                        style="position: fixed; top: 9%; right: 0; z-index: 1050; 
+                        width: 700px; display: none;">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div id="calendar" class="p-2"></div>
+                            </div>
+                        </div>
+                    </div>               
+                    <div class="py-4"></div>
+                    <div class="card mb-4 bg-dark text-light">
+                        <div class="card-header border-bottom border-1 border-warning">
+                            <i class="fas fa-table me-1"></i>
+                            Employee Accounts
+                        </div>
+                        <div class="card-body">
+                            <table id="datatablesSimple" class="table text-light text-center">
+                                <thead class="thead-light">
+                                    <tr class="text-center text-light">
+                                        <th>Employee ID</th>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Department</th>
+                                        <th>Phone Number</th>
+                                        <th>Address</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php if ($result->num_rows > 0): ?>
+                                        <?php while ($row = $result->fetch_assoc()): ?>
+                                            <tr class="text-center text-light">
+                                                <td><?php echo htmlspecialchars($row['e_id']); ?></td>
+                                                <td><?php echo htmlspecialchars($row['firstname']. ' ' . $row['lastname']); ?></td>
+                                                <td><?php echo htmlspecialchars($row['email']); ?></td>
+                                                <td><?php echo htmlspecialchars($row['department']); ?></td>
+                                                <td><?php echo htmlspecialchars($row['phone_number']); ?></td>
+                                                <td><?php echo htmlspecialchars($row['address']); ?></td>
+                                                <td class='d-flex justify-content-around'>
+                                                    <button class="btn btn-success btn-sm me-2" 
+                                                        onclick="fillUpdateForm(<?php echo $row['e_id']; ?>, '<?php echo htmlspecialchars($row['firstname']); ?>', '<?php echo htmlspecialchars($row['lastname']); ?>', '<?php echo htmlspecialchars($row['email']); ?>', '<?php echo htmlspecialchars($row['department']); ?>', '<?php echo htmlspecialchars($row['phone_number']); ?>', '<?php echo htmlspecialchars($row['address']); ?>')">Update</button>
+                                                    <button class="btn btn-danger btn-sm" onclick="deleteEmployee(<?php echo $row['e_id']; ?>)">Delete</button>
+                                                </td>
+                                            </tr>
+                                        <?php endwhile; ?>
+                                    <?php else: ?>
+                                        <tr><td colspan="8" class="text-center">No records found.</td></tr>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-center mt-4 mb-0">
+                        <a class="btn btn-primary text-light" href="../admin/create_employee.php">Create Employee</a>
                     </div>
                 </div>
-            </div>               
-            <div class="container mt-5">
-                <table class="table table-bordered table-dark">
-                    <thead class="thead-light">
-                        <tr class="text-center text-light">
-                            <th>Employee ID</th>
-                            <th>First Name</th>
-                            <th>Last Name</th>
-                            <th>Email</th>
-                            <th>Department</th>
-                            <th>Phone Number</th>
-                            <th>Address</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if ($result->num_rows > 0): ?>
-                            <?php while ($row = $result->fetch_assoc()): ?>
-                                <tr class="text-center text-light">
-                                    <td><?php echo htmlspecialchars($row['e_id']); ?></td>
-                                    <td><?php echo htmlspecialchars($row['firstname']); ?></td>
-                                    <td><?php echo htmlspecialchars($row['lastname']); ?></td>
-                                    <td><?php echo htmlspecialchars($row['email']); ?></td>
-                                    <td><?php echo htmlspecialchars($row['department']); ?></td>
-                                    <td><?php echo htmlspecialchars($row['phone_number']); ?></td>
-                                    <td><?php echo htmlspecialchars($row['address']); ?></td>
-                                    <td class='d-flex justify-content-around'>
-                                        <button class="btn btn-success btn-sm" 
-                                                onclick="fillUpdateForm(<?php echo $row['e_id']; ?>, '<?php echo htmlspecialchars($row['firstname']); ?>', '<?php echo htmlspecialchars($row['lastname']); ?>', '<?php echo htmlspecialchars($row['email']); ?>', '<?php echo htmlspecialchars($row['department']); ?>', '<?php echo htmlspecialchars($row['phone_number']); ?>', '<?php echo htmlspecialchars($row['address']); ?>')">Update</button>
-                                        <button class="btn btn-danger btn-sm" onclick="deleteEmployee(<?php echo $row['e_id']; ?>)">Delete</button>
-                                    </td>
-                                </tr>
-                            <?php endwhile; ?>
-                        <?php else: ?>
-                            <tr><td colspan="8" class="text-center">No records found.</td></tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-                <div class="d-flex justify-content-center mt-4 mb-0">
-                    <a class="btn btn-primary text-light" href="../admin/create_employee.php">Create Employee</a>
-                </div>
-
+            </main>
                 <div class="modal fade" id="updateEmployeeModal" tabindex="-1" aria-labelledby="updateEmployeeModalLabel" aria-hidden="true">
-                    <div class="modal-dialog">
+                    <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content bg-dark text-light">
-                            <div class="modal-header d-flex justify-content-center">
-                                <h5 class="modal-title" id="updateEmployeeModalLabel">Update Employee Account</h5>
+                            <div class="modal-header">
+                                <h5 class="modal-title text-center" id="updateEmployeeModalLabel">Update Employee Account</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
                                 <form id="updateForm">
-                                    <input type="hidden" name="e_id" id="updateId">
-                                    <div class="form-group">
+                                    <input type="hidden" name="e_id" id="updateId">                            
+                                    <div class="form-group mb-3">
                                         <label for="firstname">First Name</label>
                                         <input type="text" class="form-control" name="firstname" placeholder="First Name" required>
-                                    </div>
-                                    <div class="form-group">
+                                    </div>                                  
+                                    <div class="form-group mb-3">
                                         <label for="lastname">Last Name</label>
                                         <input type="text" class="form-control" name="lastname" placeholder="Last Name" required>
-                                    </div>
-                                    <div class="form-group">
+                                    </div>                             
+                                    <div class="form-group mb-3">
                                         <label for="email">Email</label>
                                         <input type="email" class="form-control" name="email" placeholder="Email" required>
-                                    </div>
-                                    <div class="form-group">
+                                    </div>                              
+                                    <div class="form-group mb-3">
                                         <label for="department">Department</label>
                                         <select class="form-control" name="department" required>
-                                            <option value="" disabled selected></option>
+                                            <option value="" disabled selected>Select a Department</option>
                                             <option value="Finance Department">Finance Department</option>
                                             <option value="Administration Department">Administration Department</option>
                                             <option value="Sales Department">Sales Department</option>
@@ -271,26 +278,45 @@ $result = $conn->query($sql);
                                             <option value="Human Resource Department">Human Resource Department</option>
                                             <option value="IT Department">IT Department</option>
                                         </select>
-                                    </div>
-                                    <div class="form-group">
+                                    </div>                                  
+                                    <div class="form-group mb-3">
                                         <label for="phone_number">Phone Number</label>
                                         <input type="text" class="form-control" name="phone_number" placeholder="Phone Number" required>
-                                    </div>
-                                    <div class="form-group">
+                                    </div>                                  
+                                    <div class="form-group mb-3">
                                         <label for="address">Address</label>
                                         <input type="text" class="form-control" name="address" placeholder="Address" required>
                                     </div>
-                                    <div class="modal-footer">
+                                    <div class="d-grid gap-2">
                                         <button type="submit" class="btn btn-primary">Update</button>
-                                        <button type="button" class="btn btn-secondary" onclick="closeModal()">Close</button>
                                     </div>
                                 </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" onclick="closeModal()">Close</button>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            </main>
+                <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content bg-dark text-light">
+                            <div class="modal-header border-bottom border-warning">
+                                <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                Are you sure you want to log out?
+                            </div>
+                            <div class="modal-footer border-top border-warning">
+                                <button type="button" class="btn border-secondary text-light" data-bs-dismiss="modal">Cancel</button>
+                                <form action="../admin/logout.php" method="POST">
+                                    <button type="submit" class="btn btn-danger">Logout</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>  
             <footer class="py-4 bg-dark text-light mt-auto border-top border-warning">
                 <div class="container-fluid px-4">
                     <div class="d-flex align-items-center justify-content-between small">
@@ -304,155 +330,154 @@ $result = $conn->query($sql);
                 </div>
             </footer>
         </div>
-        <script>
-        //CALENDAR 
-        let calendar;
-            function toggleCalendar() {
-                const calendarContainer = document.getElementById('calendarContainer');
-                    if (calendarContainer.style.display === 'none' || calendarContainer.style.display === '') {
-                        calendarContainer.style.display = 'block';
-                        if (!calendar) {
-                            initializeCalendar();
-                         }
-                        } else {
-                            calendarContainer.style.display = 'none';
-                        }
+    </div>
+<script>
+ //CALENDAR 
+let calendar;
+    function toggleCalendar() {
+        const calendarContainer = document.getElementById('calendarContainer');
+        if (calendarContainer.style.display === 'none' || calendarContainer.style.display === '') {
+            calendarContainer.style.display = 'block';
+            if (!calendar) {
+                initializeCalendar();
             }
+        } else {
+            calendarContainer.style.display = 'none';
+        }
+    }
 
-            function initializeCalendar() {
-                const calendarEl = document.getElementById('calendar');
-                    calendar = new FullCalendar.Calendar(calendarEl, {
-                        initialView: 'dayGridMonth',
-                        headerToolbar: {
-                        left: 'prev,next today',
-                        center: 'title',
-                        right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                        },
-                        height: 440,  
-                        events: {
-                        url: '../db/holiday.php',  
-                        method: 'GET',
-                        failure: function() {
-                        alert('There was an error fetching events!');
-                        }
-                        }
-                    });
-
-                    calendar.render();
+function initializeCalendar() {
+    const calendarEl = document.getElementById('calendar');
+        calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+            height: 440,  
+            events: {
+            url: '../db/holiday.php',  
+            method: 'GET',
+            failure: function() {
+            alert('There was an error fetching events!');
             }
+            }
+        });
 
-            document.addEventListener('DOMContentLoaded', function () {
-                const currentDateElement = document.getElementById('currentDate');
-                const currentDate = new Date().toLocaleDateString(); 
-                currentDateElement.textContent = currentDate; 
-            });
+        calendar.render();
+}
 
-            document.addEventListener('click', function(event) {
-                const calendarContainer = document.getElementById('calendarContainer');
-                const calendarButton = document.querySelector('button[onclick="toggleCalendar()"]');
+document.addEventListener('DOMContentLoaded', function () {
+    const currentDateElement = document.getElementById('currentDate');
+    const currentDate = new Date().toLocaleDateString(); 
+    currentDateElement.textContent = currentDate; 
+});
 
-                    if (!calendarContainer.contains(event.target) && !calendarButton.contains(event.target)) {
-                        calendarContainer.style.display = 'none';
-                        }
-            });
-        //CALENDAR END
+document.addEventListener('click', function(event) {
+    const calendarContainer = document.getElementById('calendarContainer');
+    const calendarButton = document.querySelector('button[onclick="toggleCalendar()"]');
 
-        //TIME 
-        function setCurrentTime() {
-            const currentTimeElement = document.getElementById('currentTime');
-            const currentDateElement = document.getElementById('currentDate');
+    if (!calendarContainer.contains(event.target) && !calendarButton.contains(event.target)) {
+        calendarContainer.style.display = 'none';
+    }
+    });
+//CALENDAR END
 
-            const currentDate = new Date();
+//TIME 
+function setCurrentTime() {
+    const currentTimeElement = document.getElementById('currentTime');
+    const currentDateElement = document.getElementById('currentDate');
+
+    const currentDate = new Date();
     
-            currentDate.setHours(currentDate.getHours() + 0);
-                const hours = currentDate.getHours();
-                const minutes = currentDate.getMinutes();
-                const seconds = currentDate.getSeconds();
-                const formattedHours = hours < 10 ? '0' + hours : hours;
-                const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
-                const formattedSeconds = seconds < 10 ? '0' + seconds : seconds;
+    currentDate.setHours(currentDate.getHours() + 0);
+        const hours = currentDate.getHours();
+        const minutes = currentDate.getMinutes();
+        const seconds = currentDate.getSeconds();
+        const formattedHours = hours < 10 ? '0' + hours : hours;
+        const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
+        const formattedSeconds = seconds < 10 ? '0' + seconds : seconds;
 
-            currentTimeElement.textContent = `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
-            currentDateElement.textContent = currentDate.toLocaleDateString();
-        }
-        setCurrentTime();
-        setInterval(setCurrentTime, 1000);
-        //TIME END
+    currentTimeElement.textContent = `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+    currentDateElement.textContent = currentDate.toLocaleDateString();
+}
+setCurrentTime();
+setInterval(setCurrentTime, 1000);
+//TIME END
 
-        //UPDATE MODAL
-        let modalInstance;
+//UPDATE MODAL
+let modalInstance;
 
-        function fillUpdateForm(id, firstname, lastname, email, department, phone_number, address) {
-            document.getElementById('updateId').value = id;
-            document.querySelector('input[name="firstname"]').value = firstname;
-            document.querySelector('input[name="lastname"]').value = lastname;
-            document.querySelector('input[name="email"]').value = email;
-            document.querySelector('select[name="department"]').value = department;
-            document.querySelector('input[name="phone_number"]').value = phone_number;
-            document.querySelector('input[name="address"]').value = address;
+function fillUpdateForm(id, firstname, lastname, email, department, phone_number, address) {
+    document.getElementById('updateId').value = id;
+    document.querySelector('input[name="firstname"]').value = firstname;
+    document.querySelector('input[name="lastname"]').value = lastname;
+    document.querySelector('input[name="email"]').value = email;
+    document.querySelector('select[name="department"]').value = department;
+    document.querySelector('input[name="phone_number"]').value = phone_number;
+    document.querySelector('input[name="address"]').value = address;
 
-            modalInstance = new bootstrap.Modal(document.getElementById('updateEmployeeModal'));
-            modalInstance.show();
-        }
+    modalInstance = new bootstrap.Modal(document.getElementById('updateEmployeeModal'));
+    modalInstance.show();
+}
 
-        function closeModal() {
-            if (modalInstance) {
-                modalInstance.hide();
+function closeModal() {
+    if (modalInstance) {
+        modalInstance.hide();
+    }
+}
+
+function deleteEmployee(id) {
+    if (confirm('Are you sure you want to delete this employee?')) {
+        const formData = new FormData();
+        formData.append('e_id', id);
+
+        fetch('../db/delete_employee.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.success || data.error);
+            if (data.success) {
+                location.reload();
             }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while deleting the employee.');
+        });
+    }
+}
+
+document.getElementById('updateForm').onsubmit = function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+
+    fetch('../db/update_employee.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.success || data.error);
+        if (data.success) {
+            closeModal();
+            location.reload();
         }
-
-        function deleteEmployee(id) {
-            if (confirm('Are you sure you want to delete this employee?')) {
-                const formData = new FormData();
-                formData.append('e_id', id);
-
-                fetch('../db/delete_employee.php', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    alert(data.success || data.error);
-                    if (data.success) {
-                        location.reload();
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred while deleting the employee.');
-                });
-            }
-        }
-
-        document.getElementById('updateForm').onsubmit = function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-
-            fetch('../db/update_employee.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.success || data.error);
-                if (data.success) {
-                    closeModal();
-                    location.reload();
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while updating the employee.');
-            });
-        };
-        //UPDATE MODAL END
-    </script>
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'> </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-    <script src="../js/admin.js"></script>
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while updating the employee.');
+    });
+};
+//UPDATE MODAL END
+</script>
+<script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js" crossorigin="anonymous"></script>
+<script src="../js/datatables-simple-demo.js"></script>
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'> </script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../js/admin.js"></script>
 </body>
 </html>
-
-<?php
-$conn->close();
-?>

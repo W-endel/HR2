@@ -4,20 +4,25 @@ session_start();
 // Include database connection
 include '../../db/db_conn.php'; 
 
+// Redirect to login page if employee is not logged in
 if (!isset($_SESSION['e_id'])) {
     header("Location: ../../employee/login.php");
     exit();
 }
 
+// Get the employee ID from the session
 $employeeId = $_SESSION['e_id'];
-$sql = "SELECT e_id, firstname, middlename, lastname, birthdate, email, role, position, department, phone_number, address, pfp FROM employee_register WHERE e_id = ?";
+
+// Fetch employee information
+$sql = "SELECT e_id, firstname, middlename, lastname, birthdate, email, role, position, department, phone_number, address, pfp 
+        FROM employee_register WHERE e_id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $employeeId);
 $stmt->execute();
 $result = $stmt->get_result();
-$employeeInfo = $result->fetch_assoc();
 
-$employeeId = $_SESSION['e_id'];
+// Store employee info in variable
+$employeeInfo = $result->fetch_assoc();
 
 // Fetch the average of the employee's evaluations
 $sql = "SELECT 
@@ -29,7 +34,6 @@ $sql = "SELECT
             COUNT(*) AS total_evaluations 
         FROM admin_evaluations 
         WHERE e_id = ?";
-        
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $employeeId);
 $stmt->execute();
@@ -43,9 +47,11 @@ if ($result->num_rows > 0) {
     exit;
 }
 
+// Close the statement and connection
 $stmt->close();
 $conn->close();
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -105,7 +111,7 @@ $conn->close();
                                     <li><a class="dropdown-item" href="#!">Settings</a></li>
                                     <li><a class="dropdown-item" href="#!">Activity Log</a></li>
                                     <li><hr class="dropdown-divider" /></li>
-                                    <li><a class="dropdown-item" href="../../employee/staff/employeelogout.php" onclick="confirmLogout(event)">Logout</a></li>
+                                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">Logout</a></li>
                                 </ul>
                             </li>
                             <li class="nav-item text-light d-flex ms-3 flex-column align-items-center text-center">
@@ -152,7 +158,7 @@ $conn->close();
                         </a>
                         <div class="collapse" id="collapseLM" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                            <a class="nav-link text-light" href="../../employee/staff/leave_request.php">File Leave Request</a>
+                            <a class="nav-link text-light" href="../../employee/staff/leave_file.php">File Leave</a>
                             <a class="nav-link text-light" href="../../employee/staff/leave_balance.php">View Remaining Leave</a>
                             </nav>
                         </div>
@@ -173,7 +179,7 @@ $conn->close();
                         </a>
                         <div class="collapse" id="collapseSR" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link text-light" href="../../admin/rating.php">View Ratings</a>
+                                <a class="nav-link text-light" href="../../employee/staff/awardee.php">Awardee</a>
                             </nav>
                         </div>
                         <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-warning mt-3">Feedback</div> 
@@ -195,56 +201,77 @@ $conn->close();
             </nav>
         </div>
         <div id="layoutSidenav_content">
-            <main class="container-fluid px-4 bg-black">
-                <h1 class="big mb-4 text-light">Evaluation Ratings</h1>
-                <div class="container" id="calendarContainer" 
-                    style="position: fixed; top: 9%; right: 0; z-index: 1050; 
-                    width: 700px; height: 300px; display: none;">
+            <main class="bg-black">
+                <div class="container-fluid position-relative px-4">
+                    <h1 class="big mb-4 text-light">Evaluation Ratings</h1>
+                    <div class="container" id="calendarContainer" 
+                        style="position: fixed; top: 9%; right: 0; z-index: 1050; 
+                        width: 700px; height: 300px; display: none;">
                         <div class="row">
                             <div class="col-md-12">
                                 <div id="calendar" class="p-2"></div>
                             </div>
                         </div>
-                </div>   
-                <div class="container text-light">
-                    <p>Total number of evaluations: <?php echo htmlspecialchars($evaluation['total_evaluations']); ?></p>
-                    
-                    <div class="bg-dark bordered">
-                        <canvas id="evaluationChart" width="700" height="400"></canvas>
-                    </div>
+                    </div>   
+                    <div class="card text-light bg-black py-4">
+                        <p>Total number of evaluations: <?php echo htmlspecialchars($evaluation['total_evaluations']); ?></p>
+                        
+                        <div class="bg-dark bordered">
+                            <canvas id="evaluationChart" width="700" height="400"></canvas>
+                        </div>
 
-                    <table class="table table-bordered mt-3 text-light table-dark">
-                        <thead>
-                            <tr class="text-center">
-                                <th>Category</th>
-                                <th>Average Rating</th>
-                            </tr>
-                        </thead>
-                        <tbody class="text-start">
-                            <tr>
-                                <td>Quality of Work</td>
-                                <td><?php echo htmlspecialchars(number_format($evaluation['avg_quality'], 2)); ?></td>
-                            </tr>
-                            <tr>
-                                <td>Communication Skills</td>
-                                <td><?php echo htmlspecialchars(number_format($evaluation['avg_communication_skills'], 2)); ?></td>
-                            </tr>
-                            <tr>
-                                <td>Teamwork</td>
-                                <td><?php echo htmlspecialchars(number_format($evaluation['avg_teamwork'], 2)); ?></td>
-                            </tr>
-                            <tr>
-                                <td>Punctuality</td>
-                                <td><?php echo htmlspecialchars(number_format($evaluation['avg_punctuality'], 2)); ?></td>
-                            </tr>
-                            <tr>
-                                <td>Initiative</td>
-                                <td><?php echo htmlspecialchars(number_format($evaluation['avg_initiative'], 2)); ?></td>
-                            </tr>
-                        </tbody>
-                    </table>
+                        <table class="table table-bordered mt-3 text-light table-dark w-50">
+                            <thead>
+                                <tr class="text-center">
+                                    <th>Category</th>
+                                    <th>Average Rating</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-start">
+                                <tr>
+                                    <td>Quality of Work</td>
+                                    <td><?php echo htmlspecialchars(number_format($evaluation['avg_quality'], 2)); ?></td>
+                                </tr>
+                                <tr>
+                                    <td>Communication Skills</td>
+                                    <td><?php echo htmlspecialchars(number_format($evaluation['avg_communication_skills'], 2)); ?></td>
+                                </tr>
+                                <tr>
+                                    <td>Teamwork</td>
+                                    <td><?php echo htmlspecialchars(number_format($evaluation['avg_teamwork'], 2)); ?></td>
+                                </tr>
+                                <tr>
+                                    <td>Punctuality</td>
+                                    <td><?php echo htmlspecialchars(number_format($evaluation['avg_punctuality'], 2)); ?></td>
+                                </tr>
+                                <tr>
+                                    <td>Initiative</td>
+                                    <td><?php echo htmlspecialchars(number_format($evaluation['avg_initiative'], 2)); ?></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </main>
+                <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content bg-dark text-light">
+                            <div class="modal-header border-bottom border-warning">
+                                <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                Are you sure you want to log out?
+                            </div>
+                            <div class="modal-footer border-top border-warning">
+                                <button type="button" class="btn border-secondary text-light" data-bs-dismiss="modal">Cancel</button>
+                                <form action="../../employee/logout.php" method="POST">
+                                    <button type="submit" class="btn btn-danger">Logout</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>  
             <footer class="py-4 bg-dark text-light mt-auto border-top border-warning">
                 <div class="container-fluid px-4">
                     <div class="d-flex align-items-center justify-content-between small">

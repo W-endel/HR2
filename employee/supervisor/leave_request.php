@@ -24,7 +24,7 @@ $employeeInfo = $result->fetch_assoc();
 $sql = "SELECT lr.leave_id, e.e_id, e.firstname, e.lastname, e.department, e.available_leaves, lr.start_date, lr.end_date, lr.leave_type, lr.proof, lr.status, lr.created_at
         FROM leave_requests lr
         JOIN employee_register e ON lr.e_id = e.e_id
-        WHERE lr.status = 'Pending'";  // Fetch only Pending requests
+        WHERE lr.status = 'Pending' ORDER BY created_at ASC";  // Fetch only Pending requests
 
 $stmt = $conn->prepare($sql);
 $stmt->execute();
@@ -121,12 +121,11 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <link rel="icon" type="image/png" href="../../img/logo.png">
     <title>Leave Requests</title>
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet">
     <link href="../../css/styles.css" rel="stylesheet" />
     <link href="../../css/calendar.css" rel="stylesheet"/>
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' /> <!-- calendar -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- leave table -->
 <style>
     .btn {
         transition: transform 0.3s, background-color 0.3s; /* Smooth transition */
@@ -168,7 +167,7 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
         </div>
     </nav>
     <div id="layoutSidenav">
-    <div id="layoutSidenav_nav">
+        <div id="layoutSidenav_nav">
             <nav class="sb-sidenav accordion bg-dark" id="sidenavAccordion">
                 <div class="sb-sidenav-menu ">
                     <div class="nav">
@@ -277,52 +276,54 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
                 </div>
             </nav>
         </div>
-    <div id="layoutSidenav_content">
-        <main>
-            <div class="container-fluid position-relative px-4">
-                <h1 class="mb-4 text-light">Leave Requests</h1>
-                <div class="container" id="calendarContainer" 
-                    style="position: fixed; top: 9%; right: 0; z-index: 1050; 
-                    width: 700px; display: none;">
+        <div id="layoutSidenav_content">
+            <main>
+                <div class="container-fluid position-relative px-4">
+                    <h1 class="mb-4 text-light">Leave Request</h1>
+                    <div class="container" id="calendarContainer" 
+                        style="position: fixed; top: 9%; right: 0; z-index: 1050; 
+                        width: 700px; display: none;">
                         <div class="row">
                             <div class="col-md-12">
                                 <div id="calendar" class="p-2"></div>
                             </div>
                         </div>
-                </div>                     
-                <div class="container py-4">
-                    <?php if (isset($_GET['status'])): ?>
-                        <div id="status-alert" class="alert 
-                            <?php if ($_GET['status'] === 'success'): ?>
-                                alert-success
-                            <?php elseif ($_GET['status'] === 'error'): ?>
-                                alert-danger
-                            <?php elseif ($_GET['status'] === 'not_exist'): ?>
-                                alert-warning
-                            <?php elseif ($_GET['status'] === 'insufficient_balance'): ?>
-                                alert-warning
-                            <?php endif; ?>" role="alert">
-                            <?php if ($_GET['status'] === 'success'): ?>
-                                Leave request status updated successfully.
-                            <?php elseif ($_GET['status'] === 'error'): ?>
-                                Error updating leave request status. Please try again.
-                            <?php elseif ($_GET['status'] === 'not_exist'): ?>
-                                The leave request ID does not exist or could not be found.
-                            <?php elseif ($_GET['status'] === 'insufficient_balance'): ?>
-                                Insufficient leave balance. The request cannot be approved.
-                            <?php endif; ?>
-                        </div>
-                    <?php endif; ?>
+                    </div>                     
+                    <div class="container py-4">
+                        <?php if (isset($_GET['status'])): ?>
+                            <div id="status-alert" class="alert 
+                                <?php if ($_GET['status'] === 'success'): ?>
+                                    alert-success
+                                <?php elseif ($_GET['status'] === 'error'): ?>
+                                    alert-danger
+                                <?php elseif ($_GET['status'] === 'not_exist'): ?>
+                                    alert-warning
+                                <?php elseif ($_GET['status'] === 'insufficient_balance'): ?>
+                                    alert-warning
+                                <?php endif; ?>" role="alert">
+                                <?php if ($_GET['status'] === 'success'): ?>
+                                    Leave request status updated successfully.
+                                <?php elseif ($_GET['status'] === 'error'): ?>
+                                    Error updating leave request status. Please try again.
+                                <?php elseif ($_GET['status'] === 'not_exist'): ?>
+                                    The leave request ID does not exist or could not be found.
+                                <?php elseif ($_GET['status'] === 'insufficient_balance'): ?>
+                                    Insufficient leave balance. The request cannot be approved.
+                                <?php endif; ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
 
-                    <div class="card mb-4 bg-dark">
-                        <div class="card-header border-bottom border-1 border-warning text-light">
+                    <div class="card mb-4 bg-dark text-light">
+                        <div class="card-header border-bottom border-1 border-warning">
                             <i class="fas fa-table me-1"></i>
                             Pending Request
                         </div>
                         <div class="card-body">
-                            <table id="table" class=" col-md-12 table table-bordered mt-3 text-center text-light table-dark mx-auto"> 
+                            <table id="datatablesSimple" class="table text-light text-center">
                                 <thead>
                                     <tr>
+                                        <th>Requested On</th>
                                         <th>Employee ID</th>
                                         <th>Employee Name</th>
                                         <th>Department</th>
@@ -331,7 +332,6 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
                                         <th>Deduction Leave</th>
                                         <th>Reason</th>
                                         <th>Proof</th>
-                                        <th>Requested On</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -343,10 +343,10 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
                                                 $leave_days = 0;
                                                 $current_date = strtotime($row['start_date']);
                                                 $end_date = strtotime($row['end_date']);
-                                            
+                                                
                                                 while ($current_date <= $end_date) {
                                                 $current_date_str = date('Y-m-d', $current_date);
-                                                // Check if the current day is not a Sunday (0 = Sunday) and not a holiday
+                                                 // Check if the current day is not a Sunday (0 = Sunday) and not a holiday
                                                 if (date('N', $current_date) != 7 && !in_array($current_date_str, $holidays)) {
                                                     $leave_days++; // Count this day as a leave day
                                                 }
@@ -354,11 +354,20 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
                                                 }
                                             ?>
                                         <tr>
+                                        <td>
+                                            <?php 
+                                                if (isset($row['created_at'])) {
+                                                    echo htmlspecialchars(date("F j, Y", strtotime($row['created_at']))) . ' <span class="text-warning"> | </span> ' . htmlspecialchars(date("g:i A", strtotime($row['created_at'])));
+                                                } else {
+                                                    echo "Not Available";
+                                                }
+                                            ?>
+                                        </td>
                                             <td><?php echo htmlspecialchars($row['e_id']); ?></td>
                                             <td><?php echo htmlspecialchars($row['firstname'] . ' ' . $row['lastname']); ?></td>
                                             <td><?php echo htmlspecialchars($row['department']); ?></td>
                                             <td><?php echo htmlspecialchars($row['available_leaves']); ?></td>
-                                            <td><?php echo htmlspecialchars(date("F j, Y", strtotime($row['start_date']))) . ' <span class="text-warning"> until </span> ' . htmlspecialchars(date("F j, Y", strtotime($row['end_date']))); ?></td>
+                                            <td><?php echo htmlspecialchars(date("F j, Y", strtotime($row['start_date']))) . ' <span class="text-warning"> | </span> ' . htmlspecialchars(date("F j, Y", strtotime($row['end_date']))); ?></td>
                                             <td><?php echo htmlspecialchars($leave_days); ?> day/s</td>
                                             <td><?php echo htmlspecialchars($row['leave_type']); ?></td>
                                             <td>
@@ -368,19 +377,10 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
                                                     No proof provided
                                                 <?php endif; ?>
                                             </td>
-                                            <td>
-                                                <?php 
-                                                    if (isset($row['created_at'])) {
-                                                        echo htmlspecialchars(date("F j, Y g:i A", strtotime($row['created_at'])));
-                                                    } else {
-                                                        echo "Not Available";
-                                                    }
-                                                ?>
-                                            </td>
                                             <div class="modal fade" id="proofModal<?php echo $row['proof']; ?>" tabindex="-1" aria-labelledby="proofModalLabel<?php echo $row['proof']; ?>" aria-hidden="true">
                                                 <div class="modal-dialog modal-dialog-centered">
                                                     <div class="modal-content bg-dark text-light" style="width: 600px; height: 500px;">
-                                                        <div class="modal-header">
+                                                        <div class="modal-header border-bottom border-warning">
                                                             <h5 class="modal-title" id="proofModalLabel<?php echo $row['proof']; ?>">Proof of Leave</h5>
                                                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                         </div>
@@ -388,32 +388,36 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
                                                             <div id="proofCarousel<?php echo $row['proof']; ?>" class="carousel slide d-flex align-items-center justify-content-center" data-bs-ride="false">
                                                                 <div class="carousel-inner">
                                                                     <?php
-                                                                        $filePaths = explode(',', $row['proof']);  // Assuming proof field contains a comma-separated list of file paths
-                                                                        $isActive = true;  // To set the first image as active
+                                                                        // Assuming proof field contains a comma-separated list of file names
+                                                                        $filePaths = explode(',', $row['proof']);  
+                                                                        $isActive = true;  // To set the first item as active
                                                                         $fileCount = count($filePaths);  // Count the number of files
+                                                                        $baseURL = 'http://localhost/HR2/proof/';  // Define the base URL for file access
+
                                                                         foreach ($filePaths as $filePath) {
-                                                                            $filePath = trim($filePath);  // Remove any extra spaces from the file paths
+                                                                            $filePath = trim($filePath);  // Clean the file path
+                                                                            $fullFilePath = $baseURL . $filePath;  // Construct the full URL for the file
                                                                             $fileExtension = pathinfo($filePath, PATHINFO_EXTENSION);
 
                                                                             // Check if the file is an image (e.g., jpg, jpeg, png, gif)
                                                                             $imageTypes = ['jpg', 'jpeg', 'png', 'gif'];
                                                                             if (in_array(strtolower($fileExtension), $imageTypes)) {
                                                                                 echo '<div class="carousel-item ' . ($isActive ? 'active' : '') . '">';
-                                                                                echo '<img src="' . htmlspecialchars($filePath) . '" alt="Proof of Leave" class="d-block w-100" style="max-height: 400px; object-fit: contain;">';
+                                                                                echo '<img src="' . htmlspecialchars($fullFilePath) . '" alt="Proof of Leave" class="d-block w-100" style="max-height: 400px; object-fit: contain;">';
                                                                                 echo '</div>';
                                                                                 $isActive = false;
                                                                             }
                                                                             // Check if the file is a PDF (this will just show an embed for PDFs)
                                                                             elseif (strtolower($fileExtension) === 'pdf') {
                                                                                 echo '<div class="carousel-item ' . ($isActive ? 'active' : '') . '">';
-                                                                                echo '<embed src="' . htmlspecialchars($filePath) . '" type="application/pdf" width="100%" height="400px" />';
+                                                                                echo '<embed src="' . htmlspecialchars($fullFilePath) . '" type="application/pdf" width="100%" height="400px" />';
                                                                                 echo '</div>';
                                                                                 $isActive = false;
                                                                             }
                                                                             // Handle other document types (e.g., docx, txt) – just provide a link to view the document
                                                                             else {
                                                                                 echo '<div class="carousel-item ' . ($isActive ? 'active' : '') . '">';
-                                                                                echo '<a href="' . htmlspecialchars($filePath) . '" target="_blank" class="btn btn-primary">View Document</a>';
+                                                                                echo '<a href="' . htmlspecialchars($fullFilePath) . '" target="_blank" class="btn btn-primary">View Document</a>';
                                                                                 echo '</div>';
                                                                                 $isActive = false;
                                                                             }
@@ -422,9 +426,7 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <!-- Check if there's only one file; if yes, hide the carousel controls -->
                                                         <?php if ($fileCount > 1): ?>
-                                                            <!-- Carousel Controls (Positioned to left and right side) -->
                                                             <button class="carousel-control-prev btn btn-secondary position-absolute top-50 start-0 translate-middle-y w-auto" type="button" data-bs-target="#proofCarousel<?php echo $row['proof']; ?>" data-bs-slide="prev">
                                                                 <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                                                                 <span class="visually-hidden">Previous</span>
@@ -435,7 +437,7 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
                                                             </button>
                                                         <?php endif; ?>
 
-                                                        <div class="modal-footer">
+                                                        <div class="modal-footer border-top border-warning">
                                                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                                                         </div>
                                                     </div>
@@ -446,34 +448,27 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
                                                 <button class="btn btn-success btn-sm me-2" onclick="confirmAction('approve', <?php echo $row['leave_id']; ?>)">Approve</button>
                                                 <button class="btn btn-danger btn-sm" onclick="confirmAction('deny', <?php echo $row['leave_id']; ?>)">Deny</button>
                                             </td>
-                                                </div>
-                                            </td>
-                                        </tr>
                                         <?php endwhile; ?>
-                                            <?php else: ?>
-                                        <tr>
-                                            <td colspan="10" class="text-center">No pending request found.</td>
-                                        </tr>
                                     <?php endif; ?>
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
-            </div>
-        </main>
-        <footer class="py-4 bg-dark text-light mt-auto border-top border-warning">
-            <div class="container-fluid px-4">
-                <div class="d-flex align-items-center justify-content-between small">
-                    <div class="text-muted">Copyright &copy; Your Website 2024</div>
-                    <div>
-                        <a href="#">Privacy Policy</a>
-                        &middot;
-                        <a href="#">Terms & Conditions</a>
+            </main>
+            <footer class="py-4 bg-dark text-light mt-auto border-top border-warning">
+                <div class="container-fluid px-4">
+                    <div class="d-flex align-items-center justify-content-between small">
+                        <div class="text-muted">Copyright &copy; Your Website 2024</div>
+                        <div>
+                            <a href="#">Privacy Policy</a>
+                            &middot;
+                            <a href="#">Terms & Conditions</a>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </footer>
+            </footer>
+        </div>
     </div>
 <script>
     //CALENDAR 
@@ -559,84 +554,6 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
         }
         //LEAVE STATUS END
 
-        $(document).ready(function() {
-    var table = $('.table').DataTable({
-        "paging": true,
-        "searching": true,
-        "ordering": true,
-        "info": true,
-        "autoWidth": false,
-        "responsive": true,
-        "language": {
-            "search": "Search:",  // Custom search label
-            "lengthMenu": "Display _MENU_ records per page",  // Custom display records label
-            "zeroRecords": "No matching records found",
-            "info": "Showing _START_ to _END_ of _TOTAL_ records",  // Custom info label
-            "infoEmpty": "No records available",
-            "infoFiltered": "(filtered from _MAX_ total records)"
-        },
-        "lengthMenu": [
-            [5, 10, 25, 50, -1],
-            ['5', '10', '25', '50', 'All']
-        ]
-    });
-
-    // Apply styles to the "Display X records per page" text
-    $('.dataTables_length label').css({
-        'color': '#007bff',  // Change text color to blue
-        'font-weight': 'bold'  // Make the text bold
-    });
-
-    // Apply styles to the "Search:" label
-    $('.dataTables_filter label').css({
-        'color': '#007bff',  // Change text color to blue
-        'font-weight': 'bold'  // Make the text bold
-    });
-
-    // Apply styles to the "Showing X to X of X records" text
-    $('.dataTables_info').css({
-        'color': '#007bff',  // Change text color to blue
-        'font-weight': 'bold'  // Make the text bold
-    });
-
-    // Apply styles to the "Search" input box
-    $('.dataTables_filter input').css({
-        'background-color': '#343a40',  // Dark background
-        'color': 'white',  // White text
-        'border': '1px solid #ddd'  // Light border
-    });
-
-    // Apply styles to the "Display records per page" select dropdown
-    $('.dataTables_length select').css({
-        'background-color': '#343a40',  // Dark background
-        'color': 'white',  // White text
-        'border': '1px solid #ddd'  // Light border
-    });
-
-        function applyPaginationStyles() {
-        // Pagination button styles
-        $('.dataTables_paginate .paginate_button').css({
-            'background-color': 'white',
-            'color': 'black',
-            'border': '1px solid #ddd'
-        });
-
-        // Active page button styles
-        $('.dataTables_paginate .paginate_button.current').css({
-            'background-color': 'white',
-            'border': '2px solid red'
-        });
-    }
-
-    // Apply the styles immediately after the table is drawn (including pagination)
-    table.on('draw', function() {
-        applyPaginationStyles();  // Apply styles after each page redraw
-    });
-
-    // Apply styles on initial load
-    applyPaginationStyles();
-});
-
 
     // Automatically hide the alert after 10 seconds (10,000 milliseconds)
     setTimeout(function() {
@@ -654,9 +571,10 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
 
 </script>
 <!-- Only keep the latest Bootstrap 5 version -->
+<script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'> </script>
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="../../js/datatables-simple-demo.js"></script>
 <script src="../../js/employee.js"></script>
 </body>
 </html>

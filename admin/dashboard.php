@@ -28,7 +28,7 @@ $result = $stmt->get_result();
 $adminInfo = $result->fetch_assoc();
 
 // Set profile picture or use default if not set
-$profilePicture = !empty($adminInfo['pfp']) ? $adminInfo['pfp'] : '../img/defaultpfp.png';
+$profilePicture = !empty($adminInfo['pfp']) ? $adminInfo['pfp'] : '../img/defaultpfp.jpg';
 
 // Close statement and connection
 $stmt->close();
@@ -89,7 +89,7 @@ $conn->close();
                         <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
                             <li class="nav-item dropdown text">
                                 <a class="nav-link dropdown-toggle text-light d-flex justify-content-center ms-4" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <img src="<?php echo (!empty($adminInfo['pfp']) && $adminInfo['pfp'] !== 'defaultpfp.png') 
+                                    <img src="<?php echo (!empty($adminInfo['pfp']) && $adminInfo['pfp'] !== 'defaultpfp.jpg') 
                                         ? htmlspecialchars($adminInfo['pfp']) 
                                         : '../img/defaultpfp.jpg'; ?>" 
                                         class="rounded-circle border border-light" width="120" height="120" alt="Profile Picture" />
@@ -99,7 +99,7 @@ $conn->close();
                                     <li><a class="dropdown-item" href="#!">Settings</a></li>
                                     <li><a class="dropdown-item" href="#!">Activity Log</a></li>
                                     <li><hr class="dropdown-divider border-black" /></li>
-                                    <li><a class="dropdown-item" href="../admin/logout.php" onclick="confirmLogout(event)">Logout</a></li>
+                                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">Logout</a></li>
                                 </ul>
                             </li>
                             <li class="nav-item text-light d-flex ms-3 flex-column align-items-center text-center">
@@ -195,171 +195,190 @@ $conn->close();
             </nav>
         </div>
         <div id="layoutSidenav_content">
-        <main class="bg-black">
-            <div class="container-fluid position-relative px-4">
-                <h1 class="mb-4 text-light">Dashboard</h1>
-                    <div class="container" id="calendarContainer" 
-                        style="position: fixed; top: 9%; right: 0; z-index: 1050; 
-                        width: 700px; display: none;">
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div id="calendar" class="p-2"></div>
+            <main class="bg-black">
+                <div class="container-fluid position-relative px-4">
+                    <h1 class="mb-4 text-light">Dashboard</h1>
+                        <div class="container" id="calendarContainer" 
+                            style="position: fixed; top: 9%; right: 0; z-index: 1050; 
+                            width: 700px; display: none;">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div id="calendar" class="p-2"></div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-            <!-- Leave Request Status Section -->
-                    <div class="col-xl-3">
-                        <div class="card mb-4">
-                            <div class="card-header bg-dark text-light border-bottom border-1 border-warning">
-                                <i class="fas fa-chart-pie me-1"></i> 
-                                <a class="text-light" href="../admin/leave_requests.php">Leave Request Status </a>
+                <!-- Leave Request Status Section -->
+                        <div class="col-xl-3">
+                            <div class="card mb-4">
+                                <div class="card-header bg-dark text-light border-bottom border-1 border-warning">
+                                    <i class="fas fa-chart-pie me-1"></i> 
+                                    <a class="text-light" href="../admin/leave_requests.php">Leave Request Status </a>
+                                </div>
+                                <div class="card-body bg-dark">
+                                    <canvas id="leaveStatusChart" width="300" height="300"></canvas>
+                                </div>
                             </div>
-                            <div class="card-body bg-dark">
-                                <canvas id="leaveStatusChart" width="300" height="300"></canvas>
+                        </div>
+                        
+                        <div class="card mb-4 bg-dark text-light">
+                            <div class="card-header border-bottom border-1 border-warning">
+                                <i class="fas fa-table me-1"></i>
+                                DataTable Example
+                            </div>
+                            <div class="card-body">
+                                <table id="datatablesSimple" class="table text-light">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Position</th>
+                                            <th>Office</th>
+                                            <th>Age</th>
+                                            <th>Start date</th>
+                                            <th>Salary</th>
+                                        </tr>
+                                    </thead>
+                                    <tfoot>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Position</th>
+                                            <th>Office</th>
+                                            <th>Age</th>
+                                            <th>Start date</th>
+                                            <th>Salary</th>
+                                        </tr>
+                                    </tfoot>
+                                    <tbody>
+                                        <tr>
+                                            <td>Zorita Serrano</td>
+                                            <td>Software Engineer</td>
+                                            <td>San Francisco</td>
+                                            <td>56</td>
+                                            <td>2012/06/01</td>
+                                            <td>$115,000</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Jennifer Acosta</td>
+                                            <td>Junior Javascript Developer</td>
+                                            <td>Edinburgh</td>
+                                            <td>43</td>
+                                            <td>2013/02/01</td>
+                                            <td>$75,650</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Cara Stevens</td>
+                                            <td>Sales Assistant</td>
+                                            <td>New York</td>
+                                            <td>46</td>
+                                            <td>2011/12/06</td>
+                                            <td>$145,600</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Hermione Butler</td>
+                                            <td>Regional Director</td>
+                                            <td>London</td>
+                                            <td>47</td>
+                                            <td>2011/03/21</td>
+                                            <td>$356,250</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Lael Greer</td>
+                                            <td>Systems Administrator</td>
+                                            <td>London</td>
+                                            <td>21</td>
+                                            <td>2009/02/27</td>
+                                            <td>$103,500</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Jonas Alexander</td>
+                                            <td>Developer</td>
+                                            <td>San Francisco</td>
+                                            <td>30</td>
+                                            <td>2010/07/14</td>
+                                            <td>$86,500</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Shad Decker</td>
+                                            <td>Regional Director</td>
+                                            <td>Edinburgh</td>
+                                            <td>51</td>
+                                            <td>2008/11/13</td>
+                                            <td>$183,000</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Michael Bruce</td>
+                                            <td>Javascript Developer</td>
+                                            <td>Singapore</td>
+                                            <td>29</td>
+                                            <td>2011/06/27</td>
+                                            <td>$183,000</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Donna Snider</td>
+                                            <td>Customer Support</td>
+                                            <td>New York</td>
+                                            <td>27</td>
+                                            <td>2011/01/25</td>
+                                            <td>$112,000</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="card mb-4 bg-dark text-light">
-                        <div class="card-header border-bottom border-1 border-warning">
-                            <i class="fas fa-table me-1"></i>
-                            DataTable Example
-                        </div>
-                        <div class="card-body">
-                            <table id="datatablesSimple" class="table text-light">
-                                <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Position</th>
-                                        <th>Office</th>
-                                        <th>Age</th>
-                                        <th>Start date</th>
-                                        <th>Salary</th>
-                                    </tr>
-                                </thead>
-                                <tfoot>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Position</th>
-                                        <th>Office</th>
-                                        <th>Age</th>
-                                        <th>Start date</th>
-                                        <th>Salary</th>
-                                    </tr>
-                                </tfoot>
-                                <tbody>
-                                    <tr>
-                                        <td>Zorita Serrano</td>
-                                        <td>Software Engineer</td>
-                                        <td>San Francisco</td>
-                                        <td>56</td>
-                                        <td>2012/06/01</td>
-                                        <td>$115,000</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Jennifer Acosta</td>
-                                        <td>Junior Javascript Developer</td>
-                                        <td>Edinburgh</td>
-                                        <td>43</td>
-                                        <td>2013/02/01</td>
-                                        <td>$75,650</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Cara Stevens</td>
-                                        <td>Sales Assistant</td>
-                                        <td>New York</td>
-                                        <td>46</td>
-                                        <td>2011/12/06</td>
-                                        <td>$145,600</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Hermione Butler</td>
-                                        <td>Regional Director</td>
-                                        <td>London</td>
-                                        <td>47</td>
-                                        <td>2011/03/21</td>
-                                        <td>$356,250</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Lael Greer</td>
-                                        <td>Systems Administrator</td>
-                                        <td>London</td>
-                                        <td>21</td>
-                                        <td>2009/02/27</td>
-                                        <td>$103,500</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Jonas Alexander</td>
-                                        <td>Developer</td>
-                                        <td>San Francisco</td>
-                                        <td>30</td>
-                                        <td>2010/07/14</td>
-                                        <td>$86,500</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Shad Decker</td>
-                                        <td>Regional Director</td>
-                                        <td>Edinburgh</td>
-                                        <td>51</td>
-                                        <td>2008/11/13</td>
-                                        <td>$183,000</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Michael Bruce</td>
-                                        <td>Javascript Developer</td>
-                                        <td>Singapore</td>
-                                        <td>29</td>
-                                        <td>2011/06/27</td>
-                                        <td>$183,000</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Donna Snider</td>
-                                        <td>Customer Support</td>
-                                        <td>New York</td>
-                                        <td>27</td>
-                                        <td>2011/01/25</td>
-                                        <td>$112,000</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                <!-- for leaveStatusChart -->
-                <?php
+                    <!-- for leaveStatusChart -->
+                    <?php
 
-                    include '../db/db_conn.php';
+                        include '../db/db_conn.php';
 
-                    $sql = "SELECT status, COUNT(*) as count FROM leave_requests GROUP BY status";
-                    $result = $conn->query($sql);
+                        $sql = "SELECT status, COUNT(*) as count FROM leave_requests GROUP BY status";
+                        $result = $conn->query($sql);
 
-                    $status_counts = [
-                        'Approved' => 0,
-                        'Supervisor Approved' => 0,
-                        'Denied' => 0,
-                    ];
-                    while ($row = $result->fetch_assoc()) {
-                        $status = $row['status'];
-                        if (isset($status_counts[$status])) {
-                            $status_counts[$status] = $row['count'];
+                        $status_counts = [
+                            'Approved' => 0,
+                            'Supervisor Approved' => 0,
+                            'Denied' => 0,
+                        ];
+                        while ($row = $result->fetch_assoc()) {
+                            $status = $row['status'];
+                            if (isset($status_counts[$status])) {
+                                $status_counts[$status] = $row['count'];
+                            }
                         }
-                    }
 
-                    $conn->close();
-                ?>
-            </div>
-        </main>
-        <footer class="py-4 bg-dark mt-auto border-top border-1 border-warning">
-            <div class="container-fluid px-4">
-                <div class="d-flex align-items-center justify-content-between small">
-                    <div class="text-muted">Copyright &copy; Your Website 2023</div>
-                        <div>
-                            <a href="#">Privacy Policy</a>
-                            &middot;
-                            <a href="#">Terms &amp; Conditions</a>
-                        </div>
-                        </div>
+                        $conn->close();
+                    ?>
                 </div>
-        </footer>
+            </main>
+                <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content bg-dark text-light">
+                            <div class="modal-header border-bottom border-warning">
+                                <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                Are you sure you want to log out?
+                            </div>
+                            <div class="modal-footer border-top border-warning">
+                                <button type="button" class="btn border-secondary text-light" data-bs-dismiss="modal">Cancel</button>
+                                <form action="../admin/logout.php" method="POST">
+                                    <button type="submit" class="btn btn-danger">Logout</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>  
+            <footer class="py-4 bg-dark mt-auto border-top border-1 border-warning">
+                <div class="container-fluid px-4">
+                    <div class="d-flex align-items-center justify-content-between small">
+                        <div class="text-muted">Copyright &copy; Your Website 2023</div>
+                            <div>
+                                <a href="#">Privacy Policy</a>
+                                &middot;
+                                <a href="#">Terms &amp; Conditions</a>
+                            </div>
+                            </div>
+                    </div>
+            </footer>
         </div>
     </div>
     

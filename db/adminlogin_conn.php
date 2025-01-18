@@ -210,12 +210,18 @@ function sendAlertEmail($email, $conn) {
                 <div style="max-width: 600px; margin: 0 auto; background-color: rgba(33, 37, 41); padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
                     <h2 style="text-align: center; color: #e74c3c;">Security Alert: Multiple Failed Login Attempts</h2>
                     <p style="font-size: 16px; color: #f8f9fa;">Hello, ' . $userName . '</p>
-                    <p style="font-size: 16px; color: #f8f9fa;">There have been 10 consecutive failed login attempts to your account. If this wasn\'t you, please reset your password immediately to secure your account.</p>
+                    <p style="font-size: 16px; color: #f8f9fa;">There have been 10 consecutive failed login attempts to your account. If this wasn’t you, please reset your password immediately to secure your account.</p>
                     <p style="font-size: 16px; color: #f8f9fa;">To reset your login attempts and prevent further issues, click the button below:</p>
                     <p style="text-align: center;">
-                        <a href="' . $resetLogin . '" style="background-color: #3498db; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Reset Login Attempts</a>
-                    </p>
-                    <br>
+                    <form method="POST" action="http://localhost/HR2/db/reset_login_attempt.php" style="max-width: 400px; margin: 0 auto; padding: 20px; text-align: center;">
+                        <div class="mb-3" style="display: none;"> <!-- Hides the email input -->
+                            <input type="email" class="form-control" id="email" name="email" value="' . $email . '" readonly style="color:rgb(0, 0, 0); border-color: #7f8c8d; width: 100%; padding: 10px 15px; font-size: 14px; border-radius: 5px; text-align: center;">
+                        </div>
+                        <button type="submit" class="btn btn-lg btn-success w-100" name="reset_login_attempt" style="padding: 10px 20px; background-color: #3498db; color: #fff; text-decoration: none; border-radius: 5px; display: block; margin: 10px auto 0; cursor: pointer !important;">
+                            Reset Login Attempts
+                        </button>
+                    </form>
+                    </p>   
                     <p style="font-size: 16px; color: #f8f9fa;">If you believe your password was compromised, please click the link below to reset it:</p>
                     <p style="text-align: center;">
                         <a href="' . $resetLink . '" style="padding: 10px 20px; background-color: #3498db; color: #fff; text-decoration: none; border-radius: 5px; display: inline-block;">
@@ -235,4 +241,5 @@ function sendAlertEmail($email, $conn) {
         error_log("Email could not be sent. PHPMailer Error: {$mail->ErrorInfo}");
     }
 }
+
 ?>

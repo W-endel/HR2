@@ -74,8 +74,8 @@
     --bs-border-radius-xl: 1rem;
     --bs-border-radius-2xl: 2rem;
     --bs-border-radius-pill: 50rem;
-    --bs-link-color: #0d6efd;
-    --bs-link-hover-color: #0a58ca;
+    --bs-link-color: #4eb6e6;
+    --bs-link-hover-color: #1aa2cc;
     --bs-code-color: #d63384;
     --bs-highlight-bg: #fff3cd;
 }
@@ -2039,16 +2039,16 @@ progress {
 
 .table,
 .datatable-table {
-    --bs-table-color: var(--bs-body-color);
+    --bs-table-color: var(--bs-light-rgb);
     --bs-table-bg: transparent;
     --bs-table-border-color: var(--bs-border-color);
     --bs-table-accent-bg: transparent;
     --bs-table-striped-color: var(--bs-body-color);
     --bs-table-striped-bg: rgba(0, 0, 0, 0.05);
     --bs-table-active-color: var(--bs-body-color);
-    --bs-table-active-bg: rgba(0, 0, 0, 0.1);
-    --bs-table-hover-color: var(--bs-body-color);
-    --bs-table-hover-bg: rgba(0, 0, 0, 0.075);
+    --bs-table-active-bg: rgba(255, 253, 253, 0.1);
+    --bs-table-hover-color: var(--bs-light-rgb);
+    --bs-table-hover-bg: rgba(31, 30, 30, 0.918);
     width: 100%;
     margin-bottom: 1rem;
     color: var(--bs-table-color);
@@ -13127,6 +13127,7 @@ body {
 
 .datatable-sorter {
     display: inline-block;
+    color: white;
     height: 100%;
     position: relative;
     width: 100%;
@@ -13146,11 +13147,14 @@ body {
 }
 
 .datatable-sorter::before {
+    border-top: 6px solid white;
     bottom: 4px;
 }
 
 .datatable-sorter::after {
-    top: 0px;
+    border-bottom: 6px solid white;
+    border-top: 4px solid transparent;
+    top: 0;
 }
 
 .asc .datatable-sorter::after,

@@ -1,6 +1,5 @@
 <?php
 session_start();
-
 include '../db/db_conn.php';
 
 // Check if form data is set
@@ -40,7 +39,18 @@ if ($result->num_rows > 0) {
     if (password_verify($inputPassword, $employeeData['password'])) {
         $_SESSION['e_id'] = $employeeData['e_id']; 
         $_SESSION['position'] = $employeeData['position']; // Store the user's position in the session
-        
+
+        date_default_timezone_set('Asia/Manila');
+
+        $login_time = date("Y-m-d H:i:s");
+
+        // Record login activity in the user_activity table
+        $activitySql = "INSERT INTO user_activity (user_id, login_time) VALUES (?, ?)";
+        $activityStmt = $conn->prepare($activitySql);
+        $activityStmt->bind_param("is", $_SESSION['e_id'], $login_time);
+        $activityStmt->execute();
+        $activityStmt->close();
+
         // Redirect based on position
         if ($employeeData['position'] === 'Staff') {
             $stmt->close();

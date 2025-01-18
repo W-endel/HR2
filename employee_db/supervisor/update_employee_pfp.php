@@ -7,7 +7,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_picture'])) 
     $file = $_FILES['profile_picture'];
     
     // Define the directory where you want to save the uploaded files
-    $targetDir = $_SERVER['DOCUMENT_ROOT'] . "../../uploads/profile_pictures/";
+    $targetDir = $_SERVER['DOCUMENT_ROOT'] . "/HR2/uploads/profile_pictures/";
 
     // Ensure the directory exists
     if (!file_exists($targetDir)) {
@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_picture'])) 
     
     // Construct the full file path
     $targetFile = $targetDir . basename($file["name"]);
-    $relativePath = "../../uploads/profile_pictures/" . basename($file["name"]);
+    $relativePath = "/HR2/uploads/profile_pictures/" . basename($file["name"]);
     $uploadOk = 1;
     $imageFileType = strtolower(pathinfo($targetFile, PATHINFO_EXTENSION));
 

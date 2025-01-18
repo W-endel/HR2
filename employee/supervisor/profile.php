@@ -8,7 +8,6 @@ if (!isset($_SESSION['e_id'])) {
     exit();
 }
 
-
 if (isset($_SESSION['update_success'])) {
     echo '<script>alert("' . htmlspecialchars($_SESSION['update_success']) . '");</script>';
     unset($_SESSION['update_success']);
@@ -16,12 +15,40 @@ if (isset($_SESSION['update_success'])) {
 
 // Fetch user info
 $employeeId = $_SESSION['e_id'];
-$sql = "SELECT e_id, firstname, middlename, lastname, birthdate, email, role, position, department, phone_number, address, pfp FROM employee_register WHERE e_id = ?";
+$sql = "SELECT 
+    e.e_id, e.firstname, e.middlename, e.lastname, e.birthdate, e.email, e.created_at,
+    e.role, e.position, e.department, e.phone_number, e.address, e.pfp, 
+    ua.login_time, 
+    -- Fetch the last valid logout time
+    (SELECT ua2.logout_time 
+     FROM user_activity ua2 
+     WHERE ua2.user_id = e.e_id 
+     AND ua2.logout_time IS NOT NULL 
+     ORDER BY ua2.logout_time ASC 
+     LIMIT 1) AS last_logout_time
+FROM 
+    employee_register e
+LEFT JOIN 
+    user_activity ua ON e.e_id = ua.user_id
+WHERE 
+    e.e_id = ? 
+ORDER BY 
+    ua.login_time DESC 
+LIMIT 1";
+
+
+
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $employeeId);
 $stmt->execute();
 $result = $stmt->get_result();
-$employeeInfo = $result->fetch_assoc();
+
+if ($result->num_rows > 0) {
+    $employeeInfo = $result->fetch_assoc();
+} else {
+    $employeeInfo = null;
+}
+
 $stmt->close();
 $conn->close();
 
@@ -40,6 +67,7 @@ $qrImagePath = '../qrcodes/employee_' . $employeeId . '.png';
 QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
 
 ?>
+
 
 
 <!DOCTYPE html>
@@ -61,71 +89,73 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
     <nav class="sb-topnav navbar navbar-expand navbar-dark border-bottom border-1 border-warning bg-dark">
         <a class="navbar-brand ps-3 text-muted" href="../../employee/supervisor/dashboard.php">Employee Portal</a>
         <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars text-light"></i></button>
-            <div class="d-flex ms-auto me-0 me-md-3 my-2 my-md-0 align-items-center">
-                <div class="text-light me-3 p-2 rounded shadow-sm bg-gradient" id="currentTimeContainer" 
-                    style="background: linear-gradient(45deg, #333333, #444444); border-radius: 5px;">
-                    <span class="d-flex align-items-center">
-                        <span class="pe-2">
-                            <i class="fas fa-clock"></i> 
-                            <span id="currentTime">00:00:00</span>
-                        </span>
-                        <button class="btn btn-outline-warning btn-sm ms-2" type="button" onclick="toggleCalendar()">
-                            <i class="fas fa-calendar-alt"></i>
-                            <span id="currentDate">00/00/0000</span>
-                        </button>
+        <div class="d-flex ms-auto me-0 me-md-3 my-2 my-md-0 align-items-center">
+            <div class="text-light me-3 p-2 rounded shadow-sm bg-gradient" id="currentTimeContainer" 
+                style="background: linear-gradient(45deg, #333333, #444444); border-radius: 5px;">
+                <span class="d-flex align-items-center">
+                    <span class="pe-2">
+                        <i class="fas fa-clock"></i> 
+                        <span id="currentTime">00:00:00</span>
                     </span>
-                </div>
-                <form class="d-none d-md-inline-block form-inline">
-                    <div class="input-group">
-                        <input class="form-control" type="text" placeholder="Search for..." aria-label="Search for..." aria-describedby="btnNavbarSearch" />
-                        <button class="btn btn-warning" id="btnNavbarSearch" type="button"><i class="fas fa-search"></i></button>
-                    </div>
-                </form>
+                    <button class="btn btn-outline-warning btn-sm ms-2" type="button" onclick="toggleCalendar()">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span id="currentDate">00/00/0000</span>
+                    </button>
+                </span>
             </div>
+            <form class="d-none d-md-inline-block form-inline">
+                <div class="input-group">
+                    <input class="form-control" type="text" placeholder="Search for..." aria-label="Search for..." aria-describedby="btnNavbarSearch" />
+                    <button class="btn btn-warning" id="btnNavbarSearch" type="button"><i class="fas fa-search"></i></button>
+                </div>
+            </form>
+        </div>
     </nav>
     <div id="layoutSidenav">
         <div id="layoutSidenav_nav">
             <nav class="sb-sidenav accordion bg-dark" id="sidenavAccordion">
                 <div class="sb-sidenav-menu ">
                     <div class="nav">
-                        <div class="sb-sidenav-menu-heading text-center text-muted">Your Profile</div>
-                        <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
-                            <li class="nav-item dropdown text">
-                                <a class="nav-link dropdown-toggle text-light d-flex justify-content-center ms-4" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <img src="<?php echo (!empty($employeeInfo['pfp']) && $employeeInfo['pfp'] !== 'defaultpfp.png') 
-                                        ? htmlspecialchars($employeeInfo['pfp']) 
-                                        : '../../img/defaultpfp.jpg'; ?>" 
-                                        class="rounded-circle border border-light" width="120" height="120" alt="" />
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                    <li><a class="dropdown-item" href="../../employee/supervisor/profile.php">Profile</a></li>
-                                    <li><a class="dropdown-item" href="#!">Settings</a></li>
-                                    <li><a class="dropdown-item" href="#!">Activity Log</a></li>
-                                    <li><hr class="dropdown-divider" /></li>
-                                    <li><a class="dropdown-item" href="../../employee/supervisor/employeelogout.php" onclick="confirmLogout(event)">Logout</a></li>
+                        <div class="sb-sidenav-menu-heading text-center text-muted">Profile</div>
+                            <div class="text-center">
+                                <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
+                                    <li class="nav-item dropdown text">
+                                        <a class="nav-link dropdown-toggle text-light d-flex justify-content-center ms-4" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <img src="<?php echo (!empty($employeeInfo['pfp']) && $employeeInfo['pfp'] !== 'defaultpfp.png') 
+                                                ? htmlspecialchars($employeeInfo['pfp']) 
+                                                : '../../img/defaultpfp.jpg'; ?>" 
+                                                class="rounded-circle border border-light" width="120" height="120" alt="" />
+                                        </a>
+                                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                            <li><a class="dropdown-item" href="../../employee/supervisor/profile.php">Profile</a></li>
+                                            <li><a class="dropdown-item" href="#!">Settings</a></li>
+                                            <li><a class="dropdown-item" href="#!">Activity Log</a></li>
+                                            <li><hr class="dropdown-divider" /></li>
+                                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">Logout</a></li>
+                                        </ul>
+                                    </li>
+                                    <li class="nav-item text-light d-flex ms-3 flex-column align-items-center text-center">
+                                        <span class="big text-light mb-1">
+                                            <?php
+                                                if ($employeeInfo) {
+                                                echo htmlspecialchars($employeeInfo['firstname'] . ' ' . $employeeInfo['middlename'] . ' ' . $employeeInfo['lastname']);
+                                                } else {
+                                                echo "Employee information not available.";
+                                                }
+                                            ?>
+                                        </span>      
+                                        <span class="big text-light">
+                                            <?php
+                                                if ($employeeInfo) {
+                                                echo htmlspecialchars($employeeInfo['position']);
+                                                } else {
+                                                echo "Employee information not available.";
+                                                }
+                                            ?>
+                                        </span>
+                                    </li>
                                 </ul>
-                            </li>
-                            <li class="nav-item text-light d-flex ms-3 flex-column align-items-center text-center">
-                                <span class="big text-light mb-1">
-                                    <?php
-                                        if ($employeeInfo) {
-                                        echo htmlspecialchars($employeeInfo['firstname'] . ' ' . $employeeInfo['middlename'] . ' ' . $employeeInfo['lastname']);
-                                        } else {
-                                        echo "Employee information not available.";
-                                        }
-                                    ?>
-                                </span>      
-                                <span class="big text-light">
-                                    <?php
-                                        if ($employeeInfo) {
-                                        echo htmlspecialchars($employeeInfo['position']);
-                                        } else {
-                                        echo "Employee information not available.";
-                                        }
-                                    ?>
-                                </span>
-                            </li>
-                        </ul>
+                            </div>
                         <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-warning mt-3">Employee Dashboard</div>
                         <a class="nav-link text-light" href="../../employee/supervisor/dashboard.php">
                             <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
@@ -193,67 +223,143 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
         </div>
         <div id="layoutSidenav_content">
             <main class="bg-black">
-                <div class="container" id="calendarContainer" 
-                    style="position: fixed; top: 9%; right: 0; z-index: 1050; 
-                    width: 700px; display: none;">
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div id="calendar" class="p-2"></div>
+                <div class="container-fluid position-relative px-4">
+                    <div class="container-fluid" id="calendarContainer" 
+                        style="position: fixed; top: 9%; right: 0; z-index: 1050; 
+                        max-width: 100%; display: none;">
+                        <div class="row">
+                            <div class="col-12 col-md-10 col-lg-8 mx-auto">
+                                <div id="calendar" class="p-2"></div>
+                            </div>
                         </div>
                     </div>
-                </div>   
-                <div class="container-fluid px-4 bg-black">
-                    <h1 class="big mb-4 text-light">My Profile</h1>
-                    <div class="row">
-                        <div class="col-md-4">
+                    <h1 class="big mb-2 text-light">My Profile</h1>
+                    <div class="row mt-4">
+                        <div class="col-md-12">
                             <div class="card mb-4">
                                 <div class="card-header bg-dark border-1 border-bottom border-warning text-light">
-                                    <h5 class="card-title text-center">Profile Picture</h5>
+                                    <h3 class="card-title text-start">User Information</h3>
                                 </div>
-                                <div class="card-body text-center bg-dark">
-                                    <img src="<?php echo (!empty($employeeInfo['pfp']) && $employeeInfo['pfp'] !== 'defaultpfp.png') 
-                                        ? htmlspecialchars($employeeInfo['pfp']) 
-                                        : '../../img/defaultpfp.jpg'; ?>" 
-                                        class="rounded-circle border border-light" width="200" height="200" alt="" />
+                                <div class="card-body bg-dark">
+                                    <div class="row">
+                                        <div class="col-xl-2">
+                                            <div class="d-flex justify-content-center">
+                                                <img src="<?php echo (!empty($employeeInfo['pfp']) && $employeeInfo['pfp'] !== 'defaultpfp.png') 
+                                                    ? htmlspecialchars($employeeInfo['pfp']) 
+                                                    : '../../img/defaultpfp.jpg'; ?>" 
+                                                    class="rounded-circle border border-light img-fluid" 
+                                                    style="max-width: 230px; max-height: 230px; min-width: 230px; min-height: 230px; object-fit: cover;" 
+                                                    alt="Profile Picture" />
+                                            </div>
 
-                                        <button class="btn btn-outline-light" type="button" id="editPictureDropdown" 
-                                                data-bs-toggle="dropdown" aria-expanded="false">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                    <div class="dropdown mt-3">
-                                        <ul class="dropdown-menu" aria-labelledby="editPictureDropdown">
-                                            <li>
-                                                <a class="dropdown-item" href="javascript:void(0);" id="changePictureOption">Change Profile Picture</a>
-                                            </li>
-                                            <li>
-                                                <form action="../../employee_db/supervisor/delete_employee_pfp.php" method="post">
-                                                    <input type="hidden" name="employeeId" value="<?php echo $employeeInfo['e_id']; ?>">
-                                                    <button class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#deleteProfilePictureModal">
-                                                        Delete Profile Picture
-                                                    </button>
-                                                </form>
-                                                <div class="modal fade" id="deleteProfilePictureModal" tabindex="-1" aria-labelledby="deleteProfilePictureLabel" aria-hidden="true">
-                                                    <div class="modal-dialog modal-dialog-centered">
-                                                        <div class="modal-content">
-                                                            <div class="modal-header">
-                                                                <h5 class="modal-title" id="deleteProfilePictureLabel">Delete Profile Picture</h5>
-                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                            </div>
-                                                            <div class="modal-body text-center">
-                                                                <p>Are you sure you want to delete your profile picture?</p>
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <form action="../../employee_db/supervisor/delete_employee_pfp.php" method="post">
-                                                                    <input type="hidden" name="employeeId" value="<?php echo $employeeInfo['e_id']; ?>">
-                                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                                    <button type="submit" class="btn btn-danger">Delete</button>
-                                                                </form>
-                                                            </div>
-                                                        </div>
+                                            <div class="d-flex justify-content-center align-items-center mt-4 mb-3">
+                                                <button class="btn btn-light text-center" type="button" id="editPictureDropdown" 
+                                                    data-bs-toggle="dropdown" aria-expanded="false"> Edit Profile
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <div class="dropdown">
+                                                    <ul class="dropdown-menu" aria-labelledby="editPictureDropdown">
+                                                        <li>
+                                                            <a class="dropdown-item fw-bold" href="javascript:void(0);" id="changePictureOption">Change Profile Picture</a>
+                                                        </li>
+                                                        <hr>
+                                                        <li>
+                                                            <button class="dropdown-item fw-bold text-danger" type="button" data-bs-toggle="modal" data-bs-target="#deleteProfilePictureModal">
+                                                                Delete Profile Picture
+                                                            </button>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-xl-10 mb-4">
+                                            <div class="">
+                                                <div class="d-flex justify-content-start">
+                                                    <button type="button" class="btn btn-primary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#qrCodeModal">Show QR Code</button>
+                                                    <a href="../../employee/supervisor/change_pass.php" class="btn btn-primary"> Change password </a>
+                                                </div>
+                                            </div>
+                                            <div class="mt-3">
+                                                <div class="form-group row">
+                                                    <div class="col-sm-6 bg-dark form-floating mb-3">
+                                                        <input class="form-control fw-bold" name="fname" value="<?php echo htmlspecialchars($employeeInfo['firstname'] . ' ' . $employeeInfo['middlename'] . ' ' . $employeeInfo['lastname']); ?>" readonly>
+                                                        <label class="fw-bold">Name:</label>
+                                                    </div>
+
+                                                    <div class="col-sm-6 bg-dark form-floating">
+                                                        <input class="form-control fw-bold" name="id" value="<?php echo htmlspecialchars($employeeInfo['e_id']); ?>" readonly>
+                                                        <label class="fw-bold">ID No.:</label>
                                                     </div>
                                                 </div>
-                                            </li>
-                                        </ul>
+                                            </div>
+                                            <div class="mt-3">
+                                                <div class="form-group row">
+                                                    <div class="col-sm-6 bg-dark form-floating mb-3">
+                                                        <input class="form-control fw-bold" name="position" value="<?php echo htmlspecialchars($employeeInfo['position']); ?>" readonly>
+                                                        <label class="fw-bold">Role:</label>
+                                                    </div>
+
+                                                    <div class="col-sm-6 bg-dark form-floating">
+                                                        <input class="form-control fw-bold" name="department" value="<?php echo htmlspecialchars($employeeInfo['department']); ?>" readonly>
+                                                        <label class="fw-bold">Department:</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="mt-3">
+                                                <div class="form-group row">
+                                                    <div class="col-sm-12 bg-dark form-floating mb-3">
+                                                        <input class="form-control fw-bold" name="email" value="<?php echo htmlspecialchars($employeeInfo['email']); ?>" readonly>
+                                                        <label class="fw-bold">Email:</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card-header bg-dark text-light">
+                                            <hr>
+                                            <h3 class="card-title text-center">Edit Information</h3>
+                                        </div>
+                                        <div class="card-body bg-dark">
+                                            <form id="infoForm" action="../../employee_db/supervisor/update_profile.php" method="post">
+                                                <div class="row mb-3">
+                                                    <div class="col-sm-4 bg-dark form-floating mb-3">
+                                                        <input type="text" class="form-control fw-bold" id="inputfName" name="firstname" value="<?php echo htmlspecialchars($employeeInfo['firstname']); ?>" readonly required>
+                                                        <label for="inputfName" class="fw-bold">First Name:</label>
+                                                    </div>
+                                                    <div class="col-sm-4 bg-dark form-floating mb-3">
+                                                        <input type="text" class="form-control fw-bold" id="inputmName" name="middlename" value="<?php echo htmlspecialchars($employeeInfo['middlename']); ?>" readonly required>
+                                                        <label for="inputmName" class="fw-bold">Middle Name:</label>
+                                                    </div>
+                                                    <div class="col-sm-4 bg-dark form-floating">
+                                                        <input type="text" class="form-control fw-bold" id="inputlName" name="lastname" value="<?php echo htmlspecialchars($employeeInfo['lastname']); ?>" readonly required>
+                                                        <label for="inputlName" class="fw-bold">Last Name:</label>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-3">
+                                                    <div class="col-sm-6 bg-dark form-floating mb-3">
+                                                        <input type="date" class="form-control fw-bold" id="inputbirth" name="birthdate" value="<?php echo htmlspecialchars($employeeInfo['birthdate']); ?>" readonly required>
+                                                        <label for="inputbirth" class="fw-bold">Birthdate:</label>
+                                                    </div>
+                                                    <div class="col-sm-6 bg-dark form-floating">
+                                                        <input type="email" class="form-control fw-bold" id="inputEmail" name="email" value="<?php echo htmlspecialchars($employeeInfo['email']); ?>" readonly required>
+                                                        <label for="inputEmail" class="fw-bold">Email Address:</label>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-3">
+                                                    <div class="col-sm-6 bg-dark form-floating mb-3">
+                                                        <input type="number" class="form-control fw-bold" id="inputEmail" id="inputPhone" name="phone_number" value="<?php echo htmlspecialchars($employeeInfo['phone_number']); ?>" readonly required>
+                                                        <label for="inputPhone" class="fw-bold">Phone Number:</label>
+                                                    </div>
+                                                    <div class="col-sm-6 bg-dark form-floating">
+                                                        <input class="form-control fw-bold" id="inputAddress" name="address" value="<?php echo htmlspecialchars($employeeInfo['address']); ?>" readonly required>
+                                                        <label for="inputAddress" class="fw-bold">Address:</label>
+                                                    </div>
+                                                </div>
+                                                <div class="d-flex justify-content-between">
+                                                    <button type="submit" class="btn btn-primary d-none">Save Changes</button>
+                                                    <button type="button" id="editButton" class="btn btn-primary">Update Information</button>
+                                                </div>
+                                            </form>
+                                        </div>
                                     </div>
                                     <form action="../../employee_db/supervisor/update_employee_pfp.php" method="post" enctype="multipart/form-data" id="profilePictureForm" style="display:none;">
                                         <input type="file" id="profilePictureInput" name="profile_picture" accept="image/*" onchange="showConfirmationModal();">
@@ -281,99 +387,44 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                                             </div>
                                         </div>
                                     </div>
-                                    <table class="table text-light mt-3 text-start">
-                                        <tr>
-                                            <td>Name:</td>
-                                            <td><?php echo htmlspecialchars($employeeInfo['firstname'] . ' ' . $employeeInfo['middlename'] . ' ' . $employeeInfo['lastname']); ?></td>
-                                        </tr>
-                                        <tr>
-                                            <td>ID:</td>
-                                            <td>#<?php echo htmlspecialchars($employeeInfo['e_id']); ?></td>
-                                        </tr>
-                                        <tr>
-                                            <td>Role:</td>
-                                            <td><?php echo htmlspecialchars($employeeInfo['role']); ?></td>
-                                        </tr>
-                                        <tr>
-                                            <td>Position:</td>
-                                            <td><?php echo htmlspecialchars($employeeInfo['position']); ?></td>
-                                        </tr>
-                                        <tr>
-                                            <td>Department:</td>
-                                            <td><?php echo htmlspecialchars($employeeInfo['department']); ?></td>
-                                        </tr>
-                                        <tr>
-                                            <td>Email:</td>
-                                            <td><?php echo htmlspecialchars($employeeInfo['email']); ?></td>
-                                        </tr>
-                                    </table>
-                                        <button type="button" class="btn btn-primary btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#qrCodeModal">Show QR Code</button>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-8">
-                            <div class="card mb-2">
-                                <div class="card-header bg-dark border-bottom border-1 border-warning text-light">
-                                    <h5 class="card-title text-center">My Information</h5>
-                                </div>
-                                <div class="card-body bg-dark">
-                                    <form id="infoForm" action="../../employee_db/supervisor/update_profile.php" method="post">
-                                        <div class="row mb-3">
-                                            <label for="inputfName" class="col-sm-2 col-form-label text-light">First Name:</label>
-                                            <div class="col-sm-9">
-                                                <input type="text" class="form-control bg-dark text-light border border-light" id="inputfName" name="firstname" value="<?php echo htmlspecialchars($employeeInfo['firstname']); ?>" readonly>
-                                            </div>
-                                        </div>
-                                        <div class="row mb-3">
-                                            <label for="inputmName" class="col-sm-2 col-form-label text-light">Middle Name:</label>
-                                            <div class="col-sm-9"> 
-                                                <input type="text" class="form-control bg-dark text-light border border-light" id="inputmName" name="middlename" value="<?php echo htmlspecialchars($employeeInfo['middlename']); ?>" readonly>
-                                            </div>
-                                        </div>
-                                        <div class="row mb-3">
-                                            <label for="inputlName" class="col-sm-2 col-form-label text-light">Last Name:</label>
-                                            <div class="col-sm-9">
-                                                <input type="text" class="form-control bg-dark text-light border border-light" id="inputlName" name="lastname" value="<?php echo htmlspecialchars($employeeInfo['lastname']); ?>" readonly>
-                                            </div>
-                                        </div>
-                                        <div class="row mb-3">
-                                            <label for="inputbirth" class="col-sm-2 col-form-label text-light">Birthdate:</label>
-                                            <div class="col-sm-9">
-                                                <input type="date" class="form-control bg-dark text-light border border-light" id="inputbirth" name="birthdate" value="<?php echo htmlspecialchars($employeeInfo['birthdate']); ?>" readonly>
-                                            </div>
-                                        </div>
-                                        <div class="row mb-3">
-                                            <label for="inputEmail" class="col-sm-2 col-form-label text-light">Email Address:</label>
-                                            <div class="col-sm-9">
-                                                <input type="email" class="form-control bg-dark text-light border border-light" id="inputEmail" name="email" value="<?php echo htmlspecialchars($employeeInfo['email']); ?>" readonly>
-                                            </div>
-                                        </div>
-                                        <div class="row mb-3">
-                                            <label for="inputPhone" class="col-sm-2 col-form-label text-light">Phone Number:</label>
-                                            <div class="col-sm-9">
-                                                <input type="number" class="form-control bg-dark text-light border border-light" id="inputPhone" name="phone_number" value="<?php echo htmlspecialchars($employeeInfo['phone_number']); ?>" readonly>
-                                            </div>
-                                        </div>
-                                        <div class="row mb-3">
-                                            <label for="inputAddress" class="col-sm-2 col-form-label text-light">Address:</label>
-                                            <div class="mb-3 col-sm-9">
-                                                <textarea class="form-control border bg-dark text-light border-light" id="inputAddress" name="address" rows="1" readonly><?php echo htmlspecialchars($employeeInfo['address']); ?></textarea>
-                                            </div>
-                                        </div>
-                                        <div class="d-flex justify-content-between">
-                                            <button type="submit" class="btn btn-primary d-none">Save Changes</button>
-                                            <button type="button" id="editButton" class="btn btn-primary">Update Information</button>
-                                        </div>
-                                    </form>
-                                </div>
+                    </div>
+                    <div class="col-xl-4 mb-4">
+                        <div class="card bg-dark text-light">
+                            <div class="card-header border-bottom border-warning">
+                                <h3 class="mb-0">User Activity</h3>
                             </div>
-                            <a href="../../employee/supervisor/change_pass.php" class="btn btn-primary mt-4">Change Password</a>
+                            <div class="card-body">
+                                <p><strong>Your last login was on:</strong> 
+                                    <?php 
+                                        if (!empty($employeeInfo['login_time'])) {
+                                            $login = strtotime($employeeInfo['login_time']); 
+                                            echo date("l, F j, Y | g:i A", $login); 
+                                        } else {
+                                            echo "No login time available";
+                                        }
+                                    ?>
+                                </p>
+                                <hr>
+                                <p><strong>Your last logout was on:</strong> 
+                                    <?php 
+                                        if (!empty($employeeInfo['last_logout_time'])) {
+                                            $logout = strtotime($employeeInfo['last_logout_time']); 
+                                            echo date("l, F j, Y | g:i A", $logout); 
+                                        } else {
+                                            echo "No logout time available";
+                                        }
+                                    ?>
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
             </main>
                 <div class="modal fade" id="qrCodeModal" tabindex="-1" aria-labelledby="qrCodeModalLabel" aria-hidden="true">
-                    <div class="modal-dialog">
+                    <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content bg-dark text-light">
                             <div class="modal-header boder-1 border-warning">
                                 <h5 class="modal-title" id="qrCodeModalLabel">Employee QR Code</h5>
@@ -381,11 +432,51 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                             </div>
                             <div class="modal-body text-center">
                                 <img src="<?php echo $qrImagePath; ?>" alt="QR Code" class="img-fluid border border-light" width="200">
-                                <p class="mt-3">Employee ID: <?php echo htmlspecialchars($employeeInfo['e_id']); ?></p>
-                                <p>Name: <?php echo htmlspecialchars($employeeInfo['firstname'] . ' ' . $employeeInfo['middlename'] . ' ' . $employeeInfo['lastname']); ?></p>
+                                <hr>
+                                <p class="mt-3 text-start">Employee ID: <?php echo htmlspecialchars($employeeInfo['e_id']); ?></p>
+                                <p class="text-start">Name: <?php echo htmlspecialchars($employeeInfo['firstname'] . ' ' . $employeeInfo['middlename'] . ' ' . $employeeInfo['lastname']); ?></p>
                             </div>
                             <div class="modal-footer boder-1 border-warning">
                                 <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content bg-dark text-light">
+                            <div class="modal-header border-bottom border-warning">
+                                <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                Are you sure you want to log out?
+                            </div>
+                            <div class="modal-footer border-top border-warning">
+                                <button type="button" class="btn border-secondary text-light" data-bs-dismiss="modal">Cancel</button>
+                                <form action="../../employee/logout.php" method="POST">
+                                    <button type="submit" class="btn btn-danger">Logout</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>  
+                <div class="modal fade" id="deleteProfilePictureModal" tabindex="-1" aria-labelledby="deleteProfilePictureLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content bg-dark text-light">
+                            <div class="modal-header border-bottom border-warning">
+                                <h5 class="modal-title" id="deleteProfilePictureLabel">Delete Profile Picture</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body text-start">
+                                <p>Are you sure you want to delete your profile picture?</p>
+                            </div>
+                            <div class="modal-footer border-top border-warning">
+                                <form action="../../employee_db/supervisor/delete_employee_pfp.php" method="post">
+                                    <input type="hidden" name="employeeId" value="<?php echo $employeeInfo['e_id']; ?>">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -402,24 +493,6 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                     </div>
                 </div>
             </footer>
-            <div class="modal fade" id="qrCodeModal" tabindex="-1" aria-labelledby="qrCodeModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content bg-dark text-light">
-                        <div class="modal-header boder-1 border-warning">
-                            <h5 class="modal-title" id="qrCodeModalLabel">Employee QR Code</h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body text-center">
-                            <img src="<?php echo $qrImagePath; ?>" alt="QR Code" class="img-fluid border border-light" width="200">
-                            <p class="mt-3">Employee ID: <?php echo htmlspecialchars($employeeInfo['e_id']); ?></p>
-                            <p>Name: <?php echo htmlspecialchars($employeeInfo['firstname'] . ' ' . $employeeInfo['middlename'] . ' ' . $employeeInfo['lastname']); ?></p>
-                        </div>
-                        <div class="modal-footer boder-1 border-warning">
-                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 <script>
@@ -477,28 +550,62 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
 
         //TIME 
         function setCurrentTime() {
-            const currentTimeElement = document.getElementById('currentTime');
-            const currentDateElement = document.getElementById('currentDate');
+        const currentTimeElement = document.getElementById('currentTime');
+        const currentDateElement = document.getElementById('currentDate');
 
-            const currentDate = new Date();
-    
-            currentDate.setHours(currentDate.getHours() + 0);
-                const hours = currentDate.getHours();
-                const minutes = currentDate.getMinutes();
-                const seconds = currentDate.getSeconds();
-                const formattedHours = hours < 10 ? '0' + hours : hours;
-                const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
-                const formattedSeconds = seconds < 10 ? '0' + seconds : seconds;
+        const currentDate = new Date();
 
-            currentTimeElement.textContent = `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
-            currentDateElement.textContent = currentDate.toLocaleDateString();
-        }
-        setCurrentTime();
-        setInterval(setCurrentTime, 1000);
+        // Convert to 12-hour format with AM/PM
+        let hours = currentDate.getHours();
+        const minutes = currentDate.getMinutes();
+        const seconds = currentDate.getSeconds();
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+
+        hours = hours % 12;
+        hours = hours ? hours : 12; // If hour is 0, set to 12
+
+        const formattedHours = hours < 10 ? '0' + hours : hours;
+        const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
+        const formattedSeconds = seconds < 10 ? '0' + seconds : seconds;
+
+        currentTimeElement.textContent = `${formattedHours}:${formattedMinutes}:${formattedSeconds} ${ampm}`;
+
+        // Format the date in text form (e.g., "January 12, 2025")
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        currentDateElement.textContent = currentDate.toLocaleDateString('en-US', options);
+    }
+
+    setCurrentTime();
+    setInterval(setCurrentTime, 1000);
         //TIME END
+
+
+        document.addEventListener('DOMContentLoaded', function() {
+        // Check if there is a message to show
+        <?php if (isset($message)) : ?>
+            var modalMessage = "<?php echo $message; ?>";
+            var messageType = "<?php echo $messageType; ?>";
+
+            // Set the modal content based on success or error
+            document.getElementById('modalMessage').textContent = modalMessage;
+            
+            // Change modal appearance based on message type (optional)
+            if (messageType === "success") {
+                document.getElementById('messageModalLabel').textContent = "Success";
+                document.querySelector('.modal-content').classList.add('bg-success', 'text-white');
+            } else {
+                document.getElementById('messageModalLabel').textContent = "Error";
+                document.querySelector('.modal-content').classList.add('bg-danger', 'text-white');
+            }
+
+            // Show the modal
+            var myModal = new bootstrap.Modal(document.getElementById('messageModal'));
+            myModal.show();
+        <?php endif; ?>
+    });
 </script>
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'> </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <script src="../../js/employee.js"></script>
     <script src="../../js/profile.js"></script>
 </body>

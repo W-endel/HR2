@@ -1,63 +1,135 @@
 <?php
+// Start session and check admin login
 session_start();
-include '../../db/db_conn.php';
-
 if (!isset($_SESSION['e_id'])) {
     header("Location: ../../employee/login.php");
     exit();
 }
 
+// Include database connection
+include '../../db/db_conn.php';
+
 // Fetch user info
 $employeeId = $_SESSION['e_id'];
-$sql = "SELECT e_id, firstname, middlename, lastname, birthdate, email, available_leaves, role, position, department, phone_number, address, pfp FROM employee_register WHERE e_id = ?";
+$sql = "SELECT e_id, firstname, middlename, lastname, birthdate, email, role, position, department, phone_number, address, pfp FROM employee_register WHERE e_id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $employeeId);
 $stmt->execute();
 $result = $stmt->get_result();
 $employeeInfo = $result->fetch_assoc();
 
-if (!$employeeInfo) {
-    die("Error: Employee information not found.");
+function getTopEmployeesByCriterion($conn, $criterion, $criterionLabel, $index) {
+    // SQL query to fetch the highest average score for each employee
+    $sql = "SELECT e.e_id, e.firstname, e.lastname, e.department, e.pfp, 
+                   AVG(ae.$criterion) AS avg_score
+            FROM employee_register e
+            JOIN admin_evaluations ae ON e.e_id = ae.e_id
+            GROUP BY e.e_id
+            ORDER BY avg_score DESC
+            LIMIT 1";  // Select the top employee with the highest average score
+
+    $stmt = $conn->prepare($sql);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    // Path to the default profile picture
+    $defaultPfpPath = '../../img/defaultpfp.jpg'; // Update this path to your actual default profile picture location
+    $defaultPfp = base64_encode(file_get_contents($defaultPfpPath));
+
+    // Output the awardee's information for each criterion
+    echo "<div class='category' id='category-$index' style='display: none;'>";
+    echo "<h3 class='text-center mt-4'>$criterionLabel</h3>";
+
+    if ($result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            // Check if profile picture exists, else use the default picture
+            if (file_exists($row['pfp']) && !empty($row['pfp'])) {
+                $pfp = base64_encode(file_get_contents($row['pfp']));
+            } else {
+                $pfp = $defaultPfp; // Use default profile picture
+            }
+
+            echo "<div class='card mb-3' style='max-width: 100%; margin-top: 20px; border: 2px solid #ddd; border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); padding: 20px; background-color: #f9f9f9;'>"; // Style for certificate look
+            echo "<div class='row no-gutters' style='height: 100%;'>";
+            echo "<div class='col-md-4' style='height: 100%;'>";
+            if (!empty($pfp) && $pfp != 'default_profile_image_base64_data_here') { 
+                // Apply the border only if it's not the default profile picture
+                echo "<img src='data:image/jpeg;base64,$pfp' class='card-img' alt='Profile Picture' style='width: 400px; height: 400px; object-fit: cover; border-radius: 200px; border: 2px solid black;'>";
+            } else {
+                // For default profile picture, no border
+                echo "<img src='data:image/jpeg;base64,$pfp' class='card-img' alt='Profile Picture' style='width: 150px; height: 150px; object-fit: cover; border-radius: 15px;'>";
+            }
+            echo "</div>";            
+            echo "<div class='col-md-8' style='height: 100%; display: flex; flex-direction: column; justify-content: center; padding-left: 20px;'>";
+            echo "<div class='card-body' style='height: 100%;'>";
+            echo "<h1 class='card-title' style='font-size: 40px; font-weight: bold; color: #333;'>" . htmlspecialchars($row['firstname'] . ' ' . $row['lastname']) . "</h1>";
+            echo "<p class='card-text fs-5 text-dark'><strong>Department:</strong> " . htmlspecialchars($row['department']) . "</p>";
+            echo "<p class='card-text fs-5 text-dark'><strong>$criterionLabel Score:</strong> " . number_format($row['avg_score'], 2) . "</p>";  // Display average score
+            echo "<p class='card-text fs-5 text-dark'><strong>Employee ID:</strong> " . htmlspecialchars($row['e_id']) . "</p>";
+            echo "</div>"; // End of card-body
+            echo "</div>"; // End of col-md-8
+            echo "</div>"; // End of row
+            echo "</div>"; // End of card
+        }
+    } else {
+        echo "<p class='text-center'>No outstanding employees found for $criterionLabel.</p>";
+    }
+
+    echo "</div>"; // End of category
+    $stmt->close();
 }
 
-// Check if there are any status messages to display
-$status_message = isset($_SESSION['status_message']) ? $_SESSION['status_message'] : '';
-unset($_SESSION['status_message']); // Clear the status message after displaying it
-
-// Fetch the used leave by summing up approved leave days based on leave_start_date and leave_end_date
-$usedLeaveQuery = "SELECT SUM(DATEDIFF(end_date, start_date) + 1) AS used_leaves FROM leave_requests WHERE e_id = ? AND status = 'approved'";
-$usedLeaveStmt = $conn->prepare($usedLeaveQuery);
-$usedLeaveStmt->bind_param("i", $employeeId);
-$usedLeaveStmt->execute();
-$usedLeaveResult = $usedLeaveStmt->get_result();
-$usedLeaveRow = $usedLeaveResult->fetch_assoc();
-$usedLeave = $usedLeaveRow['used_leaves'] ?? 0; // Default to 0 if no leave has been used
-
-// Calculate remaining available leaves (optional, if needed for display or logic)
-$availableLeaves = $employeeInfo['available_leaves'];
-
-// Close the database connection
-$stmt->close();
-$usedLeaveStmt->close();
-$conn->close();
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leave Request Form</title>
+    <title>Outstanding Employees</title>
     <link href="../../css/styles.css" rel="stylesheet" />
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
     <link href="../../css/calendar.css" rel="stylesheet"/>
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        .card {
+            border: 2px solid #ddd; 
+            border-radius: 15px; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
+            padding: 20px; 
+            background-color: #f9f9f9;
+        }
+        .card-img {
+            border-radius: 15px;
+        }
+        .card-body {
+            padding-left: 20px;
+        }
+        .card-title {
+            font-size: 24px; 
+            font-weight: bold; 
+            color: #333;
+        }
+        .card-text {
+            font-size: 18px;
+        }
+        .category {
+            display: none;
+        }
+        .btn {
+            transition: transform 0.3s, background-color 0.3s; /* Smooth transition */
+            border-radius: 25px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px); /* Raise the button up */
+        }
+</style>
 </head>
 <body class="sb-nav-fixed bg-black">
     <nav class="sb-topnav navbar navbar-expand navbar-dark border-bottom border-1 border-warning bg-dark">
-        <a class="navbar-brand ps-3 text-muted" href="../../employee/staff/dashboard.php">Employee Portal</a>
+        <a class="navbar-brand ps-3 text-muted" href="../../employee/staff/dashboard.php">Employee's Portal</a>
         <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars text-light"></i></button>
             <div class="d-flex ms-auto me-0 me-md-3 my-2 my-md-0 align-items-center">
                 <div class="text-light me-3 p-2 rounded shadow-sm bg-gradient" id="currentTimeContainer" 
@@ -93,14 +165,14 @@ $conn->close();
                                     <img src="<?php echo (!empty($employeeInfo['pfp']) && $employeeInfo['pfp'] !== 'defaultpfp.png') 
                                         ? htmlspecialchars($employeeInfo['pfp']) 
                                         : '../../img/defaultpfp.jpg'; ?>" 
-                                        class="rounded-circle border border-light" width="120" height="120" alt="" />
+                                        class="rounded-circle border border-light" width="120" height="120" alt="Profile Picture" />
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                    <li><a class="dropdown-item" href="../../employee/staff/profile.php">Profile</a></li>
+                                    <li><a class="dropdown-item" href=".../../employee/staff/profile.php">Profile</a></li>
                                     <li><a class="dropdown-item" href="#!">Settings</a></li>
                                     <li><a class="dropdown-item" href="#!">Activity Log</a></li>
                                     <li><hr class="dropdown-divider" /></li>
-                                    <li><a class="dropdown-item" href="../../employee/staff/employeelogout.php" onclick="confirmLogout(event)">Logout</a></li>
+                                    <li><a class="dropdown-item" href="../../employee/staff/logout.php" onclick="confirmLogout(event)">Logout</a></li>
                                 </ul>
                             </li>
                             <li class="nav-item text-light d-flex ms-3 flex-column align-items-center text-center">
@@ -109,7 +181,7 @@ $conn->close();
                                         if ($employeeInfo) {
                                         echo htmlspecialchars($employeeInfo['firstname'] . ' ' . $employeeInfo['middlename'] . ' ' . $employeeInfo['lastname']);
                                         } else {
-                                        echo "Admin information not available.";
+                                        echo "User information not available.";
                                         }
                                     ?>
                                 </span>      
@@ -136,8 +208,7 @@ $conn->close();
                         </a>
                         <div class="collapse" id="collapseTAD" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link text-light" href="../../employee/staff/attendance.php">Attendance Scanner</a>
-                                <a class="nav-link text-light" href="">Timesheet</a>
+                                <a class="nav-link text-light" href="../../employee/staff/attendance.php">Attendance</a>
                             </nav>
                         </div>
                         <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLM" aria-expanded="false" aria-controls="collapseLM">
@@ -147,8 +218,8 @@ $conn->close();
                         </a>
                         <div class="collapse" id="collapseLM" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                            <a class="nav-link text-light" href="../../employee/staff/leave_request.php">File Leave Request</a>
-                            <a class="nav-link text-light" href="../../employee/staff/leave_balance.php">View Remaining Leave</a>
+                                <a class="nav-link text-light" href="../../employee/staff/leave_file.php">Leave Requests</a>
+                                <a class="nav-link text-light" href="../../employee/staff/leave_request.php">Leave History</a>
                             </nav>
                         </div>
                         <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePM" aria-expanded="false" aria-controls="collapsePM">
@@ -158,7 +229,7 @@ $conn->close();
                         </a>
                         <div class="collapse" id="collapsePM" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                            <a class="nav-link text-light" href="../../employee/staff/evaluation.php">Evaluation</a>
+                                <a class="nav-link text-light" href="../../employee/staff/evaluation.php">Evaluation</a>
                             </nav>
                         </div>
                         <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseSR" aria-expanded="false" aria-controls="collapseSR">
@@ -168,20 +239,10 @@ $conn->close();
                         </a>
                         <div class="collapse" id="collapseSR" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link text-light" href="../../employee/staff/rating.php">View Ratings</a>
+                                <a class="nav-link text-light" href="../../employee/staff/awardee.php">Awardee</a>
                             </nav>
                         </div>
-                        <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-warning mt-3">Feedback</div> 
-                        <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseFB" aria-expanded="false" aria-controls="collapseFB">
-                            <div class="sb-nav-link-icon"><i class="fas fa-exclamation-circle"></i></div>
-                            Report Issue
-                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                        </a>
-                        <div class="collapse" id="collapseFB" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
-                            <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link text-light" href="">Report Issue</a>
-                            </nav>
-                        </div> 
+                        <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-warning">Account Management</div>
                     </div>
                 </div>
                 <div class="sb-sidenav-footer bg-black text-light border-top border-1 border-warning">
@@ -190,117 +251,49 @@ $conn->close();
             </nav>
         </div>
     <div id="layoutSidenav_content">
-        <main class="bg-black">
+        <main class="container-fluid position-relative bg-black">
             <div class="container" id="calendarContainer" 
                 style="position: fixed; top: 9%; right: 0; z-index: 1050; 
                 width: 700px; display: none;">
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div id="calendar" class="p-2"></div>
-                        </div>
-                    </div>
-            </div>        
-            <div class="container mt-5">
-                    <!-- Leave Balance Section -->
-                    <div class="row mb-4">
-                        <div class="col-md-12">
-                            <div class="card leave-balance-card bg-dark text-light">
-                                <div class="card-body text-center">
-                                    <h4 class="card-title">Leave Information</h4>
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="p-3">
-                                                <h5>Overall Available Leave</h5>
-                                                <p class="fs-4 text-success"><?php echo htmlspecialchars($employeeInfo['available_leaves']); ?> days</p>
-                                                <a class="btn btn-success" href="#"> View leave details</a>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="p-3">
-                                                <h5>Used Leave</h5>
-                                                <p class="fs-4 text-danger"><?php echo htmlspecialchars($usedLeave); ?> days</p>
-                                                <a class="btn btn-danger" href="#"> View leave history</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                <form id="leave-request-form" action="../../employee_db/staff/leave_conn.php" method="POST" enctype="multipart/form-data">
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="card leave-form text bg-dark text-light">
-                                <div class="card-body">
-                                    <h5 class="card-title text-center mb-4">Request Leave</h5>
-                                    <div class="row mb-3">
-                                        <div class="col-md-6">
-                                            <label for="name" class="text-light">Name:</label>
-                                            <input type="text" class="form-control text-dark" id="name" name="name" value="<?php echo htmlspecialchars($employeeInfo['firstname'] . ' ' . $employeeInfo['lastname']); ?>" readonly>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label for="department" class="text-light">Department:</label>
-                                            <input type="text" class="form-control text-dark" id="department" name="department" value="<?php echo htmlspecialchars($employeeInfo['department']); ?>" readonly>
-                                        </div>
-                                    </div>
-                                    <div class="row mb-3">
-                                        <div class="col-md-6">
-                                            <label for="leave_type" class="form-label">Leave Type</label>
-                                            <select id="leave_type" name="leave_type" class="form-control" required>
-                                                <option value="" disabled selected>Select leave type</option>
-                                                <option value="Sick Leave">Sick Leave</option>
-                                                <option value="Vacation Leave">Vacation Leave</option>
-                                                <option value="Emergency Leave">Emergency Leave</option>
-                                                <option value="Maternity Leave">Maternity Leave</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label for="leave_days" class="form-label">Number of Days</label>
-                                            <input type="number" name="leave_days" id="leave_days" class="form-control" min="1" max="30" placeholder="" required readonly>
-                                        </div>
-                                    </div>
-                                    <div class="row mb-3">
-                                        <div class="col-md-6">
-                                            <label for="start_date" class="form-label">Start Date</label>
-                                            <input type="date" id="start_date" name="start_date" class="form-control" required>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label for="end_date" class="form-label">End Date</label>
-                                            <input type="date" id="end_date" name="end_date" class="form-control" required>
-                                        </div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="proof" class="form-label">Attach Proof</label>
-                                        <input type="file" id="proof" name="proof[]" class="form-control" accept="*/*" multiple>
-                                        <small class="form-text text-warning">Note: Upload multiple files (images or PDFs) as proof for your leave.</small>
-                                    </div>
-                                    <div class="d-grid">
-                                        <button type="submit" class="btn btn-primary">Submit Leave Request</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </main>
-        <footer class="py-4 bg-dark text-light mt-auto border-top border-warning">
-            <div class="container-fluid px-4">
-                <div class="d-flex align-items-center justify-content-between small">
-                    <div class="text-muted">Copyright &copy; Your Website 2024</div>
-                    <div>
-                        <a href="#">Privacy Policy</a>
-                        &middot;
-                        <a href="#">Terms & Conditions</a>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div id="calendar" class="p-2"></div>
                     </div>
                 </div>
+            </div>   
+            <h1 class="mb-2 text-light ms-2">Outstanding Employees by Evaluation Criteria</h1>            
+            <div class="container text-light">
+                <!-- Top Employees for Different Criteria -->
+                <?php getTopEmployeesByCriterion($conn, 'quality', 'Quality of Work', 1); ?>
+                <?php getTopEmployeesByCriterion($conn, 'communication_skills', 'Communication Skills', 2); ?>
+                <?php getTopEmployeesByCriterion($conn, 'teamwork', 'Teamwork', 3); ?>
+                <?php getTopEmployeesByCriterion($conn, 'punctuality', 'Punctuality', 4); ?>
+                <?php getTopEmployeesByCriterion($conn, 'initiative', 'Initiative', 5); ?>
+
+                <!-- Navigation buttons for manually controlling the categories -->
+                <div class="text-center">
+                    <button class="btn btn-primary" onclick="showPreviousCategory()">Previous</button>
+                    <button class="btn btn-primary" onclick="showNextCategory()">Next</button>
+                </div>
             </div>
-        </footer>
-    </div>
+            </main>
+            <footer class="py-4 bg-dark text-light mt-auto border-top border-warning">
+                <div class="container-fluid px-4">
+                    <div class="d-flex align-items-center justify-content-between small">
+                        <div class="text-muted">Copyright &copy; Your Website 2024</div>
+                        <div>
+                            <a href="#">Privacy Policy</a>
+                            &middot;
+                            <a href="#">Terms & Conditions</a>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </div>
 
     <script>
-        //CALENDAR 
-        let calendar;
+                //CALENDAR 
+                let calendar;
             function toggleCalendar() {
                 const calendarContainer = document.getElementById('calendarContainer');
                     if (calendarContainer.style.display === 'none' || calendarContainer.style.display === '') {
@@ -373,35 +366,49 @@ $conn->close();
         setInterval(setCurrentTime, 1000);
         //TIME END
 
-        //LEAVE DAYS
-        document.getElementById('start_date').addEventListener('change', calculateLeaveDays);
-        document.getElementById('end_date').addEventListener('change', calculateLeaveDays);
+        let currentCategoryIndex = 1;
+        const totalCategories = 5; // Total number of categories
 
-        function calculateLeaveDays() {
-            const start_date = document.getElementById('start_date').value;
-            const end_date = document.getElementById('end_date').value;
-            
-            if (start_date && end_date) {
-                const start = new Date(start_date);
-                const end = new Date(end_date);
-                let totalDays = 0;
+        function showNextCategory() {
+            // Hide the current category
+            document.getElementById(`category-${currentCategoryIndex}`).style.display = 'none';
 
-                // Loop through the dates between start and end dates
-                for (let date = new Date(start); date <= end; date.setDate(date.getDate() + 1)) {
-                    // Exclude Sundays (0 is Sunday)
-                    if (date.getDay() !== 0) {
-                        totalDays++;
-                    }
-                }
+            // Update to the next category index, loop back to 1 if at the end
+            currentCategoryIndex = (currentCategoryIndex % totalCategories) + 1;
 
-                // Update the number of days in the input field
-                document.getElementById('leave_days').value = totalDays;
-            }
+            // Show the next category
+            document.getElementById(`category-${currentCategoryIndex}`).style.display = 'block';
         }
-        //LEAVE DAYS END
-</script>
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'> </script>
+
+        function showPreviousCategory() {
+            // Hide the current category
+            document.getElementById(`category-${currentCategoryIndex}`).style.display = 'none';
+
+            // Update to the previous category index, loop back to totalCategories if at the start
+            currentCategoryIndex = (currentCategoryIndex - 1) || totalCategories;
+
+            // Show the previous category
+            document.getElementById(`category-${currentCategoryIndex}`).style.display = 'block';
+        }
+
+        // Start the slideshow, show the first category immediately
+        window.onload = function() {
+            // Show the first category immediately
+            document.getElementById(`category-1`).style.display = 'block';
+            
+            // Start the slideshow after showing the first category
+            setInterval(showNextCategory, 3000); // Change every 3 seconds
+        };
+    </script>
+
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <script src="../../js/employee.js"></script>
 </body>
 </html>
+
+<?php
+// Close the database connection
+$conn->close();
+?> 
+

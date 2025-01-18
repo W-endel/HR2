@@ -81,7 +81,7 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
                                     <li><a class="dropdown-item" href="#!">Settings</a></li>
                                     <li><a class="dropdown-item" href="#!">Activity Log</a></li>
                                     <li><hr class="dropdown-divider" /></li>
-                                    <li><a class="dropdown-item" href="../../employee/logout.php" onclick="confirmLogout(event)">Logout</a></li>
+                                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">Logout</a></li>
                                 </ul>
                             </li>
                             <li class="nav-item text-light d-flex ms-3 flex-column align-items-center text-center">
@@ -160,7 +160,7 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
         </div>
         <div id="layoutSidenav_content">
             <main>
-                 <div class="container-fluid position-relative px-4">
+                <div class="container-fluid position-relative px-4">
                     <h1 class="mb-4 text-light">Dashboard</h1>
                     <div class="container" id="calendarContainer" 
                         style="position: fixed; top: 9%; right: 0; z-index: 1050; 
@@ -171,7 +171,26 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
                             </div>
                         </div>
                     </div>
-                 </div>
+                </div>
+                <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content bg-dark text-light">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                Are you sure you want to log out?
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn border-secondary text-light" data-bs-dismiss="modal">Cancel</button>
+                                <form action="../../employee/logout.php" method="POST">
+                                    <button type="submit" class="btn btn-danger">Logout</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </main>
             <footer class="py-4 bg-light mt-auto bg-dark border-top border-1 border-warning">
                 <div class="container-fluid px-4">
@@ -188,101 +207,92 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
         </div>
     </div>
 
-    <script>
-//for calendar only
-// Global variable for calendar
-        let calendar; // Declare calendar variable globally
+<script>
+    // for calendar only
+    let calendar; // Declare calendar variable globally
 
-            function toggleCalendar() {
-                const calendarContainer = document.getElementById('calendarContainer');
-// Toggle visibility of the calendar container
-                if (calendarContainer.style.display === 'none' || calendarContainer.style.display === '') {
-                    calendarContainer.style.display = 'block';
+    function toggleCalendar() {
+        const calendarContainer = document.getElementById('calendarContainer');
+        if (calendarContainer.style.display === 'none' || calendarContainer.style.display === '') {
+            calendarContainer.style.display = 'block';
 
-                    // Initialize the calendar if it hasn't been initialized yet
-                    if (!calendar) {
-                        initializeCalendar();
-                    }
-                } else {
-                    calendarContainer.style.display = 'none';
+            // Initialize the calendar if it hasn't been initialized yet
+            if (!calendar) {
+                initializeCalendar();
+            }
+        } else {
+            calendarContainer.style.display = 'none';
+        }
+    }
+
+    function initializeCalendar() {
+        const calendarEl = document.getElementById('calendar');
+        calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            height: 440,  // Set the height of the calendar to make it small
+            events: {
+                url: '../../db/holiday.php',  // Endpoint for fetching events
+                method: 'GET',
+                failure: function() {
+                    alert('There was an error fetching events!');
                 }
             }
+        });
 
-// Function to initialize FullCalendar
-            function initializeCalendar() {
-                const calendarEl = document.getElementById('calendar');
-                calendar = new FullCalendar.Calendar(calendarEl, {
-                    initialView: 'dayGridMonth',
-                    headerToolbar: {
-                        left: 'prev,next today',
-                        center: 'title',
-                        right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                    },
-                    height: 440,  // Set the height of the calendar to make it small
-                    events: {
-                        url: '../../db/holiday.php',  // Endpoint for fetching events
-                        method: 'GET',
-                        failure: function() {
-                            alert('There was an error fetching events!');
-                        }
-                    }
-                });
+        calendar.render();
+    }
 
-                calendar.render();
-            }
+    document.addEventListener('DOMContentLoaded', function () {
+        const currentDateElement = document.getElementById('currentDate');
+        const currentDate = new Date().toLocaleDateString(); // Get the current date
+        currentDateElement.textContent = currentDate; // Set the date text
+    });
 
-// Set the current date when the page loads
-            document.addEventListener('DOMContentLoaded', function () {
-                const currentDateElement = document.getElementById('currentDate');
-                const currentDate = new Date().toLocaleDateString(); // Get the current date
-                currentDateElement.textContent = currentDate; // Set the date text
-            });
+    document.addEventListener('click', function(event) {
+        const calendarContainer = document.getElementById('calendarContainer');
+        const calendarButton = document.querySelector('button[onclick="toggleCalendar()"]');
 
-// Close the calendar when clicking outside of it
-            document.addEventListener('click', function(event) {
-                const calendarContainer = document.getElementById('calendarContainer');
-                const calendarButton = document.querySelector('button[onclick="toggleCalendar()"]');
+        if (!calendarContainer.contains(event.target) && !calendarButton.contains(event.target)) {
+            calendarContainer.style.display = 'none';
+        }
+    });
+    // for calendar only end
 
-// Hide the calendar if the user clicks outside of the calendar and button
-                if (!calendarContainer.contains(event.target) && !calendarButton.contains(event.target)) {
-                    calendarContainer.style.display = 'none';
-                }
-            });
-//for calendar only end
+    function setCurrentTime() {
+        const currentTimeElement = document.getElementById('currentTime');
+        const currentDateElement = document.getElementById('currentDate');
 
-            function setCurrentTime() {
-                const currentTimeElement = document.getElementById('currentTime');
-                const currentDateElement = document.getElementById('currentDate');
+        const currentDate = new Date();
 
-// Get the current date and time in UTC
-                const currentDate = new Date();
-    
-// Adjust time to Philippine Time (UTC+8)
-                currentDate.setHours(currentDate.getHours() + 0);
+        // Convert to 12-hour format with AM/PM
+        let hours = currentDate.getHours();
+        const minutes = currentDate.getMinutes();
+        const seconds = currentDate.getSeconds();
+        const ampm = hours >= 12 ? 'PM' : 'AM';
 
-// Extract hours, minutes, and seconds
-                const hours = currentDate.getHours();
-                const minutes = currentDate.getMinutes();
-                const seconds = currentDate.getSeconds();
+        hours = hours % 12;
+        hours = hours ? hours : 12; // If hour is 0, set to 12
 
-// Format hours, minutes, and seconds to ensure they are always two digits
-                const formattedHours = hours < 10 ? '0' + hours : hours;
-                const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
-                const formattedSeconds = seconds < 10 ? '0' + seconds : seconds;
+        const formattedHours = hours < 10 ? '0' + hours : hours;
+        const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
+        const formattedSeconds = seconds < 10 ? '0' + seconds : seconds;
 
-// Set the current time
-                currentTimeElement.textContent = `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+        currentTimeElement.textContent = `${formattedHours}:${formattedMinutes}:${formattedSeconds} ${ampm}`;
 
-// Set the current date
-                currentDateElement.textContent = currentDate.toLocaleDateString();
-            }
+        // Format the date in text form (e.g., "January 12, 2025")
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        currentDateElement.textContent = currentDate.toLocaleDateString('en-US', options);
+    }
 
-// Initial call to set the current time and date
-            setCurrentTime();
+    setCurrentTime();
+    setInterval(setCurrentTime, 1000);
 
-// Update the current time every second
-            setInterval(setCurrentTime, 1000);
-    </script>
+</script>
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'> </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../../js/employee.js"></script>

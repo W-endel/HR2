@@ -85,7 +85,7 @@ $conn->close();
                                     <li><a class="dropdown-item" href="#!">Settings</a></li>
                                     <li><a class="dropdown-item" href="#!">Activity Log</a></li>
                                     <li><hr class="dropdown-divider" /></li>
-                                    <li><a class="dropdown-item" href="../admin/logout.php" onclick="confirmLogout(event)">Logout</a></li>
+                                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">Logout</a></li>
                                 </ul>
                             </li>
                             <li class="nav-item text-light d-flex ms-3 flex-column align-items-center text-center">
@@ -180,164 +180,185 @@ $conn->close();
                 </div>
             </nav>
         </div>
-    <div id="layoutSidenav_content">
-        <main class="bg-black">
-            <div class="container" id="calendarContainer" 
-                style="position: fixed; top: 9%; right: 0; z-index: 1050; 
-                width: 700px; display: none;">
+        <div id="layoutSidenav_content">
+            <main class="bg-black">
+                <div class="container" id="calendarContainer" 
+                    style="position: fixed; top: 9%; right: 0; z-index: 1050; 
+                    width: 700px; display: none;">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div id="calendar" class="p-2"></div>
+                            </div>
+                        </div>
+                </div>                               
+                <div class="container-fluid px-4 bg-black">
+                    <h1 class="big text-light mb-4">Your Profile</h1>
                     <div class="row">
-                        <div class="col-md-12">
-                            <div id="calendar" class="p-2"></div>
-                        </div>
-                    </div>
-            </div>                               
-            <div class="container-fluid px-4 bg-black">
-                <h1 class="big text-light mb-4">Your Profile</h1>
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="card mb-4">
-                            <div class="card-header bg-dark border-bottom border-1 border-warning">
-                                <h5 class="card-title text-center text-light">Profile Picture</h5>
-                            </div>
-                            <div class="card-body text-center bg-dark">
-                                 <img src="<?php echo (!empty($adminInfo['pfp']) && $adminInfo['pfp'] !== 'defaultpfp.png') 
-                                    ? htmlspecialchars($adminInfo['pfp']) 
-                                    : '../img/defaultpfp.jpg'; ?>" 
-                                    class="rounded-circle border border-light" width="200" height="200" alt="Profile Picture" />
-
-                                    <button class="btn btn-outline-light" type="button" id="editPictureDropdown" 
-                                            data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                
-                                <!-- Dropdown for editing the profile picture -->
-                                <div class="dropdown mt-3">
-                                    <ul class="dropdown-menu" aria-labelledby="editPictureDropdown">
-                                        <li>
-                                            <!-- Trigger file input for changing the profile picture -->
-                                            <a class="dropdown-item" href="javascript:void(0);" id="changePictureOption">Change Profile Picture</a>
-                                        </li>
-                                        <li>
-                                            <!-- Form to handle profile picture deletion -->
-                                        <form action="../db/delete_admin_pfp.php" method="post">
-                                            <!-- Hidden input to send the admin_id to the backend -->
-                                            <input type="hidden" name="adminId" value="<?php echo $adminInfo['a_id']; ?>">
-                                            
-                                            <button class="dropdown-item" type="submit" onclick="return confirm('Are you sure you want to delete your profile picture?');">
-                                                Delete Profile Picture
-                                            </button>
-                                        </form>
-                                        </li>
-                                    </ul>
+                        <div class="col-md-4">
+                            <div class="card mb-4">
+                                <div class="card-header bg-dark border-bottom border-1 border-warning">
+                                    <h5 class="card-title text-center text-light">Profile Picture</h5>
                                 </div>
-                                
-                                <!-- Hidden file input to upload a new profile picture -->
-                                <form action="../db/update_admin_pfp.php" method="post" enctype="multipart/form-data" id="profilePictureForm" style="display:none;">
-                                    <input type="file" id="profilePictureInput" name="profile_picture" accept="image/*" onchange="document.getElementById('profilePictureForm').submit();">
-                                </form>
+                                <div class="card-body text-center bg-dark">
+                                    <img src="<?php echo (!empty($adminInfo['pfp']) && $adminInfo['pfp'] !== 'defaultpfp.png') 
+                                        ? htmlspecialchars($adminInfo['pfp']) 
+                                        : '../img/defaultpfp.jpg'; ?>" 
+                                        class="rounded-circle border border-light" width="200" height="200" alt="Profile Picture" />
 
-                                <table class="table text-light mt-3 text-start">
-                                    <tr>
-                                        <td>Name:</td>
-                                        <td><?php echo htmlspecialchars($adminInfo['firstname'] . ' ' . $adminInfo['middlename'] . ' ' . $adminInfo['lastname']); ?></td>
-                                    </tr>
-                                    <tr>
-                                        <td>ID:</td>
-                                        <td>#<?php echo htmlspecialchars($adminInfo['a_id']); ?></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Role:</td>
-                                        <td><?php echo htmlspecialchars($adminInfo['role']); ?></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Position:</td>
-                                        <td><?php echo htmlspecialchars($adminInfo['position']); ?></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Department:</td>
-                                        <td><?php echo htmlspecialchars($adminInfo['department']); ?></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Email:</td>
-                                        <td><?php echo htmlspecialchars($adminInfo['email']); ?></td>
-                                    </tr>
-                                </table>
+                                        <button class="btn btn-outline-light" type="button" id="editPictureDropdown" 
+                                                data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    
+                                    <!-- Dropdown for editing the profile picture -->
+                                    <div class="dropdown mt-3">
+                                        <ul class="dropdown-menu" aria-labelledby="editPictureDropdown">
+                                            <li>
+                                                <!-- Trigger file input for changing the profile picture -->
+                                                <a class="dropdown-item" href="javascript:void(0);" id="changePictureOption">Change Profile Picture</a>
+                                            </li>
+                                            <li>
+                                                <!-- Form to handle profile picture deletion -->
+                                            <form action="../db/delete_admin_pfp.php" method="post">
+                                                <!-- Hidden input to send the admin_id to the backend -->
+                                                <input type="hidden" name="adminId" value="<?php echo $adminInfo['a_id']; ?>">
+                                                
+                                                <button class="dropdown-item" type="submit" onclick="return confirm('Are you sure you want to delete your profile picture?');">
+                                                    Delete Profile Picture
+                                                </button>
+                                            </form>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <!-- Hidden file input to upload a new profile picture -->
+                                    <form action="../db/update_admin_pfp.php" method="post" enctype="multipart/form-data" id="profilePictureForm" style="display:none;">
+                                        <input type="file" id="profilePictureInput" name="profile_picture" accept="image/*" onchange="document.getElementById('profilePictureForm').submit();">
+                                    </form>
+
+                                    <table class="table text-light mt-3 text-start">
+                                        <tr>
+                                            <td>Name:</td>
+                                            <td><?php echo htmlspecialchars($adminInfo['firstname'] . ' ' . $adminInfo['middlename'] . ' ' . $adminInfo['lastname']); ?></td>
+                                        </tr>
+                                        <tr>
+                                            <td>ID:</td>
+                                            <td>#<?php echo htmlspecialchars($adminInfo['a_id']); ?></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Role:</td>
+                                            <td><?php echo htmlspecialchars($adminInfo['role']); ?></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Position:</td>
+                                            <td><?php echo htmlspecialchars($adminInfo['position']); ?></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Department:</td>
+                                            <td><?php echo htmlspecialchars($adminInfo['department']); ?></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Email:</td>
+                                            <td><?php echo htmlspecialchars($adminInfo['email']); ?></td>
+                                        </tr>
+                                    </table>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-md-8">
-                        <div class="card mb-2">
-                            <div class="card-header bg-dark border-bottom border-1 border-warning">
-                                <h5 class="card-title text-center text-light">Your Information</h5>
+                        <div class="col-md-8">
+                            <div class="card mb-2">
+                                <div class="card-header bg-dark border-bottom border-1 border-warning">
+                                    <h5 class="card-title text-center text-light">Your Information</h5>
+                                </div>
+                                <div class="card-body bg-dark">
+                                    <form id="infoForm" action="../db/update_profile.php" method="post">
+                                        <div class="row mb-3">
+                                            <label for="inputfName" class="col-sm-2 col-form-label text-light">First Name:</label>
+                                            <div class="col-sm-9">
+                                                <input type="text" class="form-control bg-dark text-light border border-light" id="inputfName" name="firstname" value="<?php echo htmlspecialchars($adminInfo['firstname']); ?>" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-3">
+                                            <label for="inputmName" class="col-sm-2 col-form-label text-light">Middle Name:</label>
+                                            <div class="col-sm-9"> 
+                                                <input type="text" class="form-control bg-dark text-light border border-light" id="inputmName" name="middlename" value="<?php echo htmlspecialchars($adminInfo['middlename']); ?>" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-3">
+                                            <label for="inputlName" class="col-sm-2 col-form-label text-light">Last Name:</label>
+                                            <div class="col-sm-9">
+                                                <input type="text" class="form-control bg-dark text-light border border-light" id="inputlName" name="lastname" value="<?php echo htmlspecialchars($adminInfo['lastname']); ?>" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-3">
+                                            <label for="inputbirth" class="col-sm-2 col-form-label text-light">Birthdate:</label>
+                                            <div class="col-sm-9">
+                                                <input type="date" class="form-control bg-dark text-light border border-light" id="inputbirth" name="birthdate" value="<?php echo htmlspecialchars($adminInfo['birthdate']); ?>" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-3">
+                                            <label for="inputEmail" class="col-sm-2 col-form-label text-light">Email Address:</label>
+                                            <div class="col-sm-9">
+                                                <input type="email" class="form-control bg-dark text-light border border-light" id="inputEmail" name="email" value="<?php echo htmlspecialchars($adminInfo['email']); ?>" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-3">
+                                            <label for="inputPhone" class="col-sm-2 col-form-label text-light">Phone Number:</label>
+                                            <div class="col-sm-9">
+                                                <input type="number" class="form-control bg-dark text-light border border-light" id="inputPhone" name="phone_number" value="<?php echo htmlspecialchars($adminInfo['phone_number']); ?>" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-3">
+                                            <label for="inputAddress" class="col-sm-2 col-form-label text-light">Address:</label>
+                                            <div class="mb-3 col-sm-9">
+                                                <textarea class="form-control border bg-dark text-light border-light" id="inputAddress" name="address" rows="1" readonly><?php echo htmlspecialchars($adminInfo['address']); ?></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <button type="submit" class="btn btn-primary border border-light d-none w-30">Save Changes</button>
+                                            <button type="button" id="editButton" class="btn btn-primary w-30">Update Information</button>
+                                        </div>
+                                    </form>
+                                </div>
                             </div>
-                            <div class="card-body bg-dark">
-                                <form id="infoForm" action="../db/update_profile.php" method="post">
-                                    <div class="row mb-3">
-                                        <label for="inputfName" class="col-sm-2 col-form-label text-light">First Name:</label>
-                                        <div class="col-sm-9">
-                                            <input type="text" class="form-control bg-dark text-light border border-light" id="inputfName" name="firstname" value="<?php echo htmlspecialchars($adminInfo['firstname']); ?>" readonly>
-                                        </div>
-                                    </div>
-                                    <div class="row mb-3">
-                                        <label for="inputmName" class="col-sm-2 col-form-label text-light">Middle Name:</label>
-                                        <div class="col-sm-9"> 
-                                            <input type="text" class="form-control bg-dark text-light border border-light" id="inputmName" name="middlename" value="<?php echo htmlspecialchars($adminInfo['middlename']); ?>" readonly>
-                                        </div>
-                                    </div>
-                                    <div class="row mb-3">
-                                        <label for="inputlName" class="col-sm-2 col-form-label text-light">Last Name:</label>
-                                        <div class="col-sm-9">
-                                            <input type="text" class="form-control bg-dark text-light border border-light" id="inputlName" name="lastname" value="<?php echo htmlspecialchars($adminInfo['lastname']); ?>" readonly>
-                                        </div>
-                                    </div>
-                                    <div class="row mb-3">
-                                        <label for="inputbirth" class="col-sm-2 col-form-label text-light">Birthdate:</label>
-                                        <div class="col-sm-9">
-                                            <input type="date" class="form-control bg-dark text-light border border-light" id="inputbirth" name="birthdate" value="<?php echo htmlspecialchars($adminInfo['birthdate']); ?>" readonly>
-                                        </div>
-                                    </div>
-                                    <div class="row mb-3">
-                                        <label for="inputEmail" class="col-sm-2 col-form-label text-light">Email Address:</label>
-                                        <div class="col-sm-9">
-                                            <input type="email" class="form-control bg-dark text-light border border-light" id="inputEmail" name="email" value="<?php echo htmlspecialchars($adminInfo['email']); ?>" readonly>
-                                        </div>
-                                    </div>
-                                    <div class="row mb-3">
-                                        <label for="inputPhone" class="col-sm-2 col-form-label text-light">Phone Number:</label>
-                                        <div class="col-sm-9">
-                                            <input type="number" class="form-control bg-dark text-light border border-light" id="inputPhone" name="phone_number" value="<?php echo htmlspecialchars($adminInfo['phone_number']); ?>" readonly>
-                                        </div>
-                                    </div>
-                                    <div class="row mb-3">
-                                        <label for="inputAddress" class="col-sm-2 col-form-label text-light">Address:</label>
-                                        <div class="mb-3 col-sm-9">
-                                            <textarea class="form-control border bg-dark text-light border-light" id="inputAddress" name="address" rows="1" readonly><?php echo htmlspecialchars($adminInfo['address']); ?></textarea>
-                                        </div>
-                                    </div>
-                                    <div class="d-flex justify-content-between">
-                                        <button type="submit" class="btn btn-primary border border-light d-none w-30">Save Changes</button>
-                                        <button type="button" id="editButton" class="btn btn-primary w-30">Update Information</button>
-                                    </div>
+                            <a href="../admin/change_pass.php" class="btn btn-primary mt-4">Change Password</a>
+                        </div>
+                        <div class=""></div>
+                    </div>
+                </div>
+            </main>
+                <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content bg-dark text-light">
+                            <div class="modal-header border-bottom border-warning">
+                                <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                Are you sure you want to log out?
+                            </div>
+                            <div class="modal-footer border-top border-warning">
+                                <button type="button" class="btn border-secondary text-light" data-bs-dismiss="modal">Cancel</button>
+                                <form action="../admin/logout.php" method="POST">
+                                    <button type="submit" class="btn btn-danger">Logout</button>
                                 </form>
                             </div>
                         </div>
-                        <a href="../admin/change_pass.php" class="btn btn-primary mt-4">Change Password</a>
+                    </div>
+                </div>  
+            <footer class="py-4 bg-dark text-light mt-auto border-top border-warning">
+                <div class="container-fluid px-4">
+                    <div class="d-flex align-items-center justify-content-between small">
+                        <div class="text-muted">Copyright &copy; Your Website 2024</div>
+                        <div>
+                            <a href="#">Privacy Policy</a>
+                            &middot;
+                            <a href="#">Terms & Conditions</a>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </main>
-        <footer class="py-4 bg-dark text-light mt-auto border-top border-warning">
-            <div class="container-fluid px-4">
-                <div class="d-flex align-items-center justify-content-between small">
-                    <div class="text-muted">Copyright &copy; Your Website 2024</div>
-                    <div>
-                        <a href="#">Privacy Policy</a>
-                        &middot;
-                        <a href="#">Terms & Conditions</a>
-                    </div>
-                </div>
-            </div>
-        </footer>
+            </footer>
+        </div>
     </div>
 <script>
         //CALENDAR 

@@ -3,6 +3,7 @@ session_start();
 include '../../db/db_conn.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // Ensure user is logged in
     if (!isset($_SESSION['e_id'])) {
         $_SESSION['status_message'] = "User not logged in.";
         header("Location: ../employee/login.php");
@@ -57,7 +58,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // Handle multiple file uploads and store file paths
     $proofFiles = [];  // Initialize an array to hold the file paths
-    $uploadDir = '../../proof/';  // Define the directory to store uploaded files
+    $uploadDir = '../../proof/';  // Directory to store uploaded files
+    $baseURL = 'http://localhost/HR2/proof/';  // Full URL to access the files from the web
 
     if (isset($_FILES['proof']) && !empty($_FILES['proof']['name'][0])) {
         $files = $_FILES['proof'];
@@ -67,14 +69,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if ($files['error'][$key] === UPLOAD_ERR_OK) {
                 $fileTmpPath = $tmpName;
                 $fileName = $files['name'][$key];
-                $fileSize = $files['size'][$key];
-                $fileType = $files['type'][$key];
+                $fileExtension = pathinfo($fileName, PATHINFO_EXTENSION);
 
                 // Generate a unique name for the file to avoid overwriting
-                $fileExtension = pathinfo($fileName, PATHINFO_EXTENSION);
                 $newFileName = uniqid('proof_', true) . '.' . $fileExtension;
 
-                // Check if the file is a valid document (not just image or PDF)
+                // Check if the file is a valid document (image, PDF, or common documents)
                 $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx', 'txt', 'xlsx', 'pptx'];
                 if (!in_array(strtolower($fileExtension), $allowedExtensions)) {
                     $_SESSION['status_message'] = "Invalid file type. Only images, PDFs, and documents are allowed.";
@@ -85,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 // Move the file to the uploads directory
                 $destFilePath = $uploadDir . $newFileName;
                 if (move_uploaded_file($fileTmpPath, $destFilePath)) {
-                    $proofFiles[] = $destFilePath;  // Add the file path to the array
+                    $proofFiles[] = $newFileName;  // Store only the file name
                 } else {
                     $_SESSION['status_message'] = "Error: Could not move the uploaded file.";
                     header("Location: ../../employee/supervisor/leave_file.php");
@@ -105,7 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $stmt = $conn->prepare($sql);
 
     // Prepare the file paths to store in the database (comma-separated if multiple files)
-    $proofFilePaths = implode(',', $proofFiles);
+    $proofFilePaths = implode(',', $proofFiles);  // Store only the file names (relative to 'proof' folder)
     
     // Bind parameters
     $stmt->bind_param('issss', $employeeId, $startDate, $endDate, $leaveType, $proofFilePaths);

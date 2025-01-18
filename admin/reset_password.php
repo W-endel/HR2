@@ -142,6 +142,7 @@ if (isset($_POST['resend_token'])) {
 <head>
     <meta charset="utf-8" />
     <title>Reset Password</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"/>
     <link href="../css/styles.css" rel="stylesheet" />
 </head>
 <body class="bg-black">
@@ -166,10 +167,16 @@ if (isset($_POST['resend_token'])) {
                                 <div class="form-floating mb-3">
                                     <input class="form-control" id="new_password" name="new_password" type="password" placeholder="New Password" required />
                                     <label for="new_password">New Password</label>
+                                    <button type="button" class="btn position-absolute top-50 end-0 translate-middle-y me-2" id="toggleNewPassword">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
                                 </div>
                                 <div class="form-floating mb-3">
                                     <input class="form-control" id="confirm_new_password" name="confirm_new_password" type="password" placeholder="Confirm New Password" required />
                                     <label for="confirm_new_password">Confirm New Password</label>
+                                    <button type="button" class="btn position-absolute top-50 end-0 translate-middle-y me-2" id="toggleConfirmPassword">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
                                 </div>
                                 <div class="d-flex align-items-center justify-content-between mt-4 mb-0">
                                     <button type="submit" class="btn btn-primary w-100" id="submitButton">Reset Password</button>
@@ -183,9 +190,12 @@ if (isset($_POST['resend_token'])) {
                             </form>
                         <?php endif; ?>
 
-                        <div class="text-center mt-3 mb-0">
+                        <div class="text-center mt-3 mb-4">
                             <a class="btn border-secondary w-100 text-light border border-1" href="../admin/login.php">Back</a>
                         </div>
+                    </div>
+                    <div class="card-footer border-top border-warning">
+                        <div class="text-center text-muted">Human Resource 2</div>
                     </div>
                 </div>
             </div>
@@ -221,6 +231,37 @@ if (isset($_POST['resend_token'])) {
                 }, 1000);
             }
         });
+
+
+    // Toggle visibility of New Password
+    const toggleNewPassword = document.querySelector("#toggleNewPassword");
+    const newPasswordField = document.querySelector("#new_password");
+    const newPasswordIcon = toggleNewPassword.querySelector("i");
+
+    toggleNewPassword.addEventListener("click", function () {
+        // Toggle the password field type
+        const type = newPasswordField.getAttribute("type") === "password" ? "text" : "password";
+        newPasswordField.setAttribute("type", type);
+
+        // Toggle the eye/eye-slash icon
+        newPasswordIcon.classList.toggle("fa-eye");
+        newPasswordIcon.classList.toggle("fa-eye-slash");
+    });
+
+    // Toggle visibility of Confirm New Password
+    const toggleConfirmPassword = document.querySelector("#toggleConfirmPassword");
+    const confirmPasswordField = document.querySelector("#confirm_new_password");
+    const confirmPasswordIcon = toggleConfirmPassword.querySelector("i");
+
+    toggleConfirmPassword.addEventListener("click", function () {
+        // Toggle the password field type
+        const type = confirmPasswordField.getAttribute("type") === "password" ? "text" : "password";
+        confirmPasswordField.setAttribute("type", type);
+
+        // Toggle the eye/eye-slash icon
+        confirmPasswordIcon.classList.toggle("fa-eye");
+        confirmPasswordIcon.classList.toggle("fa-eye-slash");
+    });
     </script>
 </body>
 </html>

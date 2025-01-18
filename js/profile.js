@@ -28,6 +28,7 @@ let originalValues = []; // Declare this outside the event listener
                 this.textContent = 'Update Information'; // Change button text back
             }
         });
+//EDIT INFO (END)
 
 
 

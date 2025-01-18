@@ -134,7 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                         <div class="d-flex align-items-center justify-content-end mt-4 mb-2">
                                             <button type="submit" class="btn btn-primary align-items-center w-100">Send Link</button>
                                         </div>
-                                        <div class="text-center mt-3 mb-2"> <a class="btn border-secondary w-100 text-light border border-1" href="../employee/profile.php">Back</a></div>
+                                        <div class="text-center mt-3 mb-2"> <a class="btn border-secondary w-100 text-light border border-1" href="../../employee/supervisor/profile.php">Back</a></div>
                                     </form>
                                 </div>
                                 <div class="card-footer text-center border-top border-1 border-warning">
