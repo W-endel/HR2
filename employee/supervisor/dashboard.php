@@ -19,6 +19,7 @@ $stmt->close();
 $conn->close();
 
 $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['profile_picture'] : '../../img/defaultpfp.png';
+
 ?>
 
 <!DOCTYPE html>
@@ -67,7 +68,7 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
             <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
                 <div class="sb-sidenav-menu">
                     <div class="nav">
-                         <div class="sb-sidenav-menu-heading text-center text-muted">Your Profile</div>  
+                         <div class="sb-sidenav-menu-heading text-center text-muted">Profile</div>  
                         <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle text-light d-flex justify-content-center ms-4" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -171,7 +172,284 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
                             </div>
                         </div>
                     </div>
+                    <div class="row mb-2">
+                        <div class="col-md-3 mt-2">
+                            <div class="card bg-dark text-light border-0">
+                                <div class="card-header border-bottom border-warning text-info">
+                                    <h3 class="mb-0">To Do</h3>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item bg-dark text-light fs-4 border-0 d-flex justify-content-between align-items-center">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" value="" id="task1">
+                                                <label class="form-check-label" for="task1">
+                                                    <i class="bi bi-check-circle text-warning me-2"></i>Facial Recognition
+                                                </label>
+                                            </div>
+                                        </li>
+                                        <li class="list-group-item bg-dark text-light fs-4 border-0 d-flex justify-content-between align-items-center">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" value="" id="task2">
+                                                <label class="form-check-label" for="task2">
+                                                    <i class="bi bi-check-circle text-warning me-2"></i>Attendance Record
+                                                </label>
+                                            </div>
+                                        </li>
+                                        <li class="list-group-item bg-dark text-light fs-4 border-0 d-flex justify-content-between align-items-center">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" value="" id="task3">
+                                                <label class="form-check-label" for="task3">
+                                                    <i class="bi bi-check-circle text-warning me-2"></i>Leave Processing
+                                                </label>
+                                            </div>
+                                        </li>
+                                        <li class="list-group-item bg-dark text-light fs-4 border-0 d-flex justify-content-between align-items-center">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" value="" id="task3">
+                                                <label class="form-check-label" for="task3">
+                                                    <i class="bi bi-check-circle text-warning me-2"></i>Performance Processing
+                                                </label>
+                                            </div>
+                                        </li>
+                                        <li class="list-group-item bg-dark text-light fs-4 border-0 d-flex justify-content-between align-items-center">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" value="" id="task3">
+                                                <label class="form-check-label" for="task3">
+                                                    <i class="bi bi-check-circle text-warning me-2"></i>Payroll Processing
+                                                </label>
+                                            </div>
+                                        </li>
+                                        <li class="list-group-item bg-dark text-light fs-4 border-0 d-flex justify-content-between align-items-center">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" value="" id="task3">
+                                                <label class="form-check-label" for="task3">
+                                                    <i class="bi bi-check-circle text-warning me-2"></i>Social Recognition
+                                                </label>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mt-2 mb-2">
+                            <div class="card bg-dark text-light">
+                                <div class="card-header border-bottom border-1 border-warning text-info">
+                                    <h3 class="mb-0">Attendance</h3>
+                                </div>
+                                <div class="card-body p-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-4">
+                                        <div>
+                                            <h5 class="fw-bold">Today's Date:</h5>
+                                            <p class="text-warning">January 18, 2025</p>
+                                        </div>
+                                        <div>
+                                            <h5 class="fw-bold">Time in:</h5>
+                                            <p class="text-warning">08:11 AM</p>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <div class="mb-0">
+                                        <h4 class="fw-bold">January</h4>
+                                        <div class="row text-center fw-bold">
+                                            <!-- Days of the week -->
+                                            <div class="col">Sun</div>
+                                            <div class="col">Mon</div>
+                                            <div class="col">Tue</div>
+                                            <div class="col">Wed</div>
+                                            <div class="col">Thu</div>
+                                            <div class="col">Fri</div>
+                                            <div class="col">Sat</div>
+                                        </div>
+
+                                        <!-- Calendar rows -->
+                                        <div class="row text-center border-top pt-3">
+                                            <!-- First week -->
+                                            <div class="col"></div> <!-- Empty for days before 1st -->
+                                            <div class="col">
+                                                <span class="fw-bold">1</span>
+                                                <div class="text-success">Present</div>
+                                            </div>
+                                            <div class="col">
+                                                <span class="fw-bold">2</span>
+                                                <div class="text-danger">Absent</div>
+                                            </div>
+                                            <div class="col">
+                                                <span class="fw-bold">3</span>
+                                                <div class="text-success">Present</div>
+                                            </div>
+                                            <div class="col">
+                                                <span class="fw-bold">4</span>
+                                                <div class="text-success">Present</div>
+                                            </div>
+                                            <div class="col">
+                                                <span class="fw-bold">5</span>
+                                                <div class="text-danger">Absent</div>
+                                            </div>
+                                            <div class="col">
+                                                <span class="fw-bold">6</span>
+                                                <div class="text-success">Present</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row text-center pt-3">
+                                            <!-- Second week -->
+                                            <div class="col">
+                                                <span class="fw-bold">7</span>
+                                                <div class="text-danger">Absent</div>
+                                            </div>
+                                            <div class="col">
+                                                <span class="fw-bold">8</span>
+                                                <div class="text-success">Present</div>
+                                            </div>
+                                            <div class="col">
+                                                <span class="fw-bold">9</span>
+                                                <div class="text-danger">Absent</div>
+                                            </div>
+                                            <div class="col">
+                                                <span class="fw-bold">10</span>
+                                                <div class="text-success">Present</div>
+                                            </div>
+                                            <div class="col">
+                                                <span class="fw-bold">11</span>
+                                                <div class="text-success">Present</div>
+                                            </div>
+                                            <div class="col">
+                                                <span class="fw-bold">12</span>
+                                                <div class="text-danger">Absent</div>
+                                            </div>
+                                            <div class="col">
+                                                <span class="fw-bold">13</span>
+                                                <div class="text-success">Present</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mt-2">
+                            <div class="card bg-dark">
+                                <div class="card-header border-bottom border-1 border-warning text-info">
+                                    <h3>Performance Ratings | Graph</h3>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Rating 1: Quality of Work -->
+                                    <div class="mt-2">
+                                        <h5 class="text-light">Quality of Work</h5>
+                                        <div class="d-flex justify-content-between">
+                                            <span class="text-warning">Excellent</span>
+                                            <span class="text-warning">85%</span>
+                                        </div>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-info" role="progressbar" style="width: 85%;" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Rating 2: Communication Skills -->
+                                    <div class="mt-2">
+                                        <h5 class="text-light">Communication Skills</h5>
+                                        <div class="d-flex justify-content-between">
+                                            <span class="text-warning">Good</span>
+                                            <span class="text-warning">75%</span>
+                                        </div>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-info" role="progressbar" style="width: 75%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Rating 3: Teamwork -->
+                                    <div class="mt-2">
+                                        <h5 class="text-light">Teamwork</h5>
+                                        <div class="d-flex justify-content-between">
+                                            <span class="text-warning">Very Good</span>
+                                            <span class="text-warning">80%</span>
+                                        </div>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-info" role="progressbar" style="width: 80%;" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Rating 4: Punctuality -->
+                                    <div class="mt-2">
+                                        <h5 class="text-light">Punctuality</h5>
+                                        <div class="d-flex justify-content-between">
+                                            <span class="text-warning">Average</span>
+                                            <span class="text-warning">60%</span>
+                                        </div>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-info" role="progressbar" style="width: 60%;" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Rating 5: Initiative -->
+                                    <div class="mt-2">
+                                        <h5 class="text-light">Initiative</h5>
+                                        <div class="d-flex justify-content-between">
+                                            <span class="text-warning">Excellent</span>
+                                            <span class="text-warning">90%</span>
+                                        </div>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-info" role="progressbar" style="width: 90%;" aria-valuenow="90" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-12 mt-2 mb-2">
+                            <div class="card bg-dark text-info border-0">
+                                <div class="card-header border-bottom border-warning">
+                                    <h3 class="mb-0">Top Performers | Graph</h3>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush">
+                                        <!-- Performer 1 -->
+                                        <li class="list-group-item bg-dark text-light d-flex align-items-center justify-content-between border-0">
+                                            <div class="d-flex align-items-center">
+                                                <img src="../../uploads/profile_pictures/try.jpg" alt="Performer 1" class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                                <div>
+                                                    <h5 class="mb-0">John Doe</h5>
+                                                    <small class="text-warning">Sales Manager</small>
+                                                </div>
+                                            </div>
+                                            <div class="progress" style="width: 30%; height: 8px;">
+                                                <div class="progress-bar bg-success" role="progressbar" style="width: 90%;" aria-valuenow="90" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                        </li>
+                                        <!-- Performer 2 -->
+                                        <li class="list-group-item bg-dark text-light d-flex align-items-center justify-content-between border-0">
+                                            <div class="d-flex align-items-center">
+                                                <img src="../../uploads/profile_pictures/pfp3.jpg" alt="Performer 2" class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                                <div>
+                                                    <h5 class="mb-0">Jane Smith</h5>
+                                                    <small class="text-warning">Marketing Specialist</small>
+                                                </div>
+                                            </div>
+                                            <div class="progress" style="width: 30%; height: 8px;">
+                                                <div class="progress-bar bg-success" role="progressbar" style="width: 85%;" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                        </li>
+                                        <!-- Performer 3 -->
+                                        <li class="list-group-item bg-dark text-light d-flex align-items-center justify-content-between border-0">
+                                            <div class="d-flex align-items-center">
+                                                <img src="../../uploads/profile_pictures/logo.jpg" alt="Performer 3" class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                                <div>
+                                                    <h5 class="mb-0">Michael Johnson</h5>
+                                                    <small class="text-warning">HR Manager</small>
+                                                </div>
+                                            </div>
+                                            <div class="progress" style="width: 30%; height: 8px;">
+                                                <div class="progress-bar bg-success" role="progressbar" style="width: 80%;" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+            </main>
                 <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content bg-dark text-light">
@@ -191,7 +469,6 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
                         </div>
                     </div>
                 </div>
-            </main>
             <footer class="py-4 bg-light mt-auto bg-dark border-top border-1 border-warning">
                 <div class="container-fluid px-4">
                     <div class="d-flex align-items-center justify-content-between small">

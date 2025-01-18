@@ -248,10 +248,26 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                                                     ? htmlspecialchars($employeeInfo['pfp']) 
                                                     : '../../img/defaultpfp.jpg'; ?>" 
                                                     class="rounded-circle border border-light img-fluid" 
-                                                    style="max-width: 230px; max-height: 230px; min-width: 230px; min-height: 230px; object-fit: cover;" 
-                                                    alt="Profile Picture" />
+                                                    style="max-width: 230px; max-height: 230px; min-width: 230px; min-height: 230px; object-fit: cover; cursor: pointer;" 
+                                                    alt="Profile Picture" 
+                                                    id="profilePic" data-bs-toggle="modal" data-bs-target="#profilePicModal" />
                                             </div>
-
+                                            <div class="modal fade" id="profilePicModal" tabindex="-1" aria-labelledby="profilePicModalLabel" aria-hidden="true">
+                                                <div class="modal-dialog modal-dialog-centered"> <!-- Set the modal size using 'modal-lg' for large -->
+                                                    <div class="modal-content bg-dark text-light" style="width: 600px; height: 500px;">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="profilePicModalLabel"><?php echo htmlspecialchars($employeeInfo['firstname'] . ' ' . $employeeInfo['middlename'] . ' ' . $employeeInfo['lastname']); ?></h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <img src="<?php echo (!empty($employeeInfo['pfp']) && $employeeInfo['pfp'] !== 'defaultpfp.png') 
+                                                                ? htmlspecialchars($employeeInfo['pfp']) 
+                                                                : '../../img/defaultpfp.jpg'; ?>" 
+                                                                class="img-fluid rounded" style="width: 500px; height: 400px;" alt="Profile Picture" /> <!-- img-fluid to make it responsive -->
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                             <div class="d-flex justify-content-center align-items-center mt-4 mb-3">
                                                 <button class="btn btn-light text-center" type="button" id="editPictureDropdown" 
                                                     data-bs-toggle="dropdown" aria-expanded="false"> Edit Profile
@@ -376,8 +392,8 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                                                 <div class="modal-body">
                                                     <p>Are you sure you want to update your profile picture with the selected image?</p>
                                                     <!-- Center the image in the modal -->
-                                                    <div class="d-flex justify-content-center align-items-center">
-                                                        <img id="modalProfilePicturePreview" src="#" alt="Selected Profile Picture" style="max-width: 150px; max-height: 150px;">
+                                                    <div class="d-flex justify-content-center align-items-center img-fluid rounded">
+                                                        <img id="modalProfilePicturePreview" src="#" alt="Selected Profile Picture"  style="width: 150px; height: 150px;">
                                                     </div>
                                                 </div>
                                                 <div class="modal-footer">
