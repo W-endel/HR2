@@ -233,7 +233,7 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                             </div>
                         </div>
                     </div>
-                    <h1 class="big mb-2 text-light">My Profile</h1>
+                    <h1 class="big mb-2 text-light">Profile</h1>
                     <div class="row mt-4">
                         <div class="col-md-12">
                             <div class="card mb-4">
@@ -370,9 +370,9 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                                                         <label for="inputAddress" class="fw-bold">Address:</label>
                                                     </div>
                                                 </div>
-                                                <div class="d-flex justify-content-between">
-                                                    <button type="submit" class="btn btn-primary d-none">Save Changes</button>
+                                                <div class="d-flex justify-content-end">
                                                     <button type="button" id="editButton" class="btn btn-primary">Update Information</button>
+                                                    <button type="button" class="btn btn-primary d-none ms-2" id="saveButton" data-bs-toggle="modal" data-bs-target="#saveChangesModal">Save Changes</button>
                                                 </div>
                                             </form>
                                         </div>
@@ -443,14 +443,11 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content bg-dark text-light">
                             <div class="modal-header boder-1 border-warning">
-                                <h5 class="modal-title" id="qrCodeModalLabel">Employee QR Code</h5>
+                                <h5 class="modal-title" id="qrCodeModalLabel">QR Code</h5>
                                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body text-center">
-                                <img src="<?php echo $qrImagePath; ?>" alt="QR Code" class="img-fluid border border-light" width="200">
-                                <hr>
-                                <p class="mt-3 text-start">Employee ID: <?php echo htmlspecialchars($employeeInfo['e_id']); ?></p>
-                                <p class="text-start">Name: <?php echo htmlspecialchars($employeeInfo['firstname'] . ' ' . $employeeInfo['middlename'] . ' ' . $employeeInfo['lastname']); ?></p>
+                                <img src="<?php echo $qrImagePath; ?>" alt="QR Code" class="img-fluid rounded border border-light" width="300">
                             </div>
                             <div class="modal-footer boder-1 border-warning">
                                 <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
@@ -493,6 +490,23 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                                     <button type="submit" class="btn btn-danger">Delete</button>
                                 </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal fade" id="saveChangesModal" tabindex="-1" aria-labelledby="saveChangesModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content bg-dark text-light">
+                            <div class="modal-header boder-bottom border-warning">
+                                <h5 class="modal-title" id="saveChangesModalLabel">Confirm Save</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                Are you sure you want to save the changes to your information?
+                            </div>
+                            <div class="modal-footer boder-bottom border-warning">
+                                <button type="button" class="btn btn-outline-secondary text-light" data-bs-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-primary" id="confirmSave">Save Changes</button>
                             </div>
                         </div>
                     </div>
@@ -619,6 +633,14 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
             myModal.show();
         <?php endif; ?>
     });
+
+
+//SAVE CHANGES (MODAL)
+    document.getElementById('confirmSave').addEventListener('click', function() {
+    // Add your form submission logic here
+    document.getElementById('infoForm').submit(); // Submit the form
+});
+//END
 </script>
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'> </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>

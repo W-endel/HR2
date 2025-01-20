@@ -87,10 +87,10 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
                             </li>
                             <li class="nav-item text-light d-flex ms-3 flex-column align-items-center text-center">
                                 <span class="big text-light mb-1">
-                                    <?php echo htmlspecialchars($employeeInfo['firstname'] . ' ' . $employeeInfo['middlename'] . ' ' . $employeeInfo['lastname']); ?>
+                                    <h4><?php echo htmlspecialchars($employeeInfo['firstname'] . ' ' . $employeeInfo['middlename'] . ' ' . $employeeInfo['lastname']); ?></h4>
                                 </span>
                                 <span class="big text-light">
-                                    <?php echo htmlspecialchars($employeeInfo['position']); ?>
+                                    <h5><?php echo htmlspecialchars($employeeInfo['position']); ?></h5>
                                 </span>
                             </li>
                         </ul>
@@ -128,6 +128,7 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
                         </a>
                         <div class="collapse" id="collapsePM" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
+                                <a class="nav-link text-light" href="../../employee/supervisor/evaluation.php">Evaluation Ratings</a>
                                 <a class="nav-link text-light" href="../../employee/supervisor/evaluation.php">Evaluation</a>
                             </nav>
                         </div>
@@ -173,10 +174,10 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
                         </div>
                     </div>
                     <div class="row mb-2">
-                        <div class="col-md-3 mt-2">
+                        <div class="col-md-3 mt-2 mb-2">
                             <div class="card bg-dark text-light border-0">
                                 <div class="card-header border-bottom border-warning text-info">
-                                    <h3 class="mb-0">To Do</h3>
+                                    <h3>To Do</h3>
                                 </div>
                                 <div class="card-body">
                                     <ul class="list-group list-group-flush">
@@ -206,24 +207,24 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
                                         </li>
                                         <li class="list-group-item bg-dark text-light fs-4 border-0 d-flex justify-content-between align-items-center">
                                             <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" value="" id="task3">
-                                                <label class="form-check-label" for="task3">
+                                                <input class="form-check-input" type="checkbox" value="" id="task4">
+                                                <label class="form-check-label" for="task4">
                                                     <i class="bi bi-check-circle text-warning me-2"></i>Performance Processing
                                                 </label>
                                             </div>
                                         </li>
                                         <li class="list-group-item bg-dark text-light fs-4 border-0 d-flex justify-content-between align-items-center">
                                             <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" value="" id="task3">
-                                                <label class="form-check-label" for="task3">
+                                                <input class="form-check-input" type="checkbox" value="" id="task5">
+                                                <label class="form-check-label" for="task5">
                                                     <i class="bi bi-check-circle text-warning me-2"></i>Payroll Processing
                                                 </label>
                                             </div>
                                         </li>
                                         <li class="list-group-item bg-dark text-light fs-4 border-0 d-flex justify-content-between align-items-center">
                                             <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" value="" id="task3">
-                                                <label class="form-check-label" for="task3">
+                                                <input class="form-check-input" type="checkbox" value="" id="task6">
+                                                <label class="form-check-label" for="task6">
                                                     <i class="bi bi-check-circle text-warning me-2"></i>Social Recognition
                                                 </label>
                                             </div>
@@ -233,15 +234,15 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
                             </div>
                         </div>
                         <div class="col-md-6 mt-2 mb-2">
-                            <div class="card bg-dark text-light">
+                            <div class="card bg-dark text-light" style="height: 500px;">
                                 <div class="card-header border-bottom border-1 border-warning text-info">
-                                    <h3 class="mb-0">Attendance</h3>
+                                    <h3>Attendance</h3> <!-- Month and Year display -->
                                 </div>
-                                <div class="card-body p-4">
+                                <div class="card-body p-4 overflow-auto" style="max-height: 400px;">
                                     <div class="d-flex justify-content-between align-items-center mb-4">
                                         <div>
                                             <h5 class="fw-bold">Today's Date:</h5>
-                                            <p class="text-warning">January 18, 2025</p>
+                                            <p class="text-warning" id="todaysDate">January 18, 2025</p> <!-- fixed depends on the specific day -->
                                         </div>
                                         <div>
                                             <h5 class="fw-bold">Time in:</h5>
@@ -250,9 +251,8 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
                                     </div>
                                     <hr>
                                     <div class="mb-0">
-                                        <h4 class="fw-bold">January</h4>
+                                        <h3 class="mb-0" id="monthYearDisplay"></h3>
                                         <div class="row text-center fw-bold">
-                                            <!-- Days of the week -->
                                             <div class="col">Sun</div>
                                             <div class="col">Mon</div>
                                             <div class="col">Tue</div>
@@ -262,68 +262,14 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
                                             <div class="col">Sat</div>
                                         </div>
 
-                                        <!-- Calendar rows -->
-                                        <div class="row text-center border-top pt-3">
-                                            <!-- First week -->
-                                            <div class="col"></div> <!-- Empty for days before 1st -->
-                                            <div class="col">
-                                                <span class="fw-bold">1</span>
-                                                <div class="text-success">Present</div>
-                                            </div>
-                                            <div class="col">
-                                                <span class="fw-bold">2</span>
-                                                <div class="text-danger">Absent</div>
-                                            </div>
-                                            <div class="col">
-                                                <span class="fw-bold">3</span>
-                                                <div class="text-success">Present</div>
-                                            </div>
-                                            <div class="col">
-                                                <span class="fw-bold">4</span>
-                                                <div class="text-success">Present</div>
-                                            </div>
-                                            <div class="col">
-                                                <span class="fw-bold">5</span>
-                                                <div class="text-danger">Absent</div>
-                                            </div>
-                                            <div class="col">
-                                                <span class="fw-bold">6</span>
-                                                <div class="text-success">Present</div>
-                                            </div>
-                                        </div>
-
-                                        <div class="row text-center pt-3">
-                                            <!-- Second week -->
-                                            <div class="col">
-                                                <span class="fw-bold">7</span>
-                                                <div class="text-danger">Absent</div>
-                                            </div>
-                                            <div class="col">
-                                                <span class="fw-bold">8</span>
-                                                <div class="text-success">Present</div>
-                                            </div>
-                                            <div class="col">
-                                                <span class="fw-bold">9</span>
-                                                <div class="text-danger">Absent</div>
-                                            </div>
-                                            <div class="col">
-                                                <span class="fw-bold">10</span>
-                                                <div class="text-success">Present</div>
-                                            </div>
-                                            <div class="col">
-                                                <span class="fw-bold">11</span>
-                                                <div class="text-success">Present</div>
-                                            </div>
-                                            <div class="col">
-                                                <span class="fw-bold">12</span>
-                                                <div class="text-danger">Absent</div>
-                                            </div>
-                                            <div class="col">
-                                                <span class="fw-bold">13</span>
-                                                <div class="text-success">Present</div>
-                                            </div>
-                                        </div>
+                                        <!-- Calendar rows with attendance status -->
+                                        <div id="ATTENDANCEcalendar" class="pt-3 text-light bg-black"></div>
                                     </div>
+                                </div>
+                                <div class="card-footer text-center d-flex justify-content-around">
+                                    <!-- Footer with Next and Previous buttons -->
+                                    <button class="btn btn-primary" id="prevMonthBtn">&lt; Prev</button>
+                                    <button class="btn btn-primary" id="nextMonthBtn">Next &gt;</button>
                                 </div>
                             </div>
                         </div>
@@ -469,6 +415,31 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
                         </div>
                     </div>
                 </div>
+                <div class="modal fade" id="attendanceModal" tabindex="-1" aria-labelledby="timeInfoModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content bg-dark text-light">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="timeInfoModalLabel">January 1, 2025</h5>
+                                <button type="button" class="btn-close bg-light" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="d-flex justify-content-around"> <!-- else if, (no data in workd days === absent)  else, (sunday or holiday === no data found)-->
+                                    <div>
+                                        <h6 class="fw-bold">Time In:</h6>
+                                        <p class="text-success fw-bold">08:11 AM</p> <!-- Example time, can be dynamic -->
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold">Time Out:</h6>
+                                        <p class="text-danger fw-bold">05:00 PM</p> <!-- Example time, can be dynamic -->
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             <footer class="py-4 bg-light mt-auto bg-dark border-top border-1 border-warning">
                 <div class="container-fluid px-4">
                     <div class="d-flex align-items-center justify-content-between small">
@@ -568,6 +539,141 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
 
     setCurrentTime();
     setInterval(setCurrentTime, 1000);
+
+
+const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+let currentMonth = new Date().getMonth(); // January is 0, December is 11
+let currentYear = new Date().getFullYear();
+
+// Function to render the calendar for a specific month and year
+function renderCalendar(month, year) {
+    const daysInMonth = new Date(year, month + 1, 0).getDate(); // Get total days in the current month
+    const firstDay = new Date(year, month, 1).getDay(); // Get the starting day (0 = Sunday, 1 = Monday, etc.)
+
+let attendanceRecords = {
+    1: 'Present',
+    2: 'Absent',
+    3: 'Present',
+    4: 'Present',
+    5: 'Present',
+    6: 'Present',
+    7: 'Present',
+    8: 'Present',
+    9: 'Present',
+    10: 'Absent',
+    11: 'Present',
+    12: 'Present',
+    13: 'Present',
+    14: 'Absent',
+    15: 'Present',
+    16: 'Absent',
+    17: 'Present',
+    18: 'Present',
+    19: 'Present',
+    20: 'Absent',
+    21: 'Present',
+    22: 'Present',
+    23: 'Present',
+    24: 'Absent',
+    25: 'Present',
+    26: 'Present',
+    27: 'Absent',
+    28: 'Present',
+    29: 'Present',
+    30: 'Present',
+    31: 'Present'
+};
+
+
+let calendarHTML = '<div class="row text-center pt-3">';
+
+// Add empty columns before the first day of the month
+for (let i = 0; i < firstDay; i++) {
+    calendarHTML += '<div class="col"></div>';
+}
+
+// Fill in the days of the month
+let dayCounter = 1;
+for (let i = firstDay; i < 7; i++) {
+    const status = (i === 0) ? 'Day Off' : attendanceRecords[dayCounter] || ''; // Set "Day Off" for Sundays (day 0)
+    
+    // Wrap the day inside a button that triggers the modal
+    calendarHTML += `
+        <div class="col">
+            <button class="btn text-light p-0" data-bs-toggle="modal" data-bs-target="#attendanceModal" onclick="(${dayCounter})">
+                <span class="fw-bold">${dayCounter}</span>
+                <div class="${status === 'Present' ? 'text-success' : status === 'Absent' ? 'text-danger' : status === 'No Data' ? 'text-warning' : status === 'Day Off' ? 'text-muted' : ''}">
+                    ${status}
+                </div>
+            </button>
+        </div>
+    `;
+    dayCounter++;
+}
+calendarHTML += '</div>';
+
+// Continue filling rows for the remaining days
+while (dayCounter <= daysInMonth) {
+    calendarHTML += '<div class="row text-center pt-3">';
+    let dayOfWeek = 0; // Reset for each row
+
+    for (let i = 0; i < 7 && dayCounter <= daysInMonth; i++) {
+        const status = (dayOfWeek === 0) ? 'Day Off' : attendanceRecords[dayCounter] || ''; 
+        
+        // Wrap the day inside a button that triggers the modal
+        calendarHTML += `
+            <div class="col">
+                <button class="btn text-light p-0" data-bs-toggle="modal" data-bs-target="#attendanceModal" onclick="(${dayCounter})">
+                    <span class="fw-bold">${dayCounter}</span>
+                    <div class="${status === 'Present' ? 'text-success' : status === 'Absent' ? 'text-danger' : status === 'No Data' ? 'text-warning' : status === 'Day Off' ? 'text-muted' : ''}">
+                        ${status}
+                    </div>
+                </button>
+            </div>
+        `;
+        dayCounter++;
+        dayOfWeek++;
+    }
+
+    // If the last row is not complete (less than 7 days), add empty columns
+    if (dayOfWeek < 7) {
+        for (let j = dayOfWeek; j < 7; j++) {
+            calendarHTML += '<div class="col"></div>';
+        }
+    }
+
+    calendarHTML += '</div>';
+}
+
+    // Update the calendar container with the new content
+    document.getElementById('ATTENDANCEcalendar').innerHTML = calendarHTML;
+    
+    // Update the displayed month and year
+    document.getElementById('monthYearDisplay').textContent = `${monthNames[month]} ${year}`;
+    document.getElementById('todaysDate').textContent = `${monthNames[month]} ${new Date().getDate()}, ${year}`;
+}
+
+// Event listeners for next and previous month buttons
+document.getElementById('nextMonthBtn').addEventListener('click', function() {
+    currentMonth++;
+    if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+    }
+    renderCalendar(currentMonth, currentYear);
+});
+
+document.getElementById('prevMonthBtn').addEventListener('click', function() {
+    currentMonth--;
+    if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
+    }
+    renderCalendar(currentMonth, currentYear);
+});
+
+// Render the initial calendar for the current month and year
+renderCalendar(currentMonth, currentYear);
 
 </script>
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'> </script>

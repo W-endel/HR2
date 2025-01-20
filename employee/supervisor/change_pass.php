@@ -83,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Location: ' . $_SERVER['REQUEST_URI']); // Refresh the current page
             exit;
         } else {
-            $_SESSION['message'] = '<div class="alert alert-danger text-center">Email does not exist.</div>';
+            $_SESSION['message'] = '<div class="alert alert-danger text-center">Email not found.</div>';
             header('Location: ' . $_SERVER['REQUEST_URI']); // Refresh the current page
             exit;
         }

@@ -314,9 +314,9 @@ $conn->close();
                                                 <textarea class="form-control border bg-dark text-light border-light" id="inputAddress" name="address" rows="1" readonly><?php echo htmlspecialchars($adminInfo['address']); ?></textarea>
                                             </div>
                                         </div>
-                                        <div class="d-flex justify-content-between">
-                                            <button type="submit" class="btn btn-primary border border-light d-none w-30">Save Changes</button>
-                                            <button type="button" id="editButton" class="btn btn-primary w-30">Update Information</button>
+                                        <div class="d-flex justify-content-end">
+                                            <button type="button" id="editButton" class="btn btn-primary">Update Information</button>
+                                            <button type="submit" class="btn btn-primary d-none ms-2" id="saveButton">Save Changes</button>
                                         </div>
                                     </form>
                                 </div>
