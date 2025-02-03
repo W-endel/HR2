@@ -502,7 +502,7 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
                                     </form>
                                 </div>
                                 <div class="modal-footer border-top border-warning">
-                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                                 </div>
                             </div>
                         </div>

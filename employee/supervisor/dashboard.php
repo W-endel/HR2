@@ -7,6 +7,33 @@ if (!isset($_SESSION['e_id']))  {
 
 include '../../db/db_conn.php';
 
+
+$employeeId = $_SESSION['e_id'];
+
+// Fetch the average of the employee's evaluations
+$sql = "SELECT 
+            AVG(quality) AS avg_quality, 
+            AVG(communication_skills) AS avg_communication_skills, 
+            AVG(teamwork) AS avg_teamwork, 
+            AVG(punctuality) AS avg_punctuality, 
+            AVG(initiative) AS avg_initiative,
+            COUNT(*) AS total_evaluations 
+        FROM admin_evaluations 
+        WHERE e_id = ?";
+        
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $employeeId);
+$stmt->execute();
+$result = $stmt->get_result();
+
+// Check if evaluations exist
+if ($result->num_rows > 0) {
+    $evaluation = $result->fetch_assoc();
+} else {
+    echo "No evaluations found.";
+    exit;
+}
+
 // Fetch user info
 $employeeId = $_SESSION['e_id'];
 $sql = "SELECT firstname, middlename, lastname, email, role, position, pfp FROM employee_register WHERE e_id = ?";
@@ -33,8 +60,53 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
     <title>Employee Dashboard | HR2</title>
     <link href="../../css/styles.css" rel="stylesheet" />
     <link href="../../css/calendar.css" rel="stylesheet"/>
-    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet'/>
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+
+    <style>
+        .collapse {
+            transition: width 3s ease;
+        }
+
+        #searchInput.collapsing {
+            width: 0;
+        }
+
+        #searchInput.collapse.show {
+            width: 250px; /* Adjust the width as needed */
+        }
+
+        .search-bar {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        #search-results {
+            position: absolute;
+            width: 100%;
+            z-index: 1000;
+            display: none; /* Hidden by default */
+        }
+
+        #search-results a {
+            text-decoration: none;
+        }
+
+        .form-control:focus + #search-results {
+            display: block; /* Show the results when typing */
+        }
+        
+
+          /* CSS for background blur */
+  .blur-background {
+    filter: blur(8px); /* You can adjust the blur strength */
+    transition: filter 0.3s ease;
+  }
+    </style>
+
+
 </head>
 
 <body class="sb-nav-fixed bg-black">
@@ -49,18 +121,24 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
                         <i class="fas fa-clock"></i> 
                         <span id="currentTime">00:00:00</span>
                     </span>
-                    <button class="btn btn-outline-warning btn-sm ms-2" type="button" onclick="toggleCalendar()">
+                    <button class="btn btn-outline-warning btn-sm ms-2" title="Calendar" type="button" onclick="toggleCalendar()">
                         <i class="fas fa-calendar-alt"></i>
                         <span id="currentDate">00/00/0000</span>
                     </button>
                 </span>
             </div>
-            <form class="d-none d-md-inline-block form-inline">
-            <div class="input-group">
-                <input class="form-control" type="text" placeholder="Search for..." aria-label="Search for..." aria-describedby="btnNavbarSearch" />
-                <button class="btn btn-warning" id="btnNavbarSearch" type="button"><i class="fas fa-search"></i></button>
+            <div class="dropdown search-container" style="position: relative;">
+                <form class="d-none d-md-inline-block form-inline">
+                    <div class="input-group">
+                        <!-- Search Input -->
+                        <input class="form-control collapse" id="searchInput" type="text" placeholder="Search for..." aria-label="Search for..." aria-describedby="btnNavbarSearch" data-bs-toggle="dropdown" aria-expanded="false" />
+                        <button class="btn btn-outline-warning rounded" id="btnNavbarSearch" type="button" data-bs-toggle="collapse" data-bs-target="#searchInput" aria-expanded="false" aria-controls="searchInput">
+                            <i id="searchIcon" class="fas fa-search"></i> <!-- Initial Icon -->
+                        </button>
+                    </div>
+                    <ul id="searchResults" class="dropdown-menu list-group mt-2 bg-transparent" style="width: 100%;"></ul>
+                </form>
             </div>
-            </form>
         </div>
     </nav>
     <div id="layoutSidenav">
@@ -87,14 +165,15 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
                             </li>
                             <li class="nav-item text-light d-flex ms-3 flex-column align-items-center text-center">
                                 <span class="big text-light mb-1">
-                                    <h4><?php echo htmlspecialchars($employeeInfo['firstname'] . ' ' . $employeeInfo['middlename'] . ' ' . $employeeInfo['lastname']); ?></h4>
+                                    <p><?php echo htmlspecialchars($employeeInfo['firstname'] . ' ' . $employeeInfo['middlename'] . ' ' . $employeeInfo['lastname']); ?></p>
                                 </span>
                                 <span class="big text-light">
-                                    <h5><?php echo htmlspecialchars($employeeInfo['position']); ?></h5>
+                                    <p><?php echo htmlspecialchars($employeeInfo['position']); ?></p>
                                 </span>
                             </li>
                         </ul>
-                        <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-warning mt-3">Employee Dashboard</div>
+                        <hr>
+                        <div class="text-center text-muted">Employee Dashboard</div>
                         <a class="nav-link text-light" href="../../employee/supervisor/dashboard.php">
                             <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
                             Dashboard
@@ -142,7 +221,8 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
                                 <a class="nav-link text-light" href="">View Your Rating</a>
                             </nav>
                         </div> 
-                        <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-warning mt-3">Feedback</div> 
+                        <hr>
+                        <div class="text-center text-muted">Feedback</div> 
                         <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseFB" aria-expanded="false" aria-controls="collapseFB">
                             <div class="sb-nav-link-icon"><i class="fas fa-exclamation-circle"></i></div>
                             Report Issue
@@ -161,11 +241,22 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
             </nav>
         </div>
         <div id="layoutSidenav_content">
-            <main>
+            <main id="main-content">
                 <div class="container-fluid position-relative px-4">
-                    <h1 class="mb-4 text-light">Dashboard</h1>
+                    <div class="">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <h1 class="mb-4 text-light">Dashboard</h1>
+                            </div>
+                            <div class="col-auto">
+                                <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#todoModal" title="To-Do List" style="font-size: 20px; width: 40px; height: 40px;">
+                                    <i class="fas fa-tasks"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                     <div class="container" id="calendarContainer" 
-                        style="position: fixed; top: 9%; right: 0; z-index: 1050; 
+                         style="position: fixed; top: 9%; right: 0; z-index: 1050; 
                         width: 700px; height: 300px; display: none;">
                         <div class="row">
                             <div class="col-md-12">
@@ -174,65 +265,6 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
                         </div>
                     </div>
                     <div class="row mb-2">
-                        <div class="col-md-3 mt-2 mb-2">
-                            <div class="card bg-dark text-light border-0">
-                                <div class="card-header border-bottom border-warning text-info">
-                                    <h3>To Do</h3>
-                                </div>
-                                <div class="card-body">
-                                    <ul class="list-group list-group-flush">
-                                        <li class="list-group-item bg-dark text-light fs-4 border-0 d-flex justify-content-between align-items-center">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" value="" id="task1">
-                                                <label class="form-check-label" for="task1">
-                                                    <i class="bi bi-check-circle text-warning me-2"></i>Facial Recognition
-                                                </label>
-                                            </div>
-                                        </li>
-                                        <li class="list-group-item bg-dark text-light fs-4 border-0 d-flex justify-content-between align-items-center">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" value="" id="task2">
-                                                <label class="form-check-label" for="task2">
-                                                    <i class="bi bi-check-circle text-warning me-2"></i>Attendance Record
-                                                </label>
-                                            </div>
-                                        </li>
-                                        <li class="list-group-item bg-dark text-light fs-4 border-0 d-flex justify-content-between align-items-center">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" value="" id="task3">
-                                                <label class="form-check-label" for="task3">
-                                                    <i class="bi bi-check-circle text-warning me-2"></i>Leave Processing
-                                                </label>
-                                            </div>
-                                        </li>
-                                        <li class="list-group-item bg-dark text-light fs-4 border-0 d-flex justify-content-between align-items-center">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" value="" id="task4">
-                                                <label class="form-check-label" for="task4">
-                                                    <i class="bi bi-check-circle text-warning me-2"></i>Performance Processing
-                                                </label>
-                                            </div>
-                                        </li>
-                                        <li class="list-group-item bg-dark text-light fs-4 border-0 d-flex justify-content-between align-items-center">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" value="" id="task5">
-                                                <label class="form-check-label" for="task5">
-                                                    <i class="bi bi-check-circle text-warning me-2"></i>Payroll Processing
-                                                </label>
-                                            </div>
-                                        </li>
-                                        <li class="list-group-item bg-dark text-light fs-4 border-0 d-flex justify-content-between align-items-center">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" value="" id="task6">
-                                                <label class="form-check-label" for="task6">
-                                                    <i class="bi bi-check-circle text-warning me-2"></i>Social Recognition
-                                                </label>
-                                            </div>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
                         <div class="col-md-6 mt-2 mb-2">
                             <div class="card bg-dark text-light" style="height: 500px;">
                                 <div class="card-header border-bottom border-1 border-warning text-info">
@@ -273,7 +305,7 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3 mt-2">
+                        <div class="col-md-6 mt-2">
                             <div class="card bg-dark">
                                 <div class="card-header border-bottom border-1 border-warning text-info">
                                     <h3>Performance Ratings | Graph</h3>
@@ -283,23 +315,78 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
                                     <div class="mt-2">
                                         <h5 class="text-light">Quality of Work</h5>
                                         <div class="d-flex justify-content-between">
-                                            <span class="text-warning">Excellent</span>
-                                            <span class="text-warning">85%</span>
+                                            <span class="text-warning">
+                                                <?php 
+                                                    // Display rating label based on avg_quality value
+                                                    if ($evaluation['avg_quality'] == 6) {
+                                                        echo "Excellent";
+                                                        $progressBarClass = "bg-success"; // Green for excellent
+                                                    } elseif ($evaluation['avg_quality'] <= 5.99 && $evaluation['avg_quality'] >= 5 ) {
+                                                        echo "Good";
+                                                        $progressBarClass = "bg-primary"; // Blue for good
+                                                    } elseif ($evaluation['avg_quality'] <= 4.99 && $evaluation['avg_quality'] >= 3) {
+                                                        echo "Average";
+                                                        $progressBarClass = "bg-warning"; // Yellow for average
+                                                    } elseif ($evaluation['avg_quality'] <= 2.99 && $evaluation['avg_quality'] >= 0.01) {
+                                                        echo "Need Improvements";
+                                                        $progressBarClass = "bg-danger"; // Red for needs improvement
+                                                    } else {
+                                                        echo "Not Yet Evaluated";
+                                                        $progressBarClass = "bg-light";
+                                                    }
+                                                        
+                                                    
+                                                ?>
+                                            </span>
                                         </div>
                                         <div class="progress">
-                                            <div class="progress-bar bg-info" role="progressbar" style="width: 85%;" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100"></div>
+                                            <div 
+                                                class="progress-bar <?php echo $progressBarClass; ?>" 
+                                                role="progressbar" 
+                                                style="width: <?php echo min(100, ($evaluation['avg_quality'] / 6) * 100); ?>%;" 
+                                                aria-valuenow="<?php echo htmlspecialchars($evaluation['avg_quality']); ?>" 
+                                                aria-valuemin="0" 
+                                                aria-valuemax="6">
+                                                <?php echo htmlspecialchars(number_format($evaluation['avg_quality'], 2)); ?>
+                                            </div>
                                         </div>
                                     </div>
-
                                     <!-- Rating 2: Communication Skills -->
                                     <div class="mt-2">
                                         <h5 class="text-light">Communication Skills</h5>
                                         <div class="d-flex justify-content-between">
-                                            <span class="text-warning">Good</span>
-                                            <span class="text-warning">75%</span>
+                                            <span class="text-warning">
+                                                <?php 
+                                                    // Display rating label based on avg_quality value
+                                                    if ($evaluation['avg_communication_skills'] == 6) {
+                                                        echo "Excellent";
+                                                        $progressBarClass = "bg-success"; // Green for excellent
+                                                    } elseif ($evaluation['avg_communication_skills'] <= 5.99 && $evaluation['avg_communication_skills'] >= 5) {
+                                                        echo "Good";
+                                                        $progressBarClass = "bg-primary"; // Blue for good
+                                                    } elseif ($evaluation['avg_communication_skills'] <= 4.99 && $evaluation['avg_communication_skills'] >= 3) {
+                                                        echo "Average";
+                                                        $progressBarClass = "bg-warning"; // Yellow for average
+                                                    } elseif ($evaluation['avg_communication_skills'] <= 2.99 && $evaluation['avg_communication_skills'] >= 0.01) {
+                                                        echo "Need Improvements";
+                                                        $progressBarClass = "bg-danger";
+                                                    } else {
+                                                        echo "Not Yet Evaluated";
+                                                        $progressBarClass = "bg-light"; // Red for needs improvement
+                                                    }
+                                                ?>
+                                            </span>
                                         </div>
                                         <div class="progress">
-                                            <div class="progress-bar bg-info" role="progressbar" style="width: 75%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+                                            <div 
+                                                class="progress-bar <?php echo $progressBarClass; ?>" 
+                                                role="progressbar" 
+                                                style="width: <?php echo min(100, ($evaluation['avg_communication_skills'] / 6) * 100); ?>%;" 
+                                                aria-valuenow="<?php echo htmlspecialchars($evaluation['avg_communication_skills']); ?>" 
+                                                aria-valuemin="0" 
+                                                aria-valuemax="6">
+                                                <?php echo htmlspecialchars(number_format($evaluation['avg_communication_skills'], 2)); ?>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -307,11 +394,38 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
                                     <div class="mt-2">
                                         <h5 class="text-light">Teamwork</h5>
                                         <div class="d-flex justify-content-between">
-                                            <span class="text-warning">Very Good</span>
-                                            <span class="text-warning">80%</span>
+                                            <span class="text-warning">
+                                                <?php 
+                                                    // Display rating label based on avg_quality value
+                                                    if ($evaluation['avg_teamwork'] == 6) {
+                                                        echo "Excellent";
+                                                        $progressBarClass = "bg-success"; // Green for excellent
+                                                    } elseif ($evaluation['avg_teamwork'] <= 5.99 && $evaluation['avg_teamwork'] >= 5) {
+                                                        echo "Good";
+                                                        $progressBarClass = "bg-primary"; // Blue for good
+                                                    } elseif ($evaluation['avg_teamwork'] <= 4.99 && $evaluation['avg_teamwork'] >= 3) {
+                                                        echo "Average";
+                                                        $progressBarClass = "bg-warning"; // Yellow for average
+                                                    } elseif ($evaluation['avg_teamwork'] <= 2.99 && $evaluation['avg_teamwork'] >= 0.01) {
+                                                        echo "Need Improvements";
+                                                        $progressBarClass = "bg-danger";
+                                                    } else {
+                                                        echo "Not Yet Evaluated";
+                                                        $progressBarClass = "bg-light"; // Red for needs improvement
+                                                    }
+                                                ?>
+                                            </span>
                                         </div>
                                         <div class="progress">
-                                            <div class="progress-bar bg-info" role="progressbar" style="width: 80%;" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
+                                            <div 
+                                                class="progress-bar <?php echo $progressBarClass; ?>" 
+                                                role="progressbar" 
+                                                style="width: <?php echo min(100, ($evaluation['avg_teamwork'] / 6) * 100); ?>%;" 
+                                                aria-valuenow="<?php echo htmlspecialchars($evaluation['avg_teamwork']); ?>" 
+                                                aria-valuemin="0" 
+                                                aria-valuemax="6">
+                                                <?php echo htmlspecialchars(number_format($evaluation['avg_teamwork'], 2)); ?>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -319,11 +433,38 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
                                     <div class="mt-2">
                                         <h5 class="text-light">Punctuality</h5>
                                         <div class="d-flex justify-content-between">
-                                            <span class="text-warning">Average</span>
-                                            <span class="text-warning">60%</span>
+                                            <span class="text-warning">
+                                                <?php 
+                                                    // Display rating label based on avg_quality value
+                                                    if ($evaluation['avg_punctuality'] == 6) {
+                                                        echo "Excellent";
+                                                        $progressBarClass = "bg-success"; // Green for excellent
+                                                    } elseif ($evaluation['avg_punctuality'] <= 5.99 && $evaluation['avg_punctuality'] >= 5) {
+                                                        echo "Good";
+                                                        $progressBarClass = "bg-primary"; // Blue for good
+                                                    } elseif ($evaluation['avg_punctuality'] <= 4.99 && $evaluation['avg_punctuality'] >= 3) {
+                                                        echo "Average";
+                                                        $progressBarClass = "bg-warning"; // Yellow for average
+                                                    } elseif ($evaluation['avg_punctuality'] <= 2.99 && $evaluation['avg_punctuality'] >= 0.01) {
+                                                        echo "Need Improvements";
+                                                        $progressBarClass = "bg-danger";
+                                                    } else {
+                                                        echo "Not Yet Evaluated";
+                                                        $progressBarClass = "bg-light"; // Red for needs improvement
+                                                    }
+                                                ?>
+                                            </span>
                                         </div>
-                                        <div class="progress">
-                                            <div class="progress-bar bg-info" role="progressbar" style="width: 60%;" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
+                                        <div class="progress">  
+                                            <div 
+                                                class="progress-bar <?php echo $progressBarClass; ?>" 
+                                                role="progressbar" 
+                                                style="width: <?php echo min(100, ($evaluation['avg_punctuality'] / 6) * 100); ?>%;" 
+                                                aria-valuenow="<?php echo htmlspecialchars($evaluation['avg_punctuality']); ?>" 
+                                                aria-valuemin="0" 
+                                                aria-valuemax="6">
+                                                <?php echo htmlspecialchars(number_format($evaluation['avg_punctuality'], 2)); ?>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -331,11 +472,38 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
                                     <div class="mt-2">
                                         <h5 class="text-light">Initiative</h5>
                                         <div class="d-flex justify-content-between">
-                                            <span class="text-warning">Excellent</span>
-                                            <span class="text-warning">90%</span>
+                                            <span class="text-warning">
+                                                <?php 
+                                                    // Display rating label based on avg_quality value
+                                                    if ($evaluation['avg_initiative'] == 6) {
+                                                        echo "Excellent";
+                                                        $progressBarClass = "bg-success"; // Green for excellent
+                                                    } elseif ($evaluation['avg_initiative'] <= 5.99 && $evaluation['avg_initiative'] >= 5) {
+                                                        echo "Good";
+                                                        $progressBarClass = "bg-primary"; // Blue for good
+                                                    } elseif ($evaluation['avg_initiative'] <= 4.99 && $evaluation['avg_initiative'] >= 3) {
+                                                        echo "Average";
+                                                        $progressBarClass = "bg-warning"; // Yellow for average
+                                                    } elseif ($evaluation['avg_initiative'] <= 2.99 && $evaluation['avg_initiative'] >= 0.01) {
+                                                        echo "Need Improvements";
+                                                        $progressBarClass = "bg-danger";
+                                                    } else {
+                                                        echo "Not Yet Evaluated";
+                                                        $progressBarClass = "bg-light"; // Red for needs improvement
+                                                    }
+                                                ?>
+                                            </span>
                                         </div>
                                         <div class="progress">
-                                            <div class="progress-bar bg-info" role="progressbar" style="width: 90%;" aria-valuenow="90" aria-valuemin="0" aria-valuemax="100"></div>
+                                            <div 
+                                                class="progress-bar <?php echo $progressBarClass; ?>" 
+                                                role="progressbar" 
+                                                style="width: <?php echo min(100, ($evaluation['avg_initiative'] / 6) * 100); ?>%;" 
+                                                aria-valuenow="<?php echo htmlspecialchars($evaluation['avg_initiative']); ?>" 
+                                                aria-valuemin="0" 
+                                                aria-valuemax="6">
+                                                <?php echo htmlspecialchars(number_format($evaluation['avg_initiative'], 2)); ?>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -436,6 +604,73 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal fade" id="todoModal" tabindex="-1" aria-labelledby="todoModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content bg-dark text-light">
+                            <div class="modal-header">
+                                <h5 class="modal-title text-info" id="todoModalLabel">To Do</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="d-flex justify-content-end">
+                                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+                                        <i class="fas fa-plus me-2"></i>Add To Do List
+                                    </button>
+                                </div>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item bg-dark text-light fs-4 border-0 d-flex justify-content-between align-items-center">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="" id="task1">
+                                            <label class="form-check-label" for="task1">
+                                                <i class="bi bi-check-circle text-warning me-2"></i>Facial Recognition
+                                            </label>
+                                        </div>
+                                    </li>
+                                    <li class="list-group-item bg-dark text-light fs-4 border-0 d-flex justify-content-between align-items-center">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="" id="task2">
+                                            <label class="form-check-label" for="task2">
+                                                <i class="bi bi-check-circle text-warning me-2"></i>Attendance Record
+                                            </label>
+                                        </div>
+                                    </li>
+                                    <li class="list-group-item bg-dark text-light fs-4 border-0 d-flex justify-content-between align-items-center">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="" id="task3">
+                                            <label class="form-check-label" for="task3">
+                                                <i class="bi bi-check-circle text-warning me-2"></i>Leave Processing
+                                            </label>
+                                        </div>
+                                    </li>
+                                    <li class="list-group-item bg-dark text-light fs-4 border-0 d-flex justify-content-between align-items-center">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="" id="task4">
+                                            <label class="form-check-label" for="task4">
+                                                <i class="bi bi-check-circle text-warning me-2"></i>Performance Processing
+                                            </label>
+                                        </div>
+                                    </li>
+                                    <li class="list-group-item bg-dark text-light fs-4 border-0 d-flex justify-content-between align-items-center">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="" id="task5">
+                                            <label class="form-check-label" for="task5">
+                                                <i class="bi bi-check-circle text-warning me-2"></i>Payroll Processing
+                                            </label>
+                                        </div>
+                                    </li>
+                                    <li class="list-group-item bg-dark text-light fs-4 border-0 d-flex justify-content-between align-items-center">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="" id="task6">
+                                            <label class="form-check-label" for="task6">
+                                                <i class="bi bi-check-circle text-warning me-2"></i>Social Recognition
+                                            </label>
+                                        </div>
+                                    </li>
+                                </ul>
                             </div>
                         </div>
                     </div>
@@ -674,6 +909,75 @@ document.getElementById('prevMonthBtn').addEventListener('click', function() {
 
 // Render the initial calendar for the current month and year
 renderCalendar(currentMonth, currentYear);
+
+
+const features = [
+    { name: "Dashboard", link: "../../employee/supervisor/dashboard.php", path: "Employee Dashboard" },
+    { name: "Attendance Scanner", link: "../../employee/supervisor/attendance.php", path: "Time and Attendance/Attendance Scanner" },
+    { name: "Leave Request", link: "../../employee/supervisor/leave_request.php", path: "Leave Management/Leave Request" },
+    { name: "Evaluation Ratings", link: "../../employee/supervisor/evaluation.php", path: "Performance Management/Evaluation Ratings" },
+    { name: "File Leave", link: "../../employee/supervisor/leave_file.php", path: "Leave Management/File Leave" },
+    { name: "View Your Rating", link: "../../employee/supervisor/social_recognition.php", path: "Social Recognition/View Your Rating" },
+    { name: "Report Issue", link: "../../employee/supervisor/report_issue.php", path: "Feedback/Report Issue" }
+];
+
+// Handle search input change
+document.getElementById('searchInput').addEventListener('input', function () {
+    let input = this.value.toLowerCase();
+    let results = '';
+
+    if (input) {
+        // Filter the features based on the search input
+        const filteredFeatures = features.filter(feature => 
+            feature.name.toLowerCase().includes(input)
+        );
+
+        if (filteredFeatures.length > 0) {
+            // Generate the HTML for the filtered results
+            filteredFeatures.forEach(feature => {
+                results += `                   
+                    <a href="${feature.link}" class="list-group-item list-group-item-action">
+                        ${feature.name}
+                        <br>
+                        <small class="text-muted">${feature.path}</small>
+                    </a>`;
+            });
+        } else {
+            // If no matches found, show "No result found"
+            results = `<li class="list-group-item list-group-item-action">No result found</li>`;
+        }
+    }
+
+    // Update the search results with the filtered features
+    document.getElementById('searchResults').innerHTML = results;
+    
+    if (!input) {
+        document.getElementById('searchResults').innerHTML = ''; // Clears the dropdown if input is empty
+    }
+});
+
+// Handle collapse event to clear search input when hidden
+const searchInputElement = document.getElementById('searchInput');
+searchInputElement.addEventListener('hidden.bs.collapse', function () {
+    // Clear the search input and search results when the input collapses
+    searchInputElement.value = '';  // Clear the input
+    document.getElementById('searchResults').innerHTML = '';  // Clear the search results
+});
+
+
+
+const todoModal = document.getElementById('todoModal');
+  const mainContent = document.getElementById('main-content');
+
+  // Add blur when the modal is shown
+  todoModal.addEventListener('show.bs.modal', function () {
+    mainContent.classList.add('blur-background');
+  });
+
+  // Remove blur when the modal is hidden
+  todoModal.addEventListener('hidden.bs.modal', function () {
+    mainContent.classList.remove('blur-background');
+  });
 
 </script>
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'> </script>

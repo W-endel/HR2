@@ -92,7 +92,7 @@ $conn->close();
                                     <img src="<?php echo (!empty($adminInfo['pfp']) && $adminInfo['pfp'] !== 'defaultpfp.jpg') 
                                         ? htmlspecialchars($adminInfo['pfp']) 
                                         : '../img/defaultpfp.jpg'; ?>" 
-                                        class="rounded-circle border border-light" width="120" height="120" alt="Profile Picture" />
+                                        class="rounded-circle border border-light" width="80" height="80" alt="Profile Picture" />
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                                     <li><a class="dropdown-item" href="../admin/profile.php">Profile</a></li>

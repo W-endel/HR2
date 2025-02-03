@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $mail->setFrom('microfinancehr2@gmail.com', 'Microfinance');
             $mail->addAddress($email);
             $mail->Subject = 'Password Reset Request';
-            $resetLink = "http://localhost/HR2/employee/staff/reset_password.php?token=$token";
+            $resetLink = "http://localhost/HR2/employee/reset_password.php?token=$token";
             $mail->isHTML(true);
 
             // Email body with inline styles

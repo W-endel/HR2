@@ -6,13 +6,22 @@
     <title>Login Selection</title>
     <link rel="stylesheet" href="css/styles.css"> <!-- External CSS file -->
     <style>
-    /* Make the buttons long */
+
     #admin-login-btn, #employee-login-btn {
-        width: 700px; /* Set button width to 300px for both */
+        width: 600px; /* Set button width to 300px for both */
         height: 100px;
         padding: 15px 0; /* Increase vertical padding */
         font-size: 40px;    
         text-align: center;
+    }
+
+    #admin-login-btn, #employee-login-btn {
+        transition: transform 0.2s ease;
+    }
+
+    /* Enlarge the button slightly when hovered */
+    #admin-login-btn:hover, #employee-login-btn:hover {
+        transform: scale(1.1); /* Increase the size by 10% */
     }
 </style>
 
@@ -27,9 +36,9 @@
     </div>
     <!-- Center the buttons in the middle of the screen -->
     <div class="d-flex justify-content-center align-items-center" style="height: 60vh;">
-        <div class="d-flex justify-content-center gap-4">
-            <a href="admin/login.php" class="btn btn-primary btn-lg px-5 py-3 rounded-pill shadow-lg" id="admin-login-btn">Admin Login</a>
-            <a href="employee/login.php" class="btn btn-primary btn-lg px-5 py-3 rounded-pill shadow-lg" id="employee-login-btn">Employee Login</a>
+        <div class="d-flex justify-content-center gap-5">
+        <a href="admin/login.php" class="btn btn-primary btn-lg px-5 py-3 rounded-pill shadow-lg" id="admin-login-btn">Admin Login</a>
+        <a href="employee/login.php" class="btn btn-primary btn-lg px-5 py-3 rounded-pill shadow-lg" id="employee-login-btn">Employee Login</a>
         </div>
     </div>
 </div>

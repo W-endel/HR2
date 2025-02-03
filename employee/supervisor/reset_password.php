@@ -230,19 +230,35 @@ if (isset($_POST['resend_token'])) {
         });
 
 
-        const togglePassword = document.querySelector("#togglePassword");
-        const passwordField = document.querySelector("#inputPassword");
-        const icon = togglePassword.querySelector("i");
+        // Toggle visibility of New Password
+    const toggleNewPassword = document.querySelector("#toggleNewPassword");
+    const newPasswordField = document.querySelector("#new_password");
+    const newPasswordIcon = toggleNewPassword.querySelector("i");
 
-        togglePassword.addEventListener("click", function () {
-            // Toggle the password field type
-            const type = passwordField.getAttribute("type") === "password" ? "text" : "password";
-            passwordField.setAttribute("type", type);
+    toggleNewPassword.addEventListener("click", function () {
+        // Toggle the password field type
+        const type = newPasswordField.getAttribute("type") === "password" ? "text" : "password";
+        newPasswordField.setAttribute("type", type);
 
-            // Toggle the eye/eye-slash icon
-            icon.classList.toggle("fa-eye");
-            icon.classList.toggle("fa-eye-slash");
-        });
+        // Toggle the eye/eye-slash icon
+        newPasswordIcon.classList.toggle("fa-eye");
+        newPasswordIcon.classList.toggle("fa-eye-slash");
+    });
+
+    // Toggle visibility of Confirm New Password
+    const toggleConfirmPassword = document.querySelector("#toggleConfirmPassword");
+    const confirmPasswordField = document.querySelector("#confirm_new_password");
+    const confirmPasswordIcon = toggleConfirmPassword.querySelector("i");
+
+    toggleConfirmPassword.addEventListener("click", function () {
+        // Toggle the password field type
+        const type = confirmPasswordField.getAttribute("type") === "password" ? "text" : "password";
+        confirmPasswordField.setAttribute("type", type);
+
+        // Toggle the eye/eye-slash icon
+        confirmPasswordIcon.classList.toggle("fa-eye");
+        confirmPasswordIcon.classList.toggle("fa-eye-slash");
+    });
     </script>
 </body>
 </html>

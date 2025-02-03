@@ -218,13 +218,10 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                                 <div class="card-body bg-primary text-center">
                                     <a href="../admin/finance.php" class="btn card-button text-dark font-weight-bold bg-light border border-dark w-100">Finance Department</a>
                                 </div>
-                                <div class="card-footer d-flex align-items-center justify-content-between bg-dark border border-light department-toggle" data-target="#financeInfo">
-                                    <div class="small text-warning">Click to View Details</div>
-                                    <div class="small text-warning">
-                                        <i class="fas fa-angle-down"></i>
-                                    </div>
+                                <div class="card-footer d-flex align-items-center justify-content-between bg-dark border-bottom border-light department-toggle">
+                                    <div class="small text-warning">Details</div>
                                 </div>
-                                <div id="financeInfo" class="collapse bg-dark text-dark">
+                                <div id="financeInfo" class=" bg-dark text-dark">
                                     <div class="card-body">
                                         <h5 class="text-center mb-4 text-light">Finance Department Evaluation Status</h5>
                                         <div class="text-center mb-3">
@@ -266,13 +263,10 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                                 <div class="card-body bg-primary text-center">
                                     <a href="../admin/hr.php" class="btn card-button text-dark font-weight-bold bg-light border border-dark w-100">Human Resource Department</a>
                                 </div>
-                                <div class="card-footer d-flex align-items-center justify-content-between bg-dark border border-light department-toggle" data-target="#hrInfo">
-                                    <div class="small text-warning">Click to View Details</div>
-                                    <div class="small text-warning">
-                                        <i class="fas fa-angle-down"></i>
-                                    </div>
+                                <div class="card-footer d-flex align-items-center justify-content-between bg-dark border-bottom border-light department-toggle">
+                                    <div class="small text-warning">Details</div>
                                 </div>
-                                <div id="hrInfo" class="collapse bg-dark text-dark">
+                                <div id="hrInfo" class="bg-dark text-dark">
                                     <div class="card-body">
                                         <h5 class="text-center mb-4 text-light">Human Resource Evaluation Status</h5>
                                         <div class="text-center mb-3">
@@ -314,13 +308,10 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                                 <div class="card-body bg-primary text-center">
                                     <a href="../admin/administration.php" class="btn card-button text-dark font-weight-bold bg-light border border-dark w-100">Administration Department</a>
                                 </div>
-                                <div class="card-footer d-flex align-items-center justify-content-between bg-dark border border-light department-toggle" data-target="#administrationInfo">
-                                    <div class="small text-warning">Click to View Details</div>
-                                    <div class="small text-warning">
-                                        <i class="fas fa-angle-down"></i>
-                                    </div>
+                                <div class="card-footer d-flex align-items-center justify-content-between bg-dark border-bottom border-light department-toggle">
+                                    <div class="small text-warning">Details</div>
                                 </div>
-                                <div id="administrationInfo" class="collapse bg-dark text-dark">
+                                <div id="administrationInfo" class="bg-dark text-dark">
                                     <div class="card-body">
                                         <h5 class="text-center mb-4 text-light">Administration Evaluation Status</h5>
                                         <div class="text-center mb-3">
@@ -362,13 +353,10 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                                 <div class="card-body bg-primary text-center">
                                     <a href="../admin/sales.php" class="btn card-button text-dark font-weight-bold bg-light border border-dark w-100">Sales Department</a>
                                 </div>
-                                <div class="card-footer d-flex align-items-center justify-content-between bg-dark border border-light department-toggle" data-target="#salesInfo">
-                                    <div class="small text-warning">Click to View Details</div>
-                                    <div class="small text-warning">
-                                        <i class="fas fa-angle-down"></i>
-                                    </div>
+                                <div class="card-footer d-flex align-items-center justify-content-between bg-dark border-bottom border-light department-toggle">
+                                    <div class="small text-warning">Details</div>
                                 </div>
-                                <div id="salesInfo" class="collapse bg-dark text-dark">
+                                <div id="salesInfo" class="bg-dark text-dark">
                                     <div class="card-body">
                                         <h5 class="text-center mb-4 text-light">Sales Evaluation Status</h5>
                                         <div class="text-center mb-3">
@@ -410,13 +398,10 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                                 <div class="card-body bg-primary text-center">
                                     <a href="../admin/credit.php" class="btn card-button text-dark font-weight-bold bg-light border border-dark w-100">Credit Department</a>
                                 </div>
-                                <div class="card-footer d-flex align-items-center justify-content-between bg-dark border border-light department-toggle" data-target="#creditInfo">
-                                    <div class="small text-warning">Click to View Details</div>
-                                    <div class="small text-warning">
-                                        <i class="fas fa-angle-down"></i>
-                                    </div>
+                                <div class="card-footer d-flex align-items-center justify-content-between bg-dark border-bottom border-light department-toggle">
+                                    <div class="small text-warning">Details</div>
                                 </div>
-                                <div id="creditInfo" class="collapse bg-dark text-dark">
+                                <div id="creditInfo" class="bg-dark text-dark">
                                     <div class="card-body">
                                         <h5 class="text-center mb-4 text-light">Credit Evaluation Status</h5>
                                         <div class="text-center mb-3">
@@ -458,13 +443,10 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                                 <div class="card-body bg-primary text-center">
                                     <a href="../admin/it.php" class="btn card-button text-dark font-weight-bold bg-light border border-dark w-100">IT Department</a>
                                 </div>
-                                <div class="card-footer d-flex align-items-center justify-content-between bg-dark border border-light department-toggle" data-target="#itInfo">
-                                    <div class="small text-warning">Click to View Details</div>
-                                    <div class="small text-warning">
-                                        <i class="fas fa-angle-down"></i>
-                                    </div>
+                                <div class="card-footer d-flex align-items-center justify-content-between bg-dark border-bottom border-light department-toggle">
+                                    <div class="small text-warning">Details</div>
                                 </div>
-                                <div id="itInfo" class="collapse bg-dark text-dark">
+                                <div id="itInfo" class="bg-dark text-dark">
                                     <div class="card-body">
                                         <h5 class="text-center mb-4 text-light">It Evaluation Status</h5>
                                         <div class="text-center mb-3">

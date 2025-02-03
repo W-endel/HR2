@@ -18,7 +18,7 @@ $result = $stmt->get_result();
 $adminInfo = $result->fetch_assoc();
 
 // Fetch employee data
-$sql = "SELECT e_id, firstname, lastname, email, department, phone_number, address FROM employee_register WHERE role='Employee'";
+$sql = "SELECT e_id, firstname, lastname, face_image, gender,    email, department, position, phone_number, address FROM employee_register WHERE role='Employee'";
 $result = $conn->query($sql);
 ?>
 
@@ -209,10 +209,13 @@ $result = $conn->query($sql);
                                     <tr class="text-center text-light">
                                         <th>Employee ID</th>
                                         <th>Name</th>
+                                        <th>Gender</th>
                                         <th>Email</th>
                                         <th>Department</th>
+                                        <th>Role</th>
                                         <th>Phone Number</th>
                                         <th>Address</th>
+                                        <th>Registered Face</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -220,21 +223,24 @@ $result = $conn->query($sql);
                                     <?php if ($result->num_rows > 0): ?>
                                         <?php while ($row = $result->fetch_assoc()): ?>
                                             <tr class="text-center text-light">
-                                                <td><?php echo htmlspecialchars($row['e_id']); ?></td>
-                                                <td><?php echo htmlspecialchars($row['firstname']. ' ' . $row['lastname']); ?></td>
-                                                <td><?php echo htmlspecialchars($row['email']); ?></td>
-                                                <td><?php echo htmlspecialchars($row['department']); ?></td>
-                                                <td><?php echo htmlspecialchars($row['phone_number']); ?></td>
-                                                <td><?php echo htmlspecialchars($row['address']); ?></td>
+                                                <td><?php echo htmlspecialchars(trim($row['e_id'] ?? 'N/A')); ?></td>
+                                                <td><?php echo htmlspecialchars(trim($row['firstname'] . ' ' . $row['lastname'] ?? 'N/A')); ?></td>
+                                                <td><?php echo htmlspecialchars(trim($row['gender'] ?? 'N/A')); ?></td>
+                                                <td><?php echo htmlspecialchars(trim($row['email'] ?? 'N/A')); ?></td>
+                                                <td><?php echo htmlspecialchars(trim($row['department'] ?? 'N/A')); ?></td>
+                                                <td><?php echo htmlspecialchars(trim($row['position'] ?? 'N/A')); ?></td>
+                                                <td><?php echo htmlspecialchars(trim($row['phone_number'] ?? 'N/A')) ?: 'N/A'; ?></td>
+                                                <td><?php echo htmlspecialchars(trim($row['address'] ?? 'N/A')) ?: 'N/A'; ?></td>
+                                                <td><?php echo $row['face_image'] ? 'Image Available' : 'N/A'; ?></td>
                                                 <td class='d-flex justify-content-around'>
                                                     <button class="btn btn-success btn-sm me-2" 
-                                                        onclick="fillUpdateForm(<?php echo $row['e_id']; ?>, '<?php echo htmlspecialchars($row['firstname']); ?>', '<?php echo htmlspecialchars($row['lastname']); ?>', '<?php echo htmlspecialchars($row['email']); ?>', '<?php echo htmlspecialchars($row['department']); ?>', '<?php echo htmlspecialchars($row['phone_number']); ?>', '<?php echo htmlspecialchars($row['address']); ?>')">Update</button>
+                                                        onclick="fillUpdateForm(<?php echo $row['e_id']; ?>, '<?php echo htmlspecialchars($row['firstname']); ?>', '<?php echo htmlspecialchars($row['lastname']); ?>', '<?php echo htmlspecialchars($row['email']); ?>', '<?php echo htmlspecialchars($row['department']); ?>', '<?php echo htmlspecialchars($row['position']); ?>', '<?php echo htmlspecialchars($row['phone_number']); ?>', '<?php echo htmlspecialchars($row['address']); ?>')">Update</button>
                                                     <button class="btn btn-danger btn-sm" onclick="deleteEmployee(<?php echo $row['e_id']; ?>)">Delete</button>
                                                 </td>
                                             </tr>
                                         <?php endwhile; ?>
                                     <?php else: ?>
-                                        <tr><td colspan="8" class="text-center">No records found.</td></tr>
+                                        <tr><td colspan="10" class="text-center">No records found.</td></tr>
                                     <?php endif; ?>
                                 </tbody>
                             </table>
@@ -254,46 +260,70 @@ $result = $conn->query($sql);
                             </div>
                             <div class="modal-body">
                                 <form id="updateForm">
-                                    <input type="hidden" name="e_id" id="updateId">                            
-                                    <div class="form-group mb-3">
-                                        <label for="firstname">First Name</label>
-                                        <input type="text" class="form-control" name="firstname" placeholder="First Name" required>
-                                    </div>                                  
-                                    <div class="form-group mb-3">
-                                        <label for="lastname">Last Name</label>
-                                        <input type="text" class="form-control" name="lastname" placeholder="Last Name" required>
-                                    </div>                             
-                                    <div class="form-group mb-3">
-                                        <label for="email">Email</label>
-                                        <input type="email" class="form-control" name="email" placeholder="Email" required>
-                                    </div>                              
-                                    <div class="form-group mb-3">
-                                        <label for="department">Department</label>
-                                        <select class="form-control" name="department" required>
-                                            <option value="" disabled selected>Select a Department</option>
-                                            <option value="Finance Department">Finance Department</option>
-                                            <option value="Administration Department">Administration Department</option>
-                                            <option value="Sales Department">Sales Department</option>
-                                            <option value="Credit Department">Credit Department</option>
-                                            <option value="Human Resource Department">Human Resource Department</option>
-                                            <option value="IT Department">IT Department</option>
-                                        </select>
-                                    </div>                                  
-                                    <div class="form-group mb-3">
-                                        <label for="phone_number">Phone Number</label>
-                                        <input type="text" class="form-control" name="phone_number" placeholder="Phone Number" required>
-                                    </div>                                  
-                                    <div class="form-group mb-3">
-                                        <label for="address">Address</label>
-                                        <input type="text" class="form-control" name="address" placeholder="Address" required>
+                                    <input type="hidden" name="e_id" id="updateId">      
+                                    <div class="">                     
+                                        <div class="form-group mb-3 row">
+                                            <div class="col-sm-6 bg-dark form-floating mb-3">
+                                                <input type="text" class="form-control fw-bold" name="firstname" required>
+                                                <label class="text-dark fw-bold" for="firstname">First Name</label>
+                                            </div>
+                                            <div class="col-sm-6 bg-dark form-floating mb-3">                                 
+                                                <input type="text" class="form-control fw-bold" name="lastname" required>
+                                                <label class="text-dark fw-bold" for="lastname">Last Name</label>
+                                            </div>
+                                        </div>
+                                    </div>  
+                                    <div class="">
+                                        <div class="form-group mb-3 row">
+                                            <div class="col-sm-6 bg-dark form-floating mb-3">
+                                                <input type="email" class="form-control fw-bold" name="email" placeholder="Email" required>
+                                                <label class="text-dark fw-bold" for="email">Email</label>
+                                            </div> 
+                                            <div class="col-sm-6 bg-dark form-floating mb-3">
+                                            <input type="text" class="form-control fw-bold" name="phone_number" pattern="^\d{11}$" maxlength="11" required>
+                                            <label class="text-dark fw-bold" for="phone_number">Phone Number</label>
+                                        </div>
+                                        </div>
+                                    </div>  
+                                    <div class="">                          
+                                        <div class="form-group mb-3 row">
+                                            <div class="col-sm-6 bg-dark form-floating mb-3">
+                                                <select class="form-control fw-bold form-select" name="department" required>
+                                                    <option value="" disabled selected>Select a Department</option>
+                                                    <option value="Finance Department">Finance Department</option>
+                                                    <option value="Administration Department">Administration Department</option>
+                                                    <option value="Sales Department">Sales Department</option>
+                                                    <option value="Credit Department">Credit Department</option>
+                                                    <option value="Human Resource Department">Human Resource Department</option>
+                                                    <option value="IT Department">IT Department</option>
+                                                </select>
+                                                <label class="text-dark fw-bold" for="department">Department</label>
+                                            </div>
+                                            <div class="col-sm-6 bg-dark form-floating mb-3">
+                                                <select class="form-control fw-bold form-select" name="position" required>
+                                                    <option value="" disabled selected>Select Role</option>
+                                                    <option value="Contractual">Contractual</option>
+                                                    <option value="Field Worker">Field Worker</option>
+                                                    <option value="Staff">Staff</option>
+                                                    <option value="Supervisor">Supervisor</option>
+                                                </select>
+                                                <label class="text-dark fw-bold" for="position">Role</label>
+                                            </div>
+                                        </div>   
+                                    </div>  
+                                    <div class="">  
+                                        <div class="form-group mb-3 row">
+                                            <div class="col-sm-12 bg-dark form-floating mb-3">
+                                                <input type="text" class="form-control fw-bold" name="address" placeholder="Address" required>
+                                                <label class="text-dark fw-bold" for="address">Address</label>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="d-grid gap-2">
+                                    <div class="d-flex justify-content-end">
+                                        <button type="button" class="btn btn-secondary me-2" onclick="closeModal()">Close</button>
                                         <button type="submit" class="btn btn-primary">Update</button>
                                     </div>
                                 </form>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" onclick="closeModal()">Close</button>
                             </div>
                         </div>
                     </div>
@@ -409,14 +439,15 @@ setInterval(setCurrentTime, 1000);
 //UPDATE MODAL
 let modalInstance;
 
-function fillUpdateForm(id, firstname, lastname, email, department, phone_number, address) {
+function fillUpdateForm(id, firstname, lastname, email, department, position, phone_number, address) {
     document.getElementById('updateId').value = id;
-    document.querySelector('input[name="firstname"]').value = firstname;
-    document.querySelector('input[name="lastname"]').value = lastname;
-    document.querySelector('input[name="email"]').value = email;
-    document.querySelector('select[name="department"]').value = department;
-    document.querySelector('input[name="phone_number"]').value = phone_number;
-    document.querySelector('input[name="address"]').value = address;
+    document.querySelector('input[name="firstname"]').value = firstname.trim() === '' ? 'N/A' : firstname;
+    document.querySelector('input[name="lastname"]').value = lastname.trim() === '' ? 'N/A' : lastname;
+    document.querySelector('input[name="email"]').value = email.trim() === '' ? 'N/A' : email;
+    document.querySelector('select[name="department"]').value = department.trim() === '' ? 'N/A' : department;
+    document.querySelector('select[name="position"]').value = position.trim() === '' ? 'N/A' : position;
+    document.querySelector('input[name="phone_number"]').value = phone_number.trim() === '' ? 'N/A' : phone_number;
+    document.querySelector('input[name="address"]').value = address.trim() === '' ? 'N/A' : address;
 
     modalInstance = new bootstrap.Modal(document.getElementById('updateEmployeeModal'));
     modalInstance.show();
