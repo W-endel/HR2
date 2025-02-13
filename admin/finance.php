@@ -9,18 +9,47 @@ if (!isset($_SESSION['a_id'])) {
 // Include the database connection  
 include '../db/db_conn.php'; 
 
-// Fetch employee records where role is 'employee' and department is 'finance'
-$sql = "SELECT e_id, firstname, lastname, role, position FROM employee_register WHERE role = 'employee' AND department = 'Finance Department'";
-$result = $conn->query($sql);
+// Define the values for role and department
+$role = 'employee';
+$department = 'Finance Department';
+
+// Fetch employee records where role is 'employee' and department is 'Administration Department'
+$sql = "SELECT e_id, firstname, lastname, role, position FROM employee_register WHERE role = ? AND department = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param('ss', $role, $department);
+$stmt->execute();
+$result = $stmt->get_result();
 
 // Fetch evaluations for this admin
 $adminId = $_SESSION['a_id'];
 $evaluatedEmployees = [];
-$evalSql = "SELECT e_id FROM admin_evaluations WHERE a_id = $adminId";
-$evalResult = $conn->query($evalSql);
+$evalSql = "SELECT e_id FROM admin_evaluations WHERE a_id = ?";
+$evalStmt = $conn->prepare($evalSql);
+$evalStmt->bind_param('i', $adminId);
+$evalStmt->execute();
+$evalResult = $evalStmt->get_result();
 if ($evalResult->num_rows > 0) {
     while ($row = $evalResult->fetch_assoc()) {
         $evaluatedEmployees[] = $row['e_id'];
+    }
+}
+
+// Fetch evaluation questions from the database for each category
+$categories = ['Quality of Work', 'Communication Skills', 'Teamwork', 'Punctuality', 'Initiative'];
+$questions = [];
+
+foreach ($categories as $category) {
+    $categorySql = "SELECT question FROM evaluation_questions WHERE category = ?";
+    $categoryStmt = $conn->prepare($categorySql);
+    $categoryStmt->bind_param('s', $category);
+    $categoryStmt->execute();
+    $categoryResult = $categoryStmt->get_result();
+    $questions[$category] = [];
+
+    if ($categoryResult->num_rows > 0) {
+        while ($row = $categoryResult->fetch_assoc()) {
+            $questions[$category][] = $row['question'];
+        }
     }
 }
 
@@ -36,13 +65,14 @@ if ($result->num_rows > 0) {
 $conn->close();
 ?>
 
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employee Evaluation Table</title>
+    <title>Evaluation</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/styles.css" rel="stylesheet">
     <link href="../css/star.css" rel="stylesheet">
@@ -50,7 +80,7 @@ $conn->close();
 
 <body class="bg-dark text-light">
     <div class="container mt-5">
-        <h2 class="text-center text-primary mb-4">Finance Department Evaluation | HR2</h2>
+        <h2 class="text-center text-primary mb-4">Finance Department Evaluation</h2>
 
         <!-- Employee Evaluation Table -->
         <div class="table-responsive">
@@ -99,7 +129,7 @@ $conn->close();
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="a_id" value="<?php echo $_SESSION['a_id']; ?>">
-                    <div id="questions"></div>
+                    <div class="text-dark" id="questions"></div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -117,6 +147,9 @@ $conn->close();
         let currentEmployeeName;  
         let currentEmployeePosition; 
 
+        // The categories and questions fetched from the PHP script
+        const questions = <?php echo json_encode($questions); ?>;
+
         function evaluateEmployee(e_id, employeeName, employeePosition) {
             currentEmployeeId = e_id; 
             currentEmployeeName = employeeName; 
@@ -124,34 +157,6 @@ $conn->close();
 
             const employeeDetails = `<strong>Name: ${employeeName} <br> Position: ${employeePosition}</strong>`;
             document.getElementById('employeeDetails').innerHTML = employeeDetails;
-
-            const categories = {
-                "Quality of Work": [
-                    "How do you rate the employee's attention to detail?",
-                    "How would you evaluate the accuracy of the employee's work?",
-                    "Does the employee consistently meet job requirements?"
-                ],
-                "Communication Skills": [
-                    "Does the employee communicate clearly?",
-                    "Is the employee responsive to feedback?",
-                    "How effectively does the employee listen to others?"
-                ],
-                "Teamwork": [
-                    "Does the employee collaborate well with others?",
-                    "How well does the employee contribute to team success?",
-                    "Does the employee support team members when needed?"
-                ],
-                "Punctuality": [
-                    "Is the employee consistent in meeting deadlines?",
-                    "How often does the employee arrive on time?",
-                    "Does the employee respect others' time?"
-                ],
-                "Initiative": [
-                    "Does the employee take initiative without being asked?",
-                    "How frequently does the employee suggest improvements?",
-                    "Does the employee show a proactive attitude?"
-                ]
-            };
 
             const questionsDiv = document.getElementById('questions');
             questionsDiv.innerHTML = ''; 
@@ -169,8 +174,8 @@ $conn->close();
                 <tbody>`;
 
             // Loop through categories and questions to add them into the table
-            for (const [category, questions] of Object.entries(categories)) {
-                questions.forEach((question, index) => {
+            for (const [category, categoryQuestions] of Object.entries(questions)) {
+                categoryQuestions.forEach((question, index) => {
                     const questionName = `${category.replace(/\s/g, '')}q${index}`; // Unique name per question
                     tableHtml += `
                     <tr>
@@ -198,6 +203,64 @@ $conn->close();
             $('#evaluationModal').modal('show'); 
         }
 
+        function submitEvaluation() {
+            const evaluations = [];
+            const questionsDiv = document.getElementById('questions');
+
+            questionsDiv.querySelectorAll('input[type="radio"]:checked').forEach(input => {
+                evaluations.push({
+                    question: input.name,  
+                    rating: input.value    
+                });
+            });
+
+            const totalQuestions = questionsDiv.querySelectorAll('.star-rating').length;
+
+            if (evaluations.length !== totalQuestions) {
+                alert('Please complete the evaluation before submitting.');
+                return;
+            }
+
+            const categoryAverages = {
+                QualityOfWork: calculateAverage('Quality of Work', evaluations),
+                CommunicationSkills: calculateAverage('Communication Skills', evaluations),
+                Teamwork: calculateAverage('Teamwork', evaluations),
+                Punctuality: calculateAverage('Punctuality', evaluations),
+                Initiative: calculateAverage('Initiative', evaluations)
+            };
+
+            console.log('Category Averages:', categoryAverages);
+
+            const adminId = document.getElementById('a_id').value;
+            const department = 'Finance Department';
+
+            $.ajax({
+                type: 'POST',
+                url: '../db/submit_evaluation.php',
+                data: {
+                    e_id: currentEmployeeId,
+                    employeeName: currentEmployeeName,
+                    employeePosition: currentEmployeePosition,
+                    categoryAverages: categoryAverages,
+                    adminId: adminId,
+                    department: department  
+                },
+                success: function (response) {
+                    console.log(response); 
+                    if (response === 'You have already evaluated this employee.') {
+                        alert(response); 
+                    } else {
+                        $('#evaluationModal').modal('hide');
+                        alert('Evaluation submitted successfully!');
+                    }
+                },
+                error: function (err) {
+                    console.error(err);
+                    alert('An error occurred while submitting the evaluation.');
+                }
+            });
+        }
+
         function calculateAverage(category, evaluations) {
             const categoryEvaluations = evaluations.filter(evaluation => evaluation.question.startsWith(category.replace(/\s/g, '')));
 
@@ -208,67 +271,6 @@ $conn->close();
             const total = categoryEvaluations.reduce((sum, evaluation) => sum + parseInt(evaluation.rating), 0);
             return total / categoryEvaluations.length;
         }
-
-        function submitEvaluation() {
-    const evaluations = [];
-    const questionsDiv = document.getElementById('questions');
-
-    questionsDiv.querySelectorAll('input[type="radio"]:checked').forEach(input => {
-        evaluations.push({
-            question: input.name,  
-            rating: input.value    
-        });
-    });
-
-    const totalQuestions = questionsDiv.querySelectorAll('.star-rating').length;
-
-    if (evaluations.length !== totalQuestions) {
-        alert('Please complete the evaluation before submitting.');
-        return;
-    }
-
-    const categoryAverages = {
-        QualityOfWork: calculateAverage('Quality of Work', evaluations),
-        CommunicationSkills: calculateAverage('Communication Skills', evaluations),
-        Teamwork: calculateAverage('Teamwork', evaluations),
-        Punctuality: calculateAverage('Punctuality', evaluations),
-        Initiative: calculateAverage('Initiative', evaluations)
-    };
-
-    console.log('Category Averages:', categoryAverages);
-
-    // Get admin ID from the hidden input field
-    const adminId = document.getElementById('a_id').value;
-
-    // Pass the department value (Finance Department in this case)
-    const department = 'Finance Department'; 
-
-    $.ajax({
-        type: 'POST',
-        url: '../db/submit_finance.php',
-        data: {
-            e_id: currentEmployeeId,
-            employeeName: currentEmployeeName,
-            employeePosition: currentEmployeePosition,
-            categoryAverages: categoryAverages,
-            adminId: adminId,
-            department: department  // Include department in the AJAX request
-        },
-        success: function (response) {
-            console.log(response); 
-            if (response === 'You have already evaluated this employee.') {
-                alert(response); 
-            } else {
-                $('#evaluationModal').modal('hide');
-                alert('Evaluation submitted successfully!');
-            }
-        },
-        error: function (err) {
-            console.error(err);
-            alert('An error occurred while submitting the evaluation.');
-        }
-    });
-}
 
     </script>
 </body>

@@ -130,8 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                     ?>
                                 </div>
                                 <div class="card-body">
-                                    <div class="small mb-3 text-light">Enter your email address and we will send you a
-                                        link to your Gmail to change your password.</div>
+                                    <div class="small mb-3 text-light">Enter your email address and we will send you a link to your Gmail to change your password.</div>
                                     <form method="POST" action="">
                                         <div class="form-floating mb-3">
                                             <input class="form-control" id="inputEmail" name="email" type="email" placeholder="name@example.com" required />
@@ -140,8 +139,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                         <div class="d-flex align-items-center justify-content-end mt-4 mb-2">
                                             <button type="submit" class="btn btn-primary align-items-center w-100">Send Link</button>
                                         </div>
-                                        <div class="text-center mt-3 mb-2"> <a class="btn border-secondary w-100 text-light border border-1" href="../admin/profile.php">Back</a></div>
                                     </form>
+                                    <!-- Back button outside the form -->
+                                    <div class="text-center mt-3 mb-2"> 
+                                        <a class="btn border-secondary w-100 text-light border border-1 loading" href="../admin/profile.php">Back</a>
+                                    </div>
                                 </div>
                                 <div class="card-footer text-center border-top border-1 border-warning">
                                     <div class="text-center text-muted">Human Resource 2</div>
@@ -152,6 +154,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </div>
             </main>
         </div>
+            <div class="modal fade" id="loadingModal" tabindex="-1" aria-labelledby="loadingModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content bg-transparent border-0">
+                        <div class="modal-body d-flex flex-column align-items-center justify-content-center">
+                            <!-- Bouncing coin spinner -->
+                            <div class="coin-spinner"></div>
+                            <div class="mt-3 text-light fw-bold">Please wait...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         <div id="layoutAuthentication_footer">
             <footer class="py-4 bg-dark mt-auto">
                 <div class="container-fluid px-4">
@@ -168,5 +181,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="../js/admin.js"></script>
 </body>
 </html>

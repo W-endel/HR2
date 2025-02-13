@@ -12,7 +12,7 @@ include '../db/db_conn.php';
 $adminId = $_SESSION['a_id']; 
 
 // Fetch admin info
-$sql = "SELECT a_id, firstname, middlename, lastname, birthdate, email, role, position, department, phone_number, address, pfp FROM admin_register WHERE a_id = ?";
+$sql = "SELECT a_id, firstname, middlename, lastname, birthdate, email, role, department, phone_number, address, pfp FROM admin_register WHERE a_id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $adminId);
 $stmt->execute();
@@ -43,6 +43,12 @@ while ($holiday_row = $holiday_result->fetch_assoc()) {
 if (isset($_GET['leave_id']) && isset($_GET['status'])) {
     $leave_id = $_GET['leave_id'];
     $status = $_GET['status'];
+
+    // Validate the status input
+    if (!in_array($status, ['approve', 'deny'])) {
+        header("Location: ../admin/leave_requests.php?status=invalid_status");
+        exit();
+    }
 
     // Fetch the specific leave request
     $sql = "SELECT e.department, e.e_id, e.firstname, e.lastname, e.available_leaves, lr.start_date, lr.end_date, lr.leave_type, lr.proof, lr.status
@@ -87,6 +93,12 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
                 $update_stmt->bind_param("iii", $adminId, $new_balance, $leave_id);
 
                 if ($update_stmt->execute()) {
+                    // Log the activity for approval
+                    $action_type = "Leave Request Approved";
+                    $affected_feature = "Leave Information";
+                    $details = "Leave request from {$row['firstname']} {$row['lastname']} ({$row['e_id']}) has been approved | Leave day(s): $leave_days.";
+                    log_activity($adminId, $action_type, $affected_feature, $details);
+
                     header("Location: ../admin/leave_requests.php?status=approved");
                 } else {
                     error_log("Error updating leave balance: " . $conn->error);
@@ -99,6 +111,12 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
             $deny_stmt->bind_param("ii", $adminId, $leave_id);
 
             if ($deny_stmt->execute()) {
+                // Log the activity for denial
+                $action_type = "Leave Request Denied";
+                $affected_feature = "Leave Information";
+                $details = "Leave request from {$row['firstname']} {$row['lastname']} ({$row['e_id']}) has been denied.";
+                log_activity($adminId, $action_type, $affected_feature, $details);
+
                 header("Location: ../admin/leave_requests.php?status=denied");
             } else {
                 header("Location: ../admin/leave_requests.php?status=error");
@@ -109,7 +127,33 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
     }
     exit();
 }
+
+// Function to log activity
+function log_activity($adminId, $action_type, $affected_feature, $details) {
+    global $conn;
+
+    // Get the admin's name
+    $admin_query = "SELECT firstname, lastname FROM admin_register WHERE a_id = ?";
+    $admin_stmt = $conn->prepare($admin_query);
+    $admin_stmt->bind_param("i", $adminId);
+    $admin_stmt->execute();
+    $admin_result = $admin_stmt->get_result();
+    $admin = $admin_result->fetch_assoc();
+    $admin_name = $admin['firstname'] . ' ' . $admin['lastname'];
+
+    // Capture admin's IP address
+    $ip_address = $_SERVER['REMOTE_ADDR'];
+
+    // Insert the log entry into activity_logs table
+    $log_query = "INSERT INTO activity_logs (admin_id, admin_name, action_type, affected_feature, details, ip_address) 
+                  VALUES (?, ?, ?, ?, ?, ?)";
+    $log_stmt = $conn->prepare($log_query);
+    $log_stmt->bind_param("isssss", $adminId, $admin_name, $action_type, $affected_feature, $details, $ip_address);
+    $log_stmt->execute();
+}
 ?>
+
+
 
 
 <!DOCTYPE html>
@@ -294,7 +338,7 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
                             </div>
                         </div>
                     </div>                     
-                    <div class="container py-4">
+                    <div class="container">
                         <?php if (isset($_GET['status'])): ?>
                             <div id="status-alert" class="alert 
                                 <?php if ($_GET['status'] === 'success'): ?>

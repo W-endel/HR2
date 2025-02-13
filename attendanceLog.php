@@ -1,4 +1,7 @@
 <?php
+
+date_default_timezone_set('Asia/Manila');
+
 include 'db/db_conn.php'; // Ensure correct file path for your database connection
 
 // Check if the employeeId is passed

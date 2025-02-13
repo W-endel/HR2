@@ -81,7 +81,6 @@ if (!isset($_SESSION['a_id'])) {
                                                         <option value="" disabled selected>Select gender</option>
                                                         <option value="Male">Male</option>
                                                         <option value="Female">Female</option>
-                                                        <option value="Other">Other</option>
                                                     </select>
                                                     <label for="inputGender">Select Gender</label>
                                                 </div>

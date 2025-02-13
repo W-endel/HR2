@@ -82,20 +82,6 @@
         </div>
     </div>
 <script>
-    // Automatically hide the error alert after 10 seconds (10,000 milliseconds)
-    setTimeout(function() {
-        var errorAlertElement = document.getElementById('error-alert');
-        if (errorAlertElement) {
-            errorAlertElement.style.transition = "opacity 1s ease"; // Smooth fade-out
-            errorAlertElement.style.opacity = 0; // Set the opacity to 0 (fade out)
-
-            setTimeout(function() {
-                errorAlertElement.remove(); // Remove the element from the DOM after fade-out
-            }, 1000); // Wait 1 second after fade-out to remove the element completely
-        }
-    }, 10000); // 10 seconds delay
-
-
     const togglePassword = document.querySelector("#togglePassword");
         const passwordField = document.querySelector("#inputPassword");
         const icon = togglePassword.querySelector("i");

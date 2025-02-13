@@ -9,7 +9,7 @@ if (!isset($_SESSION['a_id'])) {
 include '../db/db_conn.php';
 
 $adminId = $_SESSION['a_id'];
-$sql = "SELECT a_id, firstname, middlename, lastname, birthdate, email, role, position, department, phone_number, address, pfp FROM admin_register WHERE a_id = ?";
+$sql = "SELECT a_id, firstname, middlename, lastname, birthdate, email, role, department, phone_number, address, pfp FROM admin_register WHERE a_id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $adminId);
 $stmt->execute();
@@ -265,6 +265,14 @@ $result = $conn->query($sql);
                                     <div class="form-group mb-3">
                                         <label for="email">Email</label>
                                         <input type="email" class="form-control" name="email" placeholder="Email" required>
+                                    </div>
+                                    <div class="form-group mb-3">
+                                        <label for="gender">Gender</label>
+                                        <select class="form-control form-select" name="gender" required>
+                                            <option value="" disabled selected></option>
+                                            <option value="Male">Male</option>
+                                            <option value="Female">Female</option>
+                                        </select>
                                     </div>
                                     <div class="form-group mb-3">
                                         <label for="role">Role</label>

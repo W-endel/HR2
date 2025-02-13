@@ -1,4 +1,7 @@
 <?php
+
+date_default_timezone_set('Asia/Manila'); // Set the time zone to Philippine time
+
 include 'db/db_conn.php'; // Ensure correct file path
 
 // Get today's date in the format 'Y-m-d'
@@ -34,7 +37,6 @@ while ($row = $result->fetch_assoc()) {
 $stmt->close();
 $conn->close();
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -111,6 +113,22 @@ $conn->close();
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="attendanceModal" tabindex="-1" aria-labelledby="attendanceModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="attendanceModalLabel">Attendance Status</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="modalMessage">
+                    <!-- Success or error message will be displayed here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -234,13 +252,21 @@ async function detectFace() {
         return;
     }
 
+    let faceMatched = false; // Flag to track if a face is matched
+
     for (let detection of detections) {
         // Check for the best match based on descriptors
         const bestMatch = findBestMatch(detection.descriptor);
         if (bestMatch) {
             // If we find a match, log attendance via PHP backend
             logAttendance(bestMatch);
+            faceMatched = true; // Mark that a face was matched
         }
+    }
+
+    // If no match was found, show alert for unknown person
+    if (!faceMatched) {
+        alert("Unknown person detected!");
     }
 }
 
@@ -279,6 +305,8 @@ async function logAttendance(employee) {
     }
 }
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js" crossorigin="anonymous"></script>
 <script src="js/datatables-simple-demo.js"></script>
 </body>

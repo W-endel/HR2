@@ -12,7 +12,7 @@ include '../db/db_conn.php';
 $adminId = $_SESSION['a_id'];
 
 // Fetch the admin's info
-$sql = "SELECT a_id, firstname, middlename, lastname, birthdate, email, role, position, department, phone_number, address, pfp FROM admin_register WHERE a_id = ?";
+$sql = "SELECT a_id, firstname, middlename, lastname, birthdate, email, role, department, phone_number, address, pfp FROM admin_register WHERE a_id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $adminId);
 $stmt->execute();
@@ -215,8 +215,8 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                     <div class="row justify-content-center">
                         <div class="col-xl-4 col-md-6 mt-5">
                             <div class="card mb-4">
-                                <div class="card-body bg-primary text-center">
-                                    <a href="../admin/finance.php" class="btn card-button text-dark font-weight-bold bg-light border border-dark w-100">Finance Department</a>
+                                <div class="card-body bg-secondary text-center">
+                                    <a href="../admin/finance.php" class="btn card-button text-light font-weight-bold bg-dark border border-dark w-100">Finance Department</a>
                                 </div>
                                 <div class="card-footer d-flex align-items-center justify-content-between bg-dark border-bottom border-light department-toggle">
                                     <div class="small text-warning">Details</div>
@@ -260,8 +260,8 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                         </div>
                         <div class="col-xl-4 col-md-6 mt-5">
                             <div class="card mb-4">
-                                <div class="card-body bg-primary text-center">
-                                    <a href="../admin/hr.php" class="btn card-button text-dark font-weight-bold bg-light border border-dark w-100">Human Resource Department</a>
+                                <div class="card-body bg-secondary text-center">
+                                    <a href="../admin/hr.php" class="btn card-button text-light font-weight-bold bg-dark border border-dark w-100">Human Resource Department</a>
                                 </div>
                                 <div class="card-footer d-flex align-items-center justify-content-between bg-dark border-bottom border-light department-toggle">
                                     <div class="small text-warning">Details</div>
@@ -305,8 +305,8 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                         </div>
                         <div class="col-xl-4 col-md-6 mt-5">
                             <div class="card mb-4">
-                                <div class="card-body bg-primary text-center">
-                                    <a href="../admin/administration.php" class="btn card-button text-dark font-weight-bold bg-light border border-dark w-100">Administration Department</a>
+                                <div class="card-body bg-secondary text-center">
+                                    <a href="../admin/administration.php" class="btn card-button text-light font-weight-bold bg-dark border border-dark w-100">Administration Department</a>
                                 </div>
                                 <div class="card-footer d-flex align-items-center justify-content-between bg-dark border-bottom border-light department-toggle">
                                     <div class="small text-warning">Details</div>
@@ -350,8 +350,8 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                         </div>
                         <div class="col-xl-4 col-md-6 mt-5">
                             <div class="card mb-4">
-                                <div class="card-body bg-primary text-center">
-                                    <a href="../admin/sales.php" class="btn card-button text-dark font-weight-bold bg-light border border-dark w-100">Sales Department</a>
+                                <div class="card-body bg-secondary text-center">
+                                    <a href="../admin/sales.php" class="btn card-button text-light font-weight-bold bg-dark border border-dark w-100">Sales Department</a>
                                 </div>
                                 <div class="card-footer d-flex align-items-center justify-content-between bg-dark border-bottom border-light department-toggle">
                                     <div class="small text-warning">Details</div>
@@ -395,8 +395,8 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                         </div>
                         <div class="col-xl-4 col-md-6 mt-5">
                             <div class="card mb-4">
-                                <div class="card-body bg-primary text-center">
-                                    <a href="../admin/credit.php" class="btn card-button text-dark font-weight-bold bg-light border border-dark w-100">Credit Department</a>
+                                <div class="card-body bg-secondary text-center">
+                                    <a href="../admin/credit.php" class="btn card-button text-light font-weight-bold bg-dark border border-dark w-100">Credit Department</a>
                                 </div>
                                 <div class="card-footer d-flex align-items-center justify-content-between bg-dark border-bottom border-light department-toggle">
                                     <div class="small text-warning">Details</div>
@@ -440,8 +440,8 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                         </div>
                         <div class="col-xl-4 col-md-6 mt-5">
                             <div class="card mb-4">
-                                <div class="card-body bg-primary text-center">
-                                    <a href="../admin/it.php" class="btn card-button text-dark font-weight-bold bg-light border border-dark w-100">IT Department</a>
+                                <div class="card-body bg-secondary text-center">
+                                    <a href="../admin/it.php" class="btn card-button text-light font-weight-bold bg-dark border border-dark w-100">IT Department</a>
                                 </div>
                                 <div class="card-footer d-flex align-items-center justify-content-between bg-dark border-bottom border-light department-toggle">
                                     <div class="small text-warning">Details</div>

@@ -126,7 +126,7 @@
                                         <!-- Face Image Upload -->
                                         <div class="form-control mb-3 bg-light rounded">
                                             <label for="face_image" class="form-label"></label>
-                                            <input type="file" id="face_image" name="face_image[]" accept="image/*" multiple required>
+                                            <input type="file" id="face_image" name="photo[]" accept="image/*" multiple required>
                                             <span id="file_name" class="ms-2"></span>
                                         </div>
                                         <!-- Hidden face descriptor input -->

@@ -1,12 +1,11 @@
 <?php
 session_start();
-if (!isset($_SESSION['e_id']))  {
-    header("Location: ../../employee/login.php"); // Redirect to login if not logged in
+if (!isset($_SESSION['e_id'])) {
+    header("Location: ../HR2/login.php"); // Redirect to login if not logged in
     exit();
 }
 
 include '../../db/db_conn.php';
-
 
 $employeeId = $_SESSION['e_id'];
 
@@ -20,7 +19,7 @@ $sql = "SELECT
             COUNT(*) AS total_evaluations 
         FROM admin_evaluations 
         WHERE e_id = ?";
-        
+
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $employeeId);
 $stmt->execute();
@@ -29,13 +28,21 @@ $result = $stmt->get_result();
 // Check if evaluations exist
 if ($result->num_rows > 0) {
     $evaluation = $result->fetch_assoc();
+
+    // Calculate the total average
+    $totalAverage = (
+        $evaluation['avg_quality'] +
+        $evaluation['avg_communication_skills'] +
+        $evaluation['avg_teamwork'] +
+        $evaluation['avg_punctuality'] +
+        $evaluation['avg_initiative']
+    ) / 5;
 } else {
     echo "No evaluations found.";
     exit;
 }
 
 // Fetch user info
-$employeeId = $_SESSION['e_id'];
 $sql = "SELECT firstname, middlename, lastname, email, role, position, pfp FROM employee_register WHERE e_id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $employeeId);
@@ -45,9 +52,10 @@ $employeeInfo = $result->fetch_assoc();
 $stmt->close();
 $conn->close();
 
-$profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['profile_picture'] : '../../img/defaultpfp.png';
-
+// Set the profile picture, default if not provided
+$profilePicture = !empty($employeeInfo['pfp']) ? $employeeInfo['pfp'] : '../../img/defaultpfp.png';
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -110,7 +118,7 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
 </head>
 
 <body class="sb-nav-fixed bg-black">
-    <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark border-bottom border-1 border-warning">
+    <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark border-bottom border-1 border-secondary">
         <a class="navbar-brand ps-3 text-muted" href="../../employee/supervisor/dashboard.php">Employee Portal</a>
         <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars text-light"></i></button>
         <div class="d-flex ms-auto me-0 me-md-3 my-2 my-md-0 align-items-center">
@@ -121,7 +129,7 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
                         <i class="fas fa-clock"></i> 
                         <span id="currentTime">00:00:00</span>
                     </span>
-                    <button class="btn btn-outline-warning btn-sm ms-2" title="Calendar" type="button" onclick="toggleCalendar()">
+                    <button class="btn btn-outline-secondary btn-sm ms-2 text-light" title="Calendar" type="button" onclick="toggleCalendar()">
                         <i class="fas fa-calendar-alt"></i>
                         <span id="currentDate">00/00/0000</span>
                     </button>
@@ -132,7 +140,7 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
                     <div class="input-group">
                         <!-- Search Input -->
                         <input class="form-control collapse" id="searchInput" type="text" placeholder="Search for..." aria-label="Search for..." aria-describedby="btnNavbarSearch" data-bs-toggle="dropdown" aria-expanded="false" />
-                        <button class="btn btn-outline-warning rounded" id="btnNavbarSearch" type="button" data-bs-toggle="collapse" data-bs-target="#searchInput" aria-expanded="false" aria-controls="searchInput">
+                        <button class="btn btn-outline-secondary rounded" id="btnNavbarSearch" type="button" data-bs-toggle="collapse" data-bs-target="#searchInput" aria-expanded="false" aria-controls="searchInput">
                             <i id="searchIcon" class="fas fa-search"></i> <!-- Initial Icon -->
                         </button>
                     </div>
@@ -172,8 +180,7 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
                                 </span>
                             </li>
                         </ul>
-                        <hr>
-                        <div class="text-center text-muted">Employee Dashboard</div>
+                        <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-secondary mt-3">Employee Dashboard</div>
                         <a class="nav-link text-light" href="../../employee/supervisor/dashboard.php">
                             <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
                             Dashboard
@@ -207,6 +214,7 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
                         </a>
                         <div class="collapse" id="collapsePM" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
+                                <a class="nav-link text-light" href="../../employee/supervisor/kpi.php">Performance</a>
                                 <a class="nav-link text-light" href="../../employee/supervisor/evaluation.php">Evaluation Ratings</a>
                                 <a class="nav-link text-light" href="../../employee/supervisor/evaluation.php">Evaluation</a>
                             </nav>
@@ -218,11 +226,11 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
                         </a>
                         <div class="collapse" id="collapseSR" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link text-light" href="">View Your Rating</a>
+                                <a class="nav-link text-light" href="../../employee/supervisor/awardee.php">Awardee</a>
+                                <a class="nav-link text-light" href="../../employee/supervisor/recognition.php">View Your Rating</a>
                             </nav>
                         </div> 
-                        <hr>
-                        <div class="text-center text-muted">Feedback</div> 
+                        <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-secondary mt-3">Feedback</div> 
                         <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseFB" aria-expanded="false" aria-controls="collapseFB">
                             <div class="sb-nav-link-icon"><i class="fas fa-exclamation-circle"></i></div>
                             Report Issue
@@ -235,7 +243,7 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
                         </div> 
                     </div>
                 </div>
-                <div class="sb-sidenav-footer bg-black border-top border-1 border-warning">
+                <div class="sb-sidenav-footer bg-black border-top border-1 border-secondary">
                     <div class="small text-light">Logged in as: <?php echo htmlspecialchars($employeeInfo['role']); ?></div>
                 </div>
             </nav>
@@ -267,14 +275,16 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
                     <div class="row mb-2">
                         <div class="col-md-6 mt-2 mb-2">
                             <div class="card bg-dark text-light" style="height: 500px;">
-                                <div class="card-header border-bottom border-1 border-warning text-info">
+                                <div class="card-header text-light border-bottom border-1 border-secondary">
                                     <h3>Attendance</h3> <!-- Month and Year display -->
                                 </div>
-                                <div class="card-body p-4 overflow-auto" style="max-height: 400px;">
-                                    <div class="d-flex justify-content-between align-items-center mb-4">
+                                <div class="card-body overflow-auto" style="max-height: 400px;">
+                                    <div class="d-flex justify-content-between align-items-start mb-4">
                                         <div>
                                             <h5 class="fw-bold">Today's Date:</h5>
-                                            <p class="text-warning" id="todaysDate">January 18, 2025</p> <!-- fixed depends on the specific day -->
+                                            <a href="../../employee/supervisor/dashboard.php" id="todaysDate" class="cursor-pointer">
+                                                <span id="todaysDateContent"></span>
+                                            </a>
                                         </div>
                                         <div>
                                             <h5 class="fw-bold">Time in:</h5>
@@ -307,213 +317,252 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
                         </div>
                         <div class="col-md-6 mt-2">
                             <div class="card bg-dark">
-                                <div class="card-header border-bottom border-1 border-warning text-info">
+                                <div class="card-header text-light border-bottom border-1 border-secondary">
                                     <h3>Performance Ratings | Graph</h3>
                                 </div>
                                 <div class="card-body">
-                                    <!-- Rating 1: Quality of Work -->
                                     <div class="mt-2">
-                                        <h5 class="text-light">Quality of Work</h5>
-                                        <div class="d-flex justify-content-between">
-                                            <span class="text-warning">
-                                                <?php 
-                                                    // Display rating label based on avg_quality value
-                                                    if ($evaluation['avg_quality'] == 6) {
-                                                        echo "Excellent";
-                                                        $progressBarClass = "bg-success"; // Green for excellent
-                                                    } elseif ($evaluation['avg_quality'] <= 5.99 && $evaluation['avg_quality'] >= 5 ) {
-                                                        echo "Good";
-                                                        $progressBarClass = "bg-primary"; // Blue for good
-                                                    } elseif ($evaluation['avg_quality'] <= 4.99 && $evaluation['avg_quality'] >= 3) {
-                                                        echo "Average";
-                                                        $progressBarClass = "bg-warning"; // Yellow for average
-                                                    } elseif ($evaluation['avg_quality'] <= 2.99 && $evaluation['avg_quality'] >= 0.01) {
-                                                        echo "Need Improvements";
-                                                        $progressBarClass = "bg-danger"; // Red for needs improvement
-                                                    } else {
-                                                        echo "Not Yet Evaluated";
-                                                        $progressBarClass = "bg-light";
-                                                    }
-                                                        
-                                                    
-                                                ?>
-                                            </span>
+                                        <div class="row">
+                                            <div class="col-xl-6">
+                                                <h5 class="text-light">Quality of Work</h5>
+                                                <div class="d-flex justify-content-between">
+                                                    <span class="text-warning">
+                                                        <?php 
+                                                            // Display rating label based on avg_quality value
+                                                            if ($evaluation['avg_quality'] == 6) {
+                                                                echo "Excellent";
+                                                                $progressBarClass = "bg-success"; // Green for excellent
+                                                            } elseif ($evaluation['avg_quality'] <= 5.99 && $evaluation['avg_quality'] >= 5 ) {
+                                                                echo "Good";
+                                                                $progressBarClass = "bg-primary"; // Blue for good
+                                                            } elseif ($evaluation['avg_quality'] <= 4.99 && $evaluation['avg_quality'] >= 3) {
+                                                                echo "Average";
+                                                                $progressBarClass = "bg-warning"; // Yellow for average
+                                                            } elseif ($evaluation['avg_quality'] <= 2.99 && $evaluation['avg_quality'] >= 0.01) {
+                                                                echo "Need Improvements";
+                                                                $progressBarClass = "bg-danger"; // Red for needs improvement
+                                                            } else {
+                                                                echo "Not Yet Evaluated";
+                                                                $progressBarClass = "bg-light";
+                                                            }                                                                                                    
+                                                        ?>
+                                                    </span>
+                                                </div>
+                                                <div class="progress">
+                                                    <div 
+                                                        class="progress-bar <?php echo $progressBarClass; ?>" 
+                                                        role="progressbar" 
+                                                        style="width: <?php echo min(100, ($evaluation['avg_quality'] / 6) * 100); ?>%;" 
+                                                        aria-valuenow="<?php echo htmlspecialchars($evaluation['avg_quality']); ?>" 
+                                                        aria-valuemin="0" 
+                                                        aria-valuemax="6">
+                                                        <?php echo htmlspecialchars(number_format($evaluation['avg_quality'], 2)); ?>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-xl-6">
+                                                <h5 class="text-light">Communication Skills</h5>
+                                                    <div class="d-flex justify-content-between">
+                                                        <span class="text-warning">
+                                                            <?php 
+                                                                // Display rating label based on avg_quality value
+                                                                if ($evaluation['avg_communication_skills'] == 6) {
+                                                                    echo "Excellent";
+                                                                    $progressBarClass = "bg-success"; // Green for excellent
+                                                                } elseif ($evaluation['avg_communication_skills'] <= 5.99 && $evaluation['avg_communication_skills'] >= 5) {
+                                                                    echo "Good";
+                                                                    $progressBarClass = "bg-primary"; // Blue for good
+                                                                } elseif ($evaluation['avg_communication_skills'] <= 4.99 && $evaluation['avg_communication_skills'] >= 3) {
+                                                                    echo "Average";
+                                                                    $progressBarClass = "bg-warning"; // Yellow for average
+                                                                } elseif ($evaluation['avg_communication_skills'] <= 2.99 && $evaluation['avg_communication_skills'] >= 0.01) {
+                                                                    echo "Need Improvements";
+                                                                    $progressBarClass = "bg-danger";
+                                                                } else {
+                                                                    echo "Not Yet Evaluated";
+                                                                    $progressBarClass = "bg-light"; // Red for needs improvement
+                                                                }
+                                                            ?>
+                                                        </span>
+                                                    </div>
+                                                <div class="progress">
+                                                    <div 
+                                                        class="progress-bar <?php echo $progressBarClass; ?>" 
+                                                        role="progressbar" 
+                                                        style="width: <?php echo min(100, ($evaluation['avg_communication_skills'] / 6) * 100); ?>%;" 
+                                                        aria-valuenow="<?php echo htmlspecialchars($evaluation['avg_communication_skills']); ?>" 
+                                                        aria-valuemin="0" 
+                                                        aria-valuemax="6">
+                                                        <?php echo htmlspecialchars(number_format($evaluation['avg_communication_skills'], 2)); ?>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div class="progress">
-                                            <div 
-                                                class="progress-bar <?php echo $progressBarClass; ?>" 
-                                                role="progressbar" 
-                                                style="width: <?php echo min(100, ($evaluation['avg_quality'] / 6) * 100); ?>%;" 
-                                                aria-valuenow="<?php echo htmlspecialchars($evaluation['avg_quality']); ?>" 
-                                                aria-valuemin="0" 
-                                                aria-valuemax="6">
-                                                <?php echo htmlspecialchars(number_format($evaluation['avg_quality'], 2)); ?>
+                                    </div>   
+                                    <div class="mt-4">
+                                        <div class="row">
+                                            <div class="col-xl-6">
+                                                <h5 class="text-light">Teamwork</h5>
+                                                <div class="d-flex justify-content-between">
+                                                    <span class="text-warning">
+                                                        <?php 
+                                                            // Display rating label based on avg_quality value
+                                                            if ($evaluation['avg_teamwork'] == 6) {
+                                                                echo "Excellent";
+                                                                $progressBarClass = "bg-success"; // Green for excellent
+                                                            } elseif ($evaluation['avg_teamwork'] <= 5.99 && $evaluation['avg_teamwork'] >= 5) {
+                                                                echo "Good";
+                                                                $progressBarClass = "bg-primary"; // Blue for good
+                                                            } elseif ($evaluation['avg_teamwork'] <= 4.99 && $evaluation['avg_teamwork'] >= 3) {
+                                                                echo "Average";
+                                                                $progressBarClass = "bg-warning"; // Yellow for average
+                                                            } elseif ($evaluation['avg_teamwork'] <= 2.99 && $evaluation['avg_teamwork'] >= 0.01) {
+                                                                echo "Need Improvements";
+                                                                $progressBarClass = "bg-danger";
+                                                            } else {
+                                                                echo "Not Yet Evaluated";
+                                                                $progressBarClass = "bg-light"; // Light gray for not yet evaluated
+                                                            }
+                                                        ?>
+                                                    </span>
+                                                </div>
+                                                <div class="progress">
+                                                    <div 
+                                                        class="progress-bar <?php echo $progressBarClass; ?>" 
+                                                        role="progressbar" 
+                                                        style="width: <?php echo min(100, ($evaluation['avg_teamwork'] / 6) * 100); ?>%;" 
+                                                        aria-valuenow="<?php echo htmlspecialchars($evaluation['avg_teamwork']); ?>" 
+                                                        aria-valuemin="0" 
+                                                        aria-valuemax="6">
+                                                        <?php echo htmlspecialchars(number_format($evaluation['avg_teamwork'], 2)); ?>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-xl-6">
+                                                <h5 class="text-light">Punctuality</h5>
+                                                <div class="d-flex justify-content-between">
+                                                    <span class="text-warning">
+                                                        <?php 
+                                                            // Display rating label based on avg_quality value
+                                                            if ($evaluation['avg_punctuality'] == 6) {
+                                                                echo "Excellent";
+                                                                $progressBarClass = "bg-success"; // Green for excellent
+                                                            } elseif ($evaluation['avg_punctuality'] <= 5.99 && $evaluation['avg_punctuality'] >= 5) {
+                                                                echo "Good";
+                                                                $progressBarClass = "bg-primary"; // Blue for good
+                                                            } elseif ($evaluation['avg_punctuality'] <= 4.99 && $evaluation['avg_punctuality'] >= 3) {
+                                                                echo "Average";
+                                                                $progressBarClass = "bg-warning"; // Yellow for average
+                                                            } elseif ($evaluation['avg_punctuality'] <= 2.99 && $evaluation['avg_punctuality'] >= 0.01) {
+                                                                echo "Need Improvements";
+                                                                $progressBarClass = "bg-danger";
+                                                            } else {
+                                                                echo "Not Yet Evaluated";
+                                                                $progressBarClass = "bg-light"; // Red for needs improvement
+                                                            }
+                                                        ?>
+                                                    </span>
+                                                </div>
+                                                <div class="progress">  
+                                                    <div 
+                                                        class="progress-bar <?php echo $progressBarClass; ?>" 
+                                                        role="progressbar" 
+                                                        style="width: <?php echo min(100, ($evaluation['avg_punctuality'] / 6) * 100); ?>%;" 
+                                                        aria-valuenow="<?php echo htmlspecialchars($evaluation['avg_punctuality']); ?>" 
+                                                        aria-valuemin="0" 
+                                                        aria-valuemax="6">
+                                                        <?php echo htmlspecialchars(number_format($evaluation['avg_punctuality'], 2)); ?>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <!-- Rating 2: Communication Skills -->
-                                    <div class="mt-2">
-                                        <h5 class="text-light">Communication Skills</h5>
-                                        <div class="d-flex justify-content-between">
-                                            <span class="text-warning">
-                                                <?php 
-                                                    // Display rating label based on avg_quality value
-                                                    if ($evaluation['avg_communication_skills'] == 6) {
-                                                        echo "Excellent";
-                                                        $progressBarClass = "bg-success"; // Green for excellent
-                                                    } elseif ($evaluation['avg_communication_skills'] <= 5.99 && $evaluation['avg_communication_skills'] >= 5) {
-                                                        echo "Good";
-                                                        $progressBarClass = "bg-primary"; // Blue for good
-                                                    } elseif ($evaluation['avg_communication_skills'] <= 4.99 && $evaluation['avg_communication_skills'] >= 3) {
-                                                        echo "Average";
-                                                        $progressBarClass = "bg-warning"; // Yellow for average
-                                                    } elseif ($evaluation['avg_communication_skills'] <= 2.99 && $evaluation['avg_communication_skills'] >= 0.01) {
-                                                        echo "Need Improvements";
-                                                        $progressBarClass = "bg-danger";
-                                                    } else {
-                                                        echo "Not Yet Evaluated";
-                                                        $progressBarClass = "bg-light"; // Red for needs improvement
-                                                    }
-                                                ?>
-                                            </span>
-                                        </div>
-                                        <div class="progress">
-                                            <div 
-                                                class="progress-bar <?php echo $progressBarClass; ?>" 
-                                                role="progressbar" 
-                                                style="width: <?php echo min(100, ($evaluation['avg_communication_skills'] / 6) * 100); ?>%;" 
-                                                aria-valuenow="<?php echo htmlspecialchars($evaluation['avg_communication_skills']); ?>" 
-                                                aria-valuemin="0" 
-                                                aria-valuemax="6">
-                                                <?php echo htmlspecialchars(number_format($evaluation['avg_communication_skills'], 2)); ?>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Rating 3: Teamwork -->
-                                    <div class="mt-2">
-                                        <h5 class="text-light">Teamwork</h5>
-                                        <div class="d-flex justify-content-between">
-                                            <span class="text-warning">
-                                                <?php 
-                                                    // Display rating label based on avg_quality value
-                                                    if ($evaluation['avg_teamwork'] == 6) {
-                                                        echo "Excellent";
-                                                        $progressBarClass = "bg-success"; // Green for excellent
-                                                    } elseif ($evaluation['avg_teamwork'] <= 5.99 && $evaluation['avg_teamwork'] >= 5) {
-                                                        echo "Good";
-                                                        $progressBarClass = "bg-primary"; // Blue for good
-                                                    } elseif ($evaluation['avg_teamwork'] <= 4.99 && $evaluation['avg_teamwork'] >= 3) {
-                                                        echo "Average";
-                                                        $progressBarClass = "bg-warning"; // Yellow for average
-                                                    } elseif ($evaluation['avg_teamwork'] <= 2.99 && $evaluation['avg_teamwork'] >= 0.01) {
-                                                        echo "Need Improvements";
-                                                        $progressBarClass = "bg-danger";
-                                                    } else {
-                                                        echo "Not Yet Evaluated";
-                                                        $progressBarClass = "bg-light"; // Red for needs improvement
-                                                    }
-                                                ?>
-                                            </span>
-                                        </div>
-                                        <div class="progress">
-                                            <div 
-                                                class="progress-bar <?php echo $progressBarClass; ?>" 
-                                                role="progressbar" 
-                                                style="width: <?php echo min(100, ($evaluation['avg_teamwork'] / 6) * 100); ?>%;" 
-                                                aria-valuenow="<?php echo htmlspecialchars($evaluation['avg_teamwork']); ?>" 
-                                                aria-valuemin="0" 
-                                                aria-valuemax="6">
-                                                <?php echo htmlspecialchars(number_format($evaluation['avg_teamwork'], 2)); ?>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Rating 4: Punctuality -->
-                                    <div class="mt-2">
-                                        <h5 class="text-light">Punctuality</h5>
-                                        <div class="d-flex justify-content-between">
-                                            <span class="text-warning">
-                                                <?php 
-                                                    // Display rating label based on avg_quality value
-                                                    if ($evaluation['avg_punctuality'] == 6) {
-                                                        echo "Excellent";
-                                                        $progressBarClass = "bg-success"; // Green for excellent
-                                                    } elseif ($evaluation['avg_punctuality'] <= 5.99 && $evaluation['avg_punctuality'] >= 5) {
-                                                        echo "Good";
-                                                        $progressBarClass = "bg-primary"; // Blue for good
-                                                    } elseif ($evaluation['avg_punctuality'] <= 4.99 && $evaluation['avg_punctuality'] >= 3) {
-                                                        echo "Average";
-                                                        $progressBarClass = "bg-warning"; // Yellow for average
-                                                    } elseif ($evaluation['avg_punctuality'] <= 2.99 && $evaluation['avg_punctuality'] >= 0.01) {
-                                                        echo "Need Improvements";
-                                                        $progressBarClass = "bg-danger";
-                                                    } else {
-                                                        echo "Not Yet Evaluated";
-                                                        $progressBarClass = "bg-light"; // Red for needs improvement
-                                                    }
-                                                ?>
-                                            </span>
-                                        </div>
-                                        <div class="progress">  
-                                            <div 
-                                                class="progress-bar <?php echo $progressBarClass; ?>" 
-                                                role="progressbar" 
-                                                style="width: <?php echo min(100, ($evaluation['avg_punctuality'] / 6) * 100); ?>%;" 
-                                                aria-valuenow="<?php echo htmlspecialchars($evaluation['avg_punctuality']); ?>" 
-                                                aria-valuemin="0" 
-                                                aria-valuemax="6">
-                                                <?php echo htmlspecialchars(number_format($evaluation['avg_punctuality'], 2)); ?>
-                                            </div>
-                                        </div>
-                                    </div>
-
                                     <!-- Rating 5: Initiative -->
-                                    <div class="mt-2">
-                                        <h5 class="text-light">Initiative</h5>
-                                        <div class="d-flex justify-content-between">
-                                            <span class="text-warning">
-                                                <?php 
-                                                    // Display rating label based on avg_quality value
-                                                    if ($evaluation['avg_initiative'] == 6) {
-                                                        echo "Excellent";
-                                                        $progressBarClass = "bg-success"; // Green for excellent
-                                                    } elseif ($evaluation['avg_initiative'] <= 5.99 && $evaluation['avg_initiative'] >= 5) {
-                                                        echo "Good";
-                                                        $progressBarClass = "bg-primary"; // Blue for good
-                                                    } elseif ($evaluation['avg_initiative'] <= 4.99 && $evaluation['avg_initiative'] >= 3) {
-                                                        echo "Average";
-                                                        $progressBarClass = "bg-warning"; // Yellow for average
-                                                    } elseif ($evaluation['avg_initiative'] <= 2.99 && $evaluation['avg_initiative'] >= 0.01) {
-                                                        echo "Need Improvements";
-                                                        $progressBarClass = "bg-danger";
-                                                    } else {
-                                                        echo "Not Yet Evaluated";
-                                                        $progressBarClass = "bg-light"; // Red for needs improvement
-                                                    }
-                                                ?>
-                                            </span>
-                                        </div>
-                                        <div class="progress">
-                                            <div 
-                                                class="progress-bar <?php echo $progressBarClass; ?>" 
-                                                role="progressbar" 
-                                                style="width: <?php echo min(100, ($evaluation['avg_initiative'] / 6) * 100); ?>%;" 
-                                                aria-valuenow="<?php echo htmlspecialchars($evaluation['avg_initiative']); ?>" 
-                                                aria-valuemin="0" 
-                                                aria-valuemax="6">
-                                                <?php echo htmlspecialchars(number_format($evaluation['avg_initiative'], 2)); ?>
+                                    <div class="mt-4">
+                                        <div class="row">
+                                            <div class="col-xl-6">
+                                                <h5 class="text-light">Initiative</h5>
+                                                <div class="d-flex justify-content-between">
+                                                    <span class="text-warning">
+                                                        <?php 
+                                                            // Display rating label based on avg_quality value
+                                                            if ($evaluation['avg_initiative'] == 6) {
+                                                                echo "Excellent";
+                                                                $progressBarClass = "bg-success"; // Green for excellent
+                                                            } elseif ($evaluation['avg_initiative'] <= 5.99 && $evaluation['avg_initiative'] >= 5) {
+                                                                echo "Good";
+                                                                $progressBarClass = "bg-primary"; // Blue for good
+                                                            } elseif ($evaluation['avg_initiative'] <= 4.99 && $evaluation['avg_initiative'] >= 3) {
+                                                                echo "Average";
+                                                                $progressBarClass = "bg-warning"; // Yellow for average
+                                                            } elseif ($evaluation['avg_initiative'] <= 2.99 && $evaluation['avg_initiative'] >= 0.01) {
+                                                                echo "Need Improvements";
+                                                                $progressBarClass = "bg-danger";
+                                                            } else {
+                                                                echo "Not Yet Evaluated";
+                                                                $progressBarClass = "bg-light"; // Red for needs improvement
+                                                            }
+                                                        ?>
+                                                    </span>
+                                                </div>
+                                                <div class="progress">
+                                                    <div 
+                                                        class="progress-bar <?php echo $progressBarClass; ?>" 
+                                                        role="progressbar" 
+                                                        style="width: <?php echo min(100, ($evaluation['avg_initiative'] / 6) * 100); ?>%;" 
+                                                        aria-valuenow="<?php echo htmlspecialchars($evaluation['avg_initiative']); ?>" 
+                                                        aria-valuemin="0" 
+                                                        aria-valuemax="6">
+                                                        <?php echo htmlspecialchars(number_format($evaluation['avg_initiative'], 2)); ?>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
+                                            <div class="col-xl-6">
+                                                <h5 class="text-light">Overall Rating</h5>
+                                                <div class="d-flex justify-content-between">
+                                                    <span class="text-warning">
+                                                        <?php
+                                                        // Display rating label based on totalAverage value
+                                                        if ($totalAverage == 6) {
+                                                            echo "Excellent";
+                                                            $progressBarClass = "bg-success"; // Green for excellent
+                                                        } elseif ($totalAverage <= 5.99 && $totalAverage >= 5) {
+                                                            echo "Good";
+                                                            $progressBarClass = "bg-primary"; // Blue for good
+                                                        } elseif ($totalAverage <= 4.99 && $totalAverage >= 3) {
+                                                            echo "Average";
+                                                            $progressBarClass = "bg-warning"; // Yellow for average
+                                                        } elseif ($totalAverage <= 2.99 && $totalAverage >= 0.01) {
+                                                            echo "Need Improvements";
+                                                            $progressBarClass = "bg-danger"; // Red for needs improvement
+                                                        } else {
+                                                            echo "Not Yet Evaluated";
+                                                            $progressBarClass = "bg-light";
+                                                        }
+                                                        ?>
+                                                    </span>
+                                                </div>
+                                                <div class="progress">
+                                                    <div
+                                                        class="progress-bar <?php echo $progressBarClass; ?>"
+                                                        role="progressbar"
+                                                        style="width: <?php echo min(100, ($totalAverage / 6) * 100); ?>%;"
+                                                        aria-valuenow="<?php echo htmlspecialchars($totalAverage); ?>"
+                                                        aria-valuemin="0"
+                                                        aria-valuemax="6">
+                                                        <?php echo htmlspecialchars(number_format($totalAverage, 2)); ?>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>               
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
                     <div class="row mb-4">
                         <div class="col-md-12 mt-2 mb-2">
-                            <div class="card bg-dark text-info border-0">
-                                <div class="card-header border-bottom border-warning">
+                            <div class="card bg-dark text-light border-0">
+                                <div class="card-header border-bottom border-1 border-secondary">
                                     <h3 class="mb-0">Top Performers | Graph</h3>
                                 </div>
                                 <div class="card-body">
@@ -587,18 +636,25 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content bg-dark text-light">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="timeInfoModalLabel">January 1, 2025</h5>
+                                <h5 class="modal-title" id="timeInfoModalLabel">Attendance Info</h5>
                                 <button type="button" class="btn-close bg-light" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                <div class="d-flex justify-content-around"> <!-- else if, (no data in workd days === absent)  else, (sunday or holiday === no data found)-->
+                                <div class="d-flex justify-content-around">
                                     <div>
                                         <h6 class="fw-bold">Time In:</h6>
-                                        <p class="text-success fw-bold">08:11 AM</p> <!-- Example time, can be dynamic -->
+                                        <p class="text-info fw-bold" id="timeIn"></p> <!-- Time will be dynamically filled -->
                                     </div>
                                     <div>
                                         <h6 class="fw-bold">Time Out:</h6>
-                                        <p class="text-danger fw-bold">05:00 PM</p> <!-- Example time, can be dynamic -->
+                                        <p class="text-info fw-bold" id="timeOut"></p> <!-- Time will be dynamically filled -->
+                                    </div>
+                                </div>
+                                <!-- New Section for Work Status -->
+                                <div class="d-flex justify-content-around mt-3">
+                                    <div>
+                                        <h6 class="fw-bold">Work Status:</h6>
+                                        <p class="text-warning fw-bold" id="workStatus"></p> <!-- Status will be dynamically filled -->
                                     </div>
                                 </div>
                             </div>
@@ -675,7 +731,7 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
                         </div>
                     </div>
                 </div>
-            <footer class="py-4 bg-light mt-auto bg-dark border-top border-1 border-warning">
+            <footer class="py-4 bg-light mt-auto bg-dark border-top border-1 border-secondary">
                 <div class="container-fluid px-4">
                     <div class="d-flex align-items-center justify-content-between small">
                         <div class="text-muted">Copyright &copy; Your Website 2023</div>
@@ -776,116 +832,184 @@ $profilePicture = !empty($employeeInfo['profile_picture']) ? $employeeInfo['prof
     setInterval(setCurrentTime, 1000);
 
 
-const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+// ATTENDANCE
 let currentMonth = new Date().getMonth(); // January is 0, December is 11
 let currentYear = new Date().getFullYear();
+let employeeId = <?php echo $employeeId; ?>; // Employee ID from PHP session
+
+const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+// Define operation hours: Start at 8:00 AM and End at 4:00 PM
+const operationStartTime = new Date();
+operationStartTime.setHours(8, 0, 0, 0); // 8:00 AM
+
+const operationEndTime = new Date();
+operationEndTime.setHours(16, 0, 0, 0); // 4:00 PM
+
+// Function to format the time in 12-hour format (with AM/PM)
+function formatTimeWithAmPm(time24) {
+    if (!time24 || time24 === 'N/A') {
+        return 'No data';  // Handle cases where there's no data
+    }
+    
+    // Split time into hours and minutes
+    let [hour, minute] = time24.split(':');
+    hour = parseInt(hour); // Convert hour to an integer
+
+    // Determine AM or PM suffix
+    const amPm = hour >= 12 ? 'PM' : 'AM';
+    
+    // Convert 24-hour time to 12-hour time
+    hour = hour % 12 || 12; // Convert 0 to 12 for midnight (12 AM)
+
+    // Return formatted time with AM/PM
+    return `${hour}:${minute} ${amPm}`;
+}
+
+// Function to calculate status (Late or Overtime)
+function calculateAttendanceStatus(timeIn, timeOut) {
+    let status = '';
+
+    if (timeIn && timeIn !== 'Absent') {
+        const timeInDate = new Date(`1970-01-01T${timeIn}:00`);
+        if (timeInDate > operationStartTime) {
+            status += 'Late';
+        }
+    }
+
+    if (timeOut && timeOut !== 'Absent') {
+        const timeOutDate = new Date(`1970-01-01T${timeOut}:00`);
+        if (timeOutDate > operationEndTime) {
+            if (status) {
+                status += ' & Overtime';
+            } else {
+                status = 'Overtime';
+            }
+        }
+    }
+
+    return status || 'On Time'; // Default to "On Time" if no issues
+}
 
 // Function to render the calendar for a specific month and year
-function renderCalendar(month, year) {
+function renderCalendar(month, year, attendanceRecords = {}) {
     const daysInMonth = new Date(year, month + 1, 0).getDate(); // Get total days in the current month
     const firstDay = new Date(year, month, 1).getDay(); // Get the starting day (0 = Sunday, 1 = Monday, etc.)
 
-let attendanceRecords = {
-    1: 'Present',
-    2: 'Absent',
-    3: 'Present',
-    4: 'Present',
-    5: 'Present',
-    6: 'Present',
-    7: 'Present',
-    8: 'Present',
-    9: 'Present',
-    10: 'Absent',
-    11: 'Present',
-    12: 'Present',
-    13: 'Present',
-    14: 'Absent',
-    15: 'Present',
-    16: 'Absent',
-    17: 'Present',
-    18: 'Present',
-    19: 'Present',
-    20: 'Absent',
-    21: 'Present',
-    22: 'Present',
-    23: 'Present',
-    24: 'Absent',
-    25: 'Present',
-    26: 'Present',
-    27: 'Absent',
-    28: 'Present',
-    29: 'Present',
-    30: 'Present',
-    31: 'Present'
-};
+    let calendarHTML = '<div class="row text-center pt-3">';
 
+    // Add empty columns before the first day of the month
+    for (let i = 0; i < firstDay; i++) {
+        calendarHTML += '<div class="col"></div>';
+    }
 
-let calendarHTML = '<div class="row text-center pt-3">';
-
-// Add empty columns before the first day of the month
-for (let i = 0; i < firstDay; i++) {
-    calendarHTML += '<div class="col"></div>';
-}
-
-// Fill in the days of the month
-let dayCounter = 1;
-for (let i = firstDay; i < 7; i++) {
-    const status = (i === 0) ? 'Day Off' : attendanceRecords[dayCounter] || ''; // Set "Day Off" for Sundays (day 0)
-    
-    // Wrap the day inside a button that triggers the modal
-    calendarHTML += `
-        <div class="col">
-            <button class="btn text-light p-0" data-bs-toggle="modal" data-bs-target="#attendanceModal" onclick="(${dayCounter})">
-                <span class="fw-bold">${dayCounter}</span>
-                <div class="${status === 'Present' ? 'text-success' : status === 'Absent' ? 'text-danger' : status === 'No Data' ? 'text-warning' : status === 'Day Off' ? 'text-muted' : ''}">
-                    ${status}
-                </div>
-            </button>
-        </div>
-    `;
-    dayCounter++;
-}
-calendarHTML += '</div>';
-
-// Continue filling rows for the remaining days
-while (dayCounter <= daysInMonth) {
-    calendarHTML += '<div class="row text-center pt-3">';
-    let dayOfWeek = 0; // Reset for each row
-
-    for (let i = 0; i < 7 && dayCounter <= daysInMonth; i++) {
-        const status = (dayOfWeek === 0) ? 'Day Off' : attendanceRecords[dayCounter] || ''; 
+    // Fill in the days of the month
+    let dayCounter = 1;
+    for (let i = firstDay; i < 7; i++) {
+        const status = (i === 0) ? 'Day Off' : attendanceRecords[dayCounter] || ''; // Set "Day Off" for Sundays (day 0)
         
-        // Wrap the day inside a button that triggers the modal
         calendarHTML += `
             <div class="col">
-                <button class="btn text-light p-0" data-bs-toggle="modal" data-bs-target="#attendanceModal" onclick="(${dayCounter})">
-                    <span class="fw-bold">${dayCounter}</span>
-                    <div class="${status === 'Present' ? 'text-success' : status === 'Absent' ? 'text-danger' : status === 'No Data' ? 'text-warning' : status === 'Day Off' ? 'text-muted' : ''}">
-                        ${status}
-                    </div>
+                <button class="btn text-light p-0" data-bs-toggle="modal" data-bs-target="#attendanceModal" onclick="showAttendanceDetails(${dayCounter})">
+                    <span class="fw-bold ${status === 'Present' ? 'text-success' : status === 'Absent' ? 'text-danger' : status === 'Late' ? 'text-warning' : status === 'Day Off' ? 'text-muted' : ''}">
+                        ${dayCounter}
+                    </span>
                 </button>
             </div>
         `;
         dayCounter++;
-        dayOfWeek++;
     }
-
-    // If the last row is not complete (less than 7 days), add empty columns
-    if (dayOfWeek < 7) {
-        for (let j = dayOfWeek; j < 7; j++) {
-            calendarHTML += '<div class="col"></div>';
-        }
-    }
-
     calendarHTML += '</div>';
+
+    // Continue filling rows for the remaining days
+    while (dayCounter <= daysInMonth) {
+        calendarHTML += '<div class="row text-center pt-3">';
+        let dayOfWeek = 0; // Reset for each row
+
+        for (let i = 0; i < 7 && dayCounter <= daysInMonth; i++) {
+            const status = (dayOfWeek === 0) ? 'Day Off' : attendanceRecords[dayCounter] || ''; 
+            
+            calendarHTML += `
+                <div class="col">
+                    <button class="btn text-light p-0" data-bs-toggle="modal" data-bs-target="#attendanceModal" onclick="showAttendanceDetails(${dayCounter})">
+                        <span class="fw-bold ${status === 'Present' ? 'text-success' : status === 'Absent' ? 'text-danger' : status === 'Late' ? 'text-warning' : status === 'Day Off' ? 'text-muted' : ''}">
+                            ${dayCounter}
+                        </span>
+                    </button>
+                </div>
+            `;
+            dayCounter++;
+            dayOfWeek++;
+        }
+
+        if (dayOfWeek < 7) {
+            for (let j = dayOfWeek; j < 7; j++) {
+                calendarHTML += '<div class="col"></div>';
+            }
+        }
+
+        calendarHTML += '</div>';
+    }
+
+    document.getElementById('ATTENDANCEcalendar').innerHTML = calendarHTML;
+    document.getElementById('monthYearDisplay').textContent = `${monthNames[month]} ${year}`;
+    document.getElementById('todaysDate').textContent = `${monthNames[new Date().getMonth()]} ${new Date().getDate()}, ${new Date().getFullYear()}`;
 }
 
-    // Update the calendar container with the new content
-    document.getElementById('ATTENDANCEcalendar').innerHTML = calendarHTML;
-    
-    // Update the displayed month and year
-    document.getElementById('monthYearDisplay').textContent = `${monthNames[month]} ${year}`;
-    document.getElementById('todaysDate').textContent = `${monthNames[month]} ${new Date().getDate()}, ${year}`;
+// Fetch attendance data for a specific month and year
+function fetchAttendance(month, year) {
+    fetch(`/HR2/employee_db/supervisor/fetch_attendance.php?e_id=${employeeId}&month=${month + 1}&year=${year}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                console.error(data.error);
+                return;
+            }
+
+            // Handle attendance records and render calendar
+            renderCalendar(month, year, data); // Pass attendance data to render calendar
+        })
+        .catch(error => console.error('Error fetching attendance data:', error));
+}
+
+// Show attendance details when a specific day is clicked
+function showAttendanceDetails(day) {
+    fetch(`/HR2/employee_db/supervisor/fetch_attendance.php?e_id=${employeeId}&day=${day}&month=${currentMonth + 1}&year=${currentYear}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                console.error(data.error);
+                return;
+            }
+
+            // If there's no time_in or time_out, mark it as "Absent"
+            const timeInFormatted = data.time_in ? formatTimeWithAmPm(data.time_in) : 'Absent';
+            const timeOutFormatted = data.time_out ? formatTimeWithAmPm(data.time_out) : 'Absent';
+
+            // Calculate the status (Late, Overtime, or On Time)
+            const attendanceStatus = calculateAttendanceStatus(data.time_in, data.time_out);
+
+            // Update the modal with the formatted time_in, time_out, and attendance status
+            document.getElementById('timeIn').textContent = timeInFormatted;
+            document.getElementById('timeOut').textContent = timeOutFormatted;
+            document.getElementById('workStatus').textContent = attendanceStatus;
+            // Set appropriate colors for the status
+            const statusElement = document.getElementById('workStatus');
+            if (attendanceStatus === 'Late') {
+                statusElement.classList.add('text-warning');
+                statusElement.classList.remove('text-success', 'text-danger', 'text-muted');
+            } else if (attendanceStatus === 'Overtime') {
+                statusElement.classList.add('text-info');
+                statusElement.classList.remove('text-success', 'text-danger', 'text-muted');
+            } else if (attendanceStatus === 'On Time') {
+                statusElement.classList.add('text-success');
+                statusElement.classList.remove('text-warning', 'text-danger', 'text-muted');
+            } else {
+                statusElement.classList.add('text-muted');
+                statusElement.classList.remove('text-success', 'text-danger', 'text-warning');
+            }
+        })
+        .catch(error => console.error('Error fetching attendance details:', error));
 }
 
 // Event listeners for next and previous month buttons
@@ -895,7 +1019,7 @@ document.getElementById('nextMonthBtn').addEventListener('click', function() {
         currentMonth = 0;
         currentYear++;
     }
-    renderCalendar(currentMonth, currentYear);
+    fetchAttendance(currentMonth, currentYear);
 });
 
 document.getElementById('prevMonthBtn').addEventListener('click', function() {
@@ -904,13 +1028,15 @@ document.getElementById('prevMonthBtn').addEventListener('click', function() {
         currentMonth = 11;
         currentYear--;
     }
-    renderCalendar(currentMonth, currentYear);
+    fetchAttendance(currentMonth, currentYear);
 });
 
-// Render the initial calendar for the current month and year
-renderCalendar(currentMonth, currentYear);
+// Fetch the initial calendar for the current month and year
+fetchAttendance(currentMonth, currentYear);
 
 
+
+// GENERAL SEARCH
 const features = [
     { name: "Dashboard", link: "../../employee/supervisor/dashboard.php", path: "Employee Dashboard" },
     { name: "Attendance Scanner", link: "../../employee/supervisor/attendance.php", path: "Time and Attendance/Attendance Scanner" },
@@ -921,7 +1047,6 @@ const features = [
     { name: "Report Issue", link: "../../employee/supervisor/report_issue.php", path: "Feedback/Report Issue" }
 ];
 
-// Handle search input change
 document.getElementById('searchInput').addEventListener('input', function () {
     let input = this.value.toLowerCase();
     let results = '';
@@ -956,25 +1081,23 @@ document.getElementById('searchInput').addEventListener('input', function () {
     }
 });
 
-// Handle collapse event to clear search input when hidden
+
 const searchInputElement = document.getElementById('searchInput');
 searchInputElement.addEventListener('hidden.bs.collapse', function () {
-    // Clear the search input and search results when the input collapses
-    searchInputElement.value = '';  // Clear the input
-    document.getElementById('searchResults').innerHTML = '';  // Clear the search results
+    searchInputElement.value = '';
+    document.getElementById('searchResults').innerHTML = ''; 
 });
 
 
 
+// BLUR MODAL
 const todoModal = document.getElementById('todoModal');
   const mainContent = document.getElementById('main-content');
 
-  // Add blur when the modal is shown
   todoModal.addEventListener('show.bs.modal', function () {
     mainContent.classList.add('blur-background');
   });
 
-  // Remove blur when the modal is hidden
   todoModal.addEventListener('hidden.bs.modal', function () {
     mainContent.classList.remove('blur-background');
   });

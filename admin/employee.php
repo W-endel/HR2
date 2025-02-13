@@ -10,7 +10,7 @@ include '../db/db_conn.php';
 
 // Fetch user info
 $adminId = $_SESSION['a_id'];
-$sql = "SELECT a_id, firstname, middlename, lastname, birthdate, email, role, position, department, phone_number, address, pfp FROM admin_register WHERE a_id = ?";
+$sql = "SELECT a_id, firstname, middlename, lastname, birthdate, email, role, department, phone_number, address, pfp FROM admin_register WHERE a_id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $adminId);
 $stmt->execute();
@@ -18,7 +18,7 @@ $result = $stmt->get_result();
 $adminInfo = $result->fetch_assoc();
 
 // Fetch employee data
-$sql = "SELECT e_id, firstname, lastname, face_image, gender,    email, department, position, phone_number, address FROM employee_register WHERE role='Employee'";
+$sql = "SELECT e_id, firstname, lastname, face_image, gender, email, department, position, phone_number, address FROM employee_register WHERE role='Employee'";
 $result = $conn->query($sql);
 ?>
 
@@ -197,11 +197,14 @@ $result = $conn->query($sql);
                             </div>
                         </div>
                     </div>               
-                    <div class="py-4"></div>
+                    <div class=""></div>
                     <div class="card mb-4 bg-dark text-light">
-                        <div class="card-header border-bottom border-1 border-warning">
-                            <i class="fas fa-table me-1"></i>
-                            Employee Accounts
+                        <div class="card-header border-bottom border-1 border-warning d-flex justify-content-between align-items-center">
+                            <span>
+                                <i class="fas fa-table me-1"></i>
+                                Employee Accounts
+                            </span>
+                            <a class="btn btn-primary text-light" href="../admin/create_employee.php">Create Employee</a>
                         </div>
                         <div class="card-body">
                             <table id="datatablesSimple" class="table text-light text-center">
@@ -222,7 +225,7 @@ $result = $conn->query($sql);
                                 <tbody>
                                     <?php if ($result->num_rows > 0): ?>
                                         <?php while ($row = $result->fetch_assoc()): ?>
-                                            <tr class="text-center text-light">
+                                            <tr class="text-center text-light align-items-center">
                                                 <td><?php echo htmlspecialchars(trim($row['e_id'] ?? 'N/A')); ?></td>
                                                 <td><?php echo htmlspecialchars(trim($row['firstname'] . ' ' . $row['lastname'] ?? 'N/A')); ?></td>
                                                 <td><?php echo htmlspecialchars(trim($row['gender'] ?? 'N/A')); ?></td>
@@ -231,10 +234,17 @@ $result = $conn->query($sql);
                                                 <td><?php echo htmlspecialchars(trim($row['position'] ?? 'N/A')); ?></td>
                                                 <td><?php echo htmlspecialchars(trim($row['phone_number'] ?? 'N/A')) ?: 'N/A'; ?></td>
                                                 <td><?php echo htmlspecialchars(trim($row['address'] ?? 'N/A')) ?: 'N/A'; ?></td>
-                                                <td><?php echo $row['face_image'] ? 'Image Available' : 'N/A'; ?></td>
-                                                <td class='d-flex justify-content-around'>
+                                                <td>
+                                                    <?php if (!empty($row['face_image'])): ?>
+                                                        <img src="/HR2/face/<?php echo htmlspecialchars(trim(basename($row['face_image']))); ?>" style="width: 100px; height: 100px;">
+                                                    <?php else: ?>
+                                                        N/A
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td class='d-flex justify-content-around '>
                                                     <button class="btn btn-success btn-sm me-2" 
-                                                        onclick="fillUpdateForm(<?php echo $row['e_id']; ?>, '<?php echo htmlspecialchars($row['firstname']); ?>', '<?php echo htmlspecialchars($row['lastname']); ?>', '<?php echo htmlspecialchars($row['email']); ?>', '<?php echo htmlspecialchars($row['department']); ?>', '<?php echo htmlspecialchars($row['position']); ?>', '<?php echo htmlspecialchars($row['phone_number']); ?>', '<?php echo htmlspecialchars($row['address']); ?>')">Update</button>
+                                                        onclick="fillUpdateForm(<?php echo $row['e_id']; ?>, '<?php echo htmlspecialchars($row['firstname']); ?>', '<?php echo htmlspecialchars($row['lastname']); ?>', '<?php echo htmlspecialchars($row['email']); ?>',
+                                                        '<?php echo htmlspecialchars($row['department']); ?>', '<?php echo htmlspecialchars($row['position']); ?>', '<?php echo htmlspecialchars($row['phone_number']); ?>', '<?php echo htmlspecialchars($row['address']); ?>')">Update</button>
                                                     <button class="btn btn-danger btn-sm" onclick="deleteEmployee(<?php echo $row['e_id']; ?>)">Delete</button>
                                                 </td>
                                             </tr>
@@ -245,9 +255,6 @@ $result = $conn->query($sql);
                                 </tbody>
                             </table>
                         </div>
-                    </div>
-                    <div class="d-flex justify-content-center mt-4 mb-0">
-                        <a class="btn btn-primary text-light" href="../admin/create_employee.php">Create Employee</a>
                     </div>
                 </div>
             </main>

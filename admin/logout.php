@@ -5,6 +5,7 @@ session_start();
 unset($_SESSION['a_id']);
 unset($_SESSION['role']);
 
-header("Location: ../admin/login.php");
+
+header("Location: ../login.php");
 exit();
 ?>

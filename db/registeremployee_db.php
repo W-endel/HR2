@@ -1,10 +1,18 @@
 <?php
+session_start();  // Ensure session is started at the beginning
+
 include '../db/db_conn.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
 // Include the Composer autoloader (make sure PHPMailer is installed via Composer)
 require '../phpmailer/vendor/autoload.php';
+
+// Ensure admin_id is available
+if (!isset($_SESSION['a_id'])) {
+    echo "<script>alert('You must be logged in as an admin to perform this action.'); window.history.back();</script>";
+    exit();
+}
 
 // Sanitize inputs
 $firstname = htmlspecialchars($_POST['firstname']);
@@ -69,17 +77,18 @@ if (empty($faceDescriptor)) {
 }
 
 // Decode the face descriptor string into an array
-$faceDescriptorArray = json_decode($faceDescriptor);
+$faceDescriptorArray = json_decode($faceDescriptor);  // Move json_decode to variable first
 
 // Handle multiple photo uploads (maximum 3 images)
 $uploadedPhotos = [];
 if (isset($_FILES['photo']) && count($_FILES['photo']['name']) > 0) {
     $maxFiles = 3; // Limit to 3 files
-    $targetDirectory = '../face/';  // Path to the uploads directory
+    $targetDirectory = $_SERVER['DOCUMENT_ROOT'] . '/HR2/face/';  // Absolute path
     
     // Ensure the target directory exists, if not create it
     if (!file_exists($targetDirectory)) {
         mkdir($targetDirectory, 0755, true);  // Create folder with permissions
+        echo "Folder created successfully.<br>";
     }
 
     // Loop through all uploaded files
@@ -89,14 +98,22 @@ if (isset($_FILES['photo']) && count($_FILES['photo']['name']) > 0) {
             $photoName = $_FILES['photo']['name'][$i];
             $targetFilePath = $targetDirectory . basename($photoName);
 
+            // Debugging: Check the target file path
+            echo "Target file path: " . $targetFilePath . "<br>";
+
             // Validate the file type (image/jpeg, image/png, etc.)
             $allowedFileTypes = ['image/jpeg', 'image/png', 'image/jpg'];
             $fileType = mime_content_type($photoTmpName);
 
-            if (in_array($fileType, $allowedFileTypes)) {
+            // Check extension as well
+            $fileExtension = pathinfo($photoName, PATHINFO_EXTENSION);
+            $allowedExtensions = ['jpg', 'jpeg', 'png'];
+
+            if (in_array($fileType, $allowedFileTypes) && in_array(strtolower($fileExtension), $allowedExtensions)) {
                 // Move the uploaded file to the uploads folder
                 if (move_uploaded_file($photoTmpName, $targetFilePath)) {
                     $uploadedPhotos[] = $targetFilePath;
+                    echo "File uploaded successfully: " . $targetFilePath . "<br>";
                 } else {
                     echo "<script>alert('Error uploading the image. Please try again.'); window.history.back();</script>";
                     exit();
@@ -106,13 +123,14 @@ if (isset($_FILES['photo']) && count($_FILES['photo']['name']) > 0) {
                 exit();
             }
         } else {
-            echo "<script>alert('Error in file upload. Please try again.'); window.history.back();</script>";
+            echo "<script>alert('Error in file upload. Error code: " . $_FILES['photo']['error'][$i] . "'); window.history.back();</script>";
             exit();
         }
     }
 } else {
     $uploadedPhotos = []; // No files uploaded
 }
+
 
 // Insert employee data into the database, with the photos stored as a JSON array
 $insertQuery = "INSERT INTO employee_register (e_id, firstname, lastname, email, password, role, gender, department, position, face_descriptor, face_image) 
@@ -121,15 +139,50 @@ $insertQuery = "INSERT INTO employee_register (e_id, firstname, lastname, email,
 $stmt = $conn->prepare($insertQuery);
 
 // Prepare the face descriptor array (if any)
-$faceDescriptorArray = json_decode($_POST['face_descriptor'] ?? '[]');
+$faceDescriptorArray = json_decode($faceDescriptor ?? '[]');  // Fix here, ensure it is assigned before
 
 // Bind the parameters and execute
 $stmt->bind_param("issssssssss", $employeeId, $firstname, $lastname, $email, $hashed_password, $role, $gender, $department, $position, json_encode($faceDescriptorArray), json_encode($uploadedPhotos));
 
 if ($stmt->execute()) {
-    // Send email after successful registration
-    sendWelcomeEmail($email, $firstname, $lastname, $password);
-    echo "<script>alert('Employee account created successfully!'); window.location.href='../admin/employee.php';</script>";
+    // Get admin ID from session (ensure this session value is set when admin logs in)
+    $admin_id = $_SESSION['a_id'];  // Make sure session contains this value
+
+    // Get admin's name
+    $admin_query = "SELECT firstname, lastname FROM admin_register WHERE a_id = ?";
+    $admin_stmt = $conn->prepare($admin_query);
+    $admin_stmt->bind_param("i", $admin_id);
+    $admin_stmt->execute();
+    $admin_result = $admin_stmt->get_result();
+    if ($admin_result->num_rows > 0) {
+        $admin = $admin_result->fetch_assoc();
+        $admin_name = $admin['firstname'] . ' ' . $admin['lastname'];
+    } else {
+        echo "<script>alert('Admin details not found.'); window.history.back();</script>";
+        exit();
+    }
+
+    // Capture admin's IP address
+    $ip_address = $_SERVER['REMOTE_ADDR'];
+
+    // Log the action
+    $action_type = "Created Employee Account";
+    $affected_feature = "Employee Management";
+    $details = "New employee registered with ID: ($employeeId) Name: {$firstname} {$lastname} in $department.";
+
+    $log_query = "INSERT INTO activity_logs (admin_id, admin_name, action_type, affected_feature, details, ip_address) 
+                  VALUES (?, ?, ?, ?, ?, ?)";
+    $log_stmt = $conn->prepare($log_query);
+    $log_stmt->bind_param("isssss", $admin_id, $admin_name, $action_type, $affected_feature, $details, $ip_address);
+
+    if ($log_stmt->execute()) {
+        // Send email after successful registration
+        sendWelcomeEmail($email, $firstname, $lastname, $password);
+
+        echo "<script>alert('Employee account created successfully!'); window.location.href='../admin/employee.php';</script>";
+    } else {
+        echo "<script>alert('Error logging activity. Please try again.'); window.history.back();</script>";
+    }
 } else {
     echo "<script>alert('Error creating account. Please try again.'); window.history.back();</script>";
 }
@@ -142,7 +195,7 @@ function sendWelcomeEmail($email, $firstname, $lastname, $password) {
     $mail = new PHPMailer(true);
 
     try {
-        //Server settings
+        // Server settings
         $mail->isSMTP();
         $mail->Host = 'smtp.gmail.com'; // Set the SMTP server to Gmail
         $mail->SMTPAuth = true;
@@ -151,7 +204,7 @@ function sendWelcomeEmail($email, $firstname, $lastname, $password) {
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port = 587;
 
-        //Recipients
+        // Recipients
         $mail->setFrom('microfinancehr2@gmail.com', 'HR Department');
         $mail->addAddress($email); // Add the employee's email address
 
@@ -277,20 +330,18 @@ function sendWelcomeEmail($email, $firstname, $lastname, $password) {
                         <p class='card-text'>Best regards,<br>The HR Team</p>
                     </div>
                     <div class='card-footer'>
-                        <p>If you have any questions, feel free to <a href='microfinancehr2@gmail.com' class='btn-contact'>Contact HR</a>.</p>
+                        <p>If you have any questions, feel free to <a href='mailto:microfinancehr2@gmail.com' class='btn-contact'>Contact HR</a>.</p>
                     </div>
                 </div>
             </div>
         </body>
         </html>
         ";
-    
-        
 
         // Send the email
         $mail->send();
     } catch (Exception $e) {
-        echo "<script>alert('Error sending email: {$mail->ErrorInfo}'); window.history.back();</script>";
+        echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
     }
 }
 ?>

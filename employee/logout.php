@@ -26,6 +26,6 @@ unset($_SESSION['e_id']);
 unset($_SESSION['role']);
 
 // Redirect to the login page
-header("Location: ../employee/login.php");
+header("Location: ../login.php");
 exit();
 ?>

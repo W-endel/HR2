@@ -96,7 +96,7 @@ $conn->close();
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                                     <li><a class="dropdown-item" href="../admin/profile.php">Profile</a></li>
-                                    <li><a class="dropdown-item" href="#!">Settings</a></li>
+                                    <li><a class="dropdown-item" href="../admin/settings.php">Settings</a></li>
                                     <li><a class="dropdown-item" href="#!">Activity Log</a></li>
                                     <li><hr class="dropdown-divider border-black" /></li>
                                     <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">Logout</a></li>
