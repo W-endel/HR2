@@ -13232,5 +13232,18 @@ body {
   #loadingModal .modal-body {
     padding: 20px;
   }
+
+
+  /* Change the tooltip background color */
+.tooltip-inner {
+    background-color: black !important; /* Green background */
+    color: white !important; /* White text */
+}
+
+/* Change the color of the tooltip arrow */
+.tooltip-arrow {
+    border-top-color: black !important; /* Arrow color matches tooltip background */
+}
+
   
 

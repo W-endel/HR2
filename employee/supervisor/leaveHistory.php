@@ -5,16 +5,16 @@ session_start();
 // Include database connection
 include '../../db/db_conn.php';
 
-// Ensure session variable is set
 if (!isset($_SESSION['e_id'])) {
-    die("Error: Employee ID is not set in the session.");
+    header("Location: ../../login.php");
+    exit();
 }
 
 // Fetch user info
 $employeeId = $_SESSION['e_id'];
 
 // Correct SQL query
-$sql = "SELECT e_id, firstname, middlename, lastname, available_leaves, role, position, department, phone_number 
+$sql = "SELECT e_id, firstname, middlename, lastname, role, position, department, phone_number 
         FROM employee_register WHERE e_id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $employeeId);

@@ -2,7 +2,7 @@
 session_start();
 
 if (!isset($_SESSION['a_id'])) {
-    header("Location: ../admin/login.php");
+    header("Location: ../login.php");
     exit();
 }
 
@@ -10,7 +10,7 @@ include '../db/db_conn.php';
 
 // Fetch user info
 $adminId = $_SESSION['a_id'];
-$sql = "SELECT a_id, firstname, middlename, lastname, birthdate, email, role, position, department, phone_number, address, pfp FROM admin_register WHERE a_id = ?";
+$sql = "SELECT a_id, firstname, middlename, lastname, birthdate, email, role, department, phone_number, address, pfp FROM admin_register WHERE a_id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $adminId);
 $stmt->execute();

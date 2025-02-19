@@ -35,38 +35,48 @@
                                     <?php endif; ?>
                                 </div>
                                 <div class="card-body bg-dark mt-3">
-                                    <form action="../HR2/employeelogin_conn.php" method="post">
+                                    <form action="../HR2/login_conn.php" method="post" class="needs-validation"  novalidate>
                                         <div class="position-relative mb-3">
-                                            <label class="fw-bold position-absolute text-light" style="top: -10px; left: 
-                                                15px; background-color: #212529; padding: 0 5px;" for="inputEmail">Email address:</label>                                          
-                                            <input class="form-control fw-bold bg-dark border border-2 border-secondary text-light" 
+                                            <label class="fw-bold position-absolute text-light" style="top: -10px; left: 15px; background-color: #212529; padding: 0 5px;" for="inputEmail">
+                                                Email address
+                                            </label>
+                                            <input class="form-control fw-bold bg-dark border border-2 border-secondary text-light"
                                                 style="height: 60px; padding-top: 15px; padding-bottom: 15px;" id="inputEmail" type="email" name="email"
-                                                placeholder="name@example.com" required />  
+                                                placeholder="name@example.com" required pattern="[^\s@]+@[^\s@]+\.[^\s@]+" />
+                                            <div class="invalid-feedback">Email is required and must be in a valid format (e.g., name@example.com).</div>
                                         </div>
                                         <div class="mb-3 position-relative">
-                                            <label class="fw-bold position-absolute text-light" style="top: -10px; left: 
-                                                15px; background-color: #212529; padding: 0 5px;" for="inputPassword">Password:</label>
-                                            <input class="form-control fw-bold bg-dark border border-2 border-secondary text-light" 
-                                                style="height: 60px; padding-top: 15px; padding-bottom: 15px;" id="inputPassword" type="password" 
-                                                name="password" required placeholder="Password"/>
-                                            <button type="button" class="btn text-muted position-absolute top-50 end-0 translate-middle-y me-2" id="togglePassword">
-                                                <i class="fas fa-eye"></i> <!-- Default icon (eye) -->
+                                            <label class="fw-bold position-absolute text-light"
+                                                style="top: -10px; left: 15px; background-color: #212529; padding: 0 5px;"
+                                                for="inputPassword">Password</label>
+                                            <input class="form-control fw-bold bg-dark border border-2 border-secondary text-light"
+                                                style="height: 60px; padding-top: 15px; padding-bottom: 15px; padding-right: 60px;"
+                                                id="inputPassword" type="password" name="password" required placeholder="Password" />
+                                            <button type="button" class="btn text-muted position-absolute me-1"
+                                                    id="togglePassword" style="top: 50%; right: 15px; transform: translateY(-50%);"
+                                                    onclick="togglePasswordVisibility()">
+                                                <i class="fas fa-eye"></i>
                                             </button>
+                                            <div class="invalid-feedback" style="position: absolute; top: 60px; bottom: -20px; left: 0;">
+                                                Password is required!
+                                            </div>
                                         </div>
-                                        <div class="d-flex justify-content-between align-items-center mt-1 mb-2">
+                                        <div class="d-flex justify-content-between align-items-center mt-4 mb-2">
                                             <div class="d-flex align-items-center">
                                                 <input class="form-check-input" id="inputRememberPassword" type="checkbox" name="remember" value="" />
                                                 <label class="form-check-label text-light ms-2" for="inputRememberPassword">Remember Password</label>
                                             </div>
+                                            <div>
+                                                <a class="small text-info" href="../employee/forgot_pass.php">Forgot Password?</a>
+                                            </div>
                                         </div>
                                         <div class="d-flex align-items-center justify-content-between mt-2 mb-2">
-                                            <a class="small text-info" href="../employee/forgot_pass.php">Forgot Password?</a>
-                                            <button type="submit" class="btn btn-primary">Login</button>
+                                            <button type="submit" class="btn btn-primary w-100 mt-3">Login</button>
                                         </div>
                                     </form>
                                 </div>
                                 <div class="card-footer text-center border-top border-1 border-secondary">
-                                    <div class="text-center text-muted">Human Resource 2</div>
+                                    <div class="text-center text-muted">Human Resources 2</div>
                                 </div>
                             </div>
                         </div>
@@ -74,7 +84,6 @@
                 </div>
             </main>
         </div>
-
         <div id="layoutAuthentication_footer">
             <footer class="py-4 bg-dark border-top border-secondary mt-auto">
                 <div class="container-fluid px-4">
@@ -93,6 +102,27 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.js"></script>
 <script>
+     // Bootstrap form validation script
+     (function () {
+        'use strict'
+
+        // Fetch all the forms we want to apply custom Bootstrap validation styles to
+        var forms = document.querySelectorAll('.needs-validation')
+
+        // Loop over them and prevent submission
+        Array.prototype.slice.call(forms)
+            .forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                            event.preventDefault()
+                            event.stopPropagation()
+                        }
+                        form.classList.add('was-validated')
+                    }, false)
+                })
+    })()
+
+
     const togglePassword = document.querySelector("#togglePassword");
     const passwordField = document.querySelector("#inputPassword");
     const icon = togglePassword.querySelector("i");

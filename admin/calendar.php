@@ -39,6 +39,7 @@ if (!isset($_SESSION['a_id'])) {
                 <tr>
                     <th>Date</th>
                     <th>Description</th>
+                    <th>Type>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -92,6 +93,7 @@ if (!isset($_SESSION['a_id'])) {
                     row.innerHTML = `
                         <td>${day.date}</td>
                         <td>${day.description}</td>
+                        <td>${day.type}</td> <!-- Added type display -->
                         <td>
                             <button class="btn btn-danger btn-sm" onclick="deleteNonWorkingDay('${day.date}')">Delete</button>
                         </td>

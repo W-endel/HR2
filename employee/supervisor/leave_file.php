@@ -3,13 +3,13 @@ session_start();
 include '../../db/db_conn.php';
 
 if (!isset($_SESSION['e_id'])) {
-    header("Location: ../../employee/login.php");
+    header("Location: ../../login.php");
     exit();
 }
 
-// Fetch user info
+// Fetch user info from the employee_register table
 $employeeId = $_SESSION['e_id'];
-$sql = "SELECT e_id, firstname, middlename, lastname, birthdate, gender, email, available_leaves, role, position, department, phone_number, address, pfp FROM employee_register WHERE e_id = ?";
+$sql = "SELECT e_id, firstname, middlename, lastname, birthdate, gender, email, role, position, department, phone_number, address, pfp FROM employee_register WHERE e_id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $employeeId);
 $stmt->execute();
@@ -22,12 +22,36 @@ if (!$employeeInfo) {
 
 $gender = $employeeInfo['gender']; // Fetch gender
 
-// Check if there are any status messages to display
-$status_message = isset($_SESSION['status_message']) ? $_SESSION['status_message'] : '';
-unset($_SESSION['status_message']); // Clear the status message after displaying it
+// Fetch the available leaves from the employee_leaves table (including both male and female leave types)
+$leavesQuery = "SELECT 
+                    bereavement_leave, emergency_leave, maternity_leave, mcw_special_leave, 
+                    parental_leave, service_incentive_leave, sick_leave, vacation_leave, vawc_leave,
+                    bereavement_leave_male,emergency_leave_male, parental_leave_male, 
+                    paternity_leave_male, service_incentive_leave_male, sick_leave_male, vacation_leave_male 
+                FROM employee_leaves 
+                WHERE employee_id = ?";
+$leavesStmt = $conn->prepare($leavesQuery);
+$leavesStmt->bind_param("i", $employeeId);
+$leavesStmt->execute();
+$leavesResult = $leavesStmt->get_result();
+$leavesInfo = $leavesResult->fetch_assoc();
 
-// Fetch the used leave by summing up approved leave days based on leave_start_date and leave_end_date
-$usedLeaveQuery = "SELECT SUM(DATEDIFF(end_date, start_date) + 1) AS used_leaves FROM leave_requests WHERE e_id = ? AND status = 'approved'";
+// If no leave information is found, set default values for leave types
+if (!$leavesInfo) {
+    $leaveTypes = [
+        'bereavement_leave', 'emergency_leave', 'maternity_leave', 'mcw_special_leave', 
+        'parental_leave', 'service_incentive_leave', 'sick_leave', 'vacation_leave', 'vawc_leave',
+        'bereavement_leave_male', 'emergency_leave_male', 'parental_leave_male', 'paternity_leave_male', 
+        'service_incentive_leave_male', 'sick_leave_male', 'vacation_leave_male'
+    ];
+    $leavesInfo = array_fill_keys($leaveTypes, 0);
+}
+
+// Fetch the used leave by summing up approved leave days
+$usedLeaveQuery = "SELECT start_date, end_date, SUM(DATEDIFF(end_date, start_date) + 1) AS used_leaves 
+                   FROM leave_requests 
+                   WHERE e_id = ? AND status = 'approved'
+                   GROUP BY e_id";
 $usedLeaveStmt = $conn->prepare($usedLeaveQuery);
 $usedLeaveStmt->bind_param("i", $employeeId);
 $usedLeaveStmt->execute();
@@ -35,16 +59,41 @@ $usedLeaveResult = $usedLeaveStmt->get_result();
 $usedLeaveRow = $usedLeaveResult->fetch_assoc();
 $usedLeave = $usedLeaveRow['used_leaves'] ?? 0; // Default to 0 if no leave has been used
 
-// Calculate remaining available leaves (optional, if needed for display or logic)
-$availableLeaves = $employeeInfo['available_leaves'];
+// Calculate total available leaves based on gender
+$totalAvailableLeaves = 0;
+if ($employeeInfo['gender'] === 'Male') {
+    // For male employees
+    $totalAvailableLeaves = 
+        $leavesInfo['bereavement_leave_male'] +
+        $leavesInfo['emergency_leave_male'] +
+        $leavesInfo['parental_leave_male'] +
+        $leavesInfo['paternity_leave_male'] +
+        $leavesInfo['service_incentive_leave_male'] +
+        $leavesInfo['sick_leave_male'] +
+        $leavesInfo['vacation_leave_male'];
+} else {
+    // For female employees
+    $totalAvailableLeaves = 
+        $leavesInfo['bereavement_leave'] +
+        $leavesInfo['emergency_leave'] +
+        $leavesInfo['maternity_leave'] +
+        $leavesInfo['mcw_special_leave'] +
+        $leavesInfo['parental_leave'] +
+        $leavesInfo['service_incentive_leave'] +
+        $leavesInfo['sick_leave'] +
+        $leavesInfo['vacation_leave'] +
+        $leavesInfo['vawc_leave'];
+}
+
+// Calculate remaining total leaves by subtracting used leaves
+$remainingLeaves = $totalAvailableLeaves;
 
 // Close the database connection
 $stmt->close();
+$leavesStmt->close();
 $usedLeaveStmt->close();
 $conn->close();
 ?>
-
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -174,17 +223,6 @@ $conn->close();
                                 <a class="nav-link text-light" href="">Awardee</a>
                             </nav>
                         </div>
-                        <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-warning mt-3">Feedback</div> 
-                        <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseFB" aria-expanded="false" aria-controls="collapseFB">
-                            <div class="sb-nav-link-icon"><i class="fas fa-exclamation-circle"></i></div>
-                            Report Issue
-                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                        </a>
-                        <div class="collapse" id="collapseFB" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
-                            <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link text-light" href="">Report Issue</a>
-                            </nav>
-                        </div> 
                     </div>
                 </div>
                 <div class="sb-sidenav-footer bg-black text-light border-top border-1 border-warning">
@@ -205,6 +243,33 @@ $conn->close();
                 </div> 
                 <h1 class="mb-2 text-light">File Leave</h1>                   
                 <div class="card bg-black py-4">
+                    <?php if (isset($_SESSION['status_message'])): ?>
+                        <div class="modal fade" id="statusModal" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content bg-dark text-light">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="statusModalLabel">
+                                            <i class="fa fa-info-circle text-light me-2 fs-4"></i> Message
+                                        </h5>
+                                        <button type="button" class="btn-close text-light" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body align-items-center">
+                                        <?php echo $_SESSION['status_message']; ?>
+                                        <div class="d-flex justify-content-center mt-3">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Ok</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                var myModal = new bootstrap.Modal(document.getElementById('statusModal'));
+                                myModal.show();
+                            });
+                        </script>
+                        <?php unset($_SESSION['status_message']); // Clear the message after displaying ?>
+                    <?php endif; ?>
                     <div class="row mb-4">
                         <div class="col-md-12">
                             <div class="card leave-balance-card bg-dark text-light">
@@ -214,8 +279,8 @@ $conn->close();
                                         <div class="col-md-6">
                                             <div class="p-3">
                                                 <h5>Overall Available Leave</h5>
-                                                <p class="fs-4 text-success"><?php echo htmlspecialchars($employeeInfo['available_leaves']); ?> days</p>
-                                                <a class="btn btn-success" href="#"> View leave details</a>
+                                                <p class="fs-4 text-success"><?php echo htmlspecialchars($remainingLeaves); ?> days</p>
+                                                <a class="btn btn-success" href="../../employee/supervisor/leaveDetails.php"> View leave details</a>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
@@ -230,7 +295,7 @@ $conn->close();
                             </div>
                         </div>
                     </div>
-                    <form id="leave-request-form" action="../../employee_db/supervisor/leave_conn.php" method="POST" enctype="multipart/form-data">
+                    <form id="leave-request-form" action="../../employee_db/supervisor/leave_conn.php"class="needs-validation" method="POST" enctype="multipart/form-data" novalidate>
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="card leave-form text bg-dark text-light">
@@ -238,59 +303,82 @@ $conn->close();
                                         <h3 class="card-title text-center mb-4">Request Leave</h3>
                                         <div class="row mb-3">
                                             <div class="col-md-6 mb-3">
-                                                <div class="form-floating mb-3 mb-md-0">
-                                                    <input type="text" class="form-control text-dark" id="name" name="name" value="<?php echo htmlspecialchars($employeeInfo['firstname'] . ' ' . $employeeInfo['lastname']); ?>" readonly>
-                                                    <label for="name" class="text-dark fw-bold">Name:</label>
+                                                <div class="position-relative mb-3 mb-md-0">
+                                                    <label for="name" class="fw-bold position-absolute text-light" 
+                                                        style="top: -10px; left: 15px; background-color: #212529; padding: 0 5px;">Name:</label>
+                                                    <input type="text" class="form-control fw-bold bg-dark border border-2 border-secondary text-light" 
+                                                        style="height: 60px; padding-top: 15px; padding-bottom: 15px;" id="name" name="name" value="<?php echo htmlspecialchars($employeeInfo['firstname'] . ' ' . $employeeInfo['lastname']); ?>" readonly>
                                                 </div>
                                             </div>
                                             <div class="col-md-6 mb-3">
-                                                <div class="form-floating mb-3 mb-md-0">
-                                                    <input type="text" class="form-control text-dark" id="department" name="department" value="<?php echo htmlspecialchars($employeeInfo['department']); ?>" readonly>
-                                                    <label for="department" class="text-dark fw-bold">Department:</label>
+                                                <div class="position-relative mb-3 mb-md-0">
+                                                    <label for="department" class="fw-bold position-absolute text-light" 
+                                                        style="top: -10px; left: 15px; background-color: #212529; padding: 0 5px;">Department:</label>
+                                                    <input type="text" class="form-control fw-bold bg-dark border border-2 border-secondary text-light" 
+                                                        style="height: 60px; padding-top: 15px; padding-bottom: 15px;" id="department" name="department" value="<?php echo htmlspecialchars($employeeInfo['department']); ?>" readonly>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="row mb-3">
                                             <div class="col-md-6 mb-3">
-                                                <div class="form-floating mb-3 mb-md-0">
-                                                    <select id="leave_type" name="leave_type" class="form-control form-select" required>
+                                                <div class="position-relative mb-3 mb-md-0">
+                                                    <label class="fw-bold position-absolute text-light" 
+                                                        style="top: -10px; left: 15px; background-color: #212529; padding: 0 5px;" for="leave_type">Leave Type</label>
+                                                    <select id="leave_type" name="leave_type" class="form-control form-select fw-bold bg-dark border border-2 border-secondary text-light" 
+                                                        style="height: 60px; padding-top: 15px; padding-bottom: 15px;" required>
                                                         <option value="" disabled selected>Select leave type</option>
+                                                        <option value="Bereavement Leave">Bereavement Leave</option>
+                                                        <option value="Emergency Leave">Emergency Leave</option>
+                                                        <option value="Maternity Leave" class="female-leave">Maternity Leave</option>
+                                                        <option value="MCW Special Leave" class="female-leave">MCW Special Leave Benefit</option>
+                                                        <option value="Parental Leave">Parental Leave</option>
+                                                        <option value="Paternity Leave" class="male-leave">Paternity Leave</option>
+                                                        <option value="Service Incentive Leave">Service Incentive Leave</option>
                                                         <option value="Sick Leave">Sick Leave</option>
                                                         <option value="Vacation Leave">Vacation Leave</option>
-                                                        <option value="Emergency Leave">Emergency Leave</option>
-                                                        <option value="Maternity Leave" class="maternity-leave" style="display:none;">Maternity Leave</option>
-                                                        <option value="Paternity Leave" class="paternity-leave" style="display:none;">Paternity Leave</option>
+                                                        <option value="VAWC Leave" class="female-leave">VAWC Leave</option>
                                                     </select>
-                                                    <label class="text-dark fw-bold" for="leave_type">Leave Type</label>
+                                                    <div class="invalid-feedback">Please select leave type.</div>
                                                 </div>
                                             </div>
                                             <div class="col-md-6 mb-3">
-                                                <div class="form-floating mb-3 mb-md-0">
-                                                    <input type="number" name="leave_days" id="leave_days" class="form-control" min="1" max="30" placeholder="" required readonly>
-                                                    <label for="leave_days" class="form-label text-dark fw-bold">Number of Days</label>
+                                                <div class="position-relative mb-3 mb-md-0">
+                                                    <label for="leave_days" class="fw-bold position-absolute text-light" 
+                                                        style="top: -10px; left: 15px; background-color: #212529; padding: 0 5px;">Number of Days</label>
+                                                    <input type="number" name="leave_days" id="leave_days" class="form-control fw-bold bg-dark border border-2 border-secondary text-light" 
+                                                        style="height: 60px; padding-top: 15px; padding-bottom: 15px;" min="1" max="30" placeholder="" required readonly>
+                                                    <div class="invalid-feedback">Please set a value.</div>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="row mb-3">
                                             <div class="col-md-6 mb-3">
-                                                <div class="form-floating mb-3 mb-md-0">
-                                                    <input type="date" id="start_date" name="start_date" class="form-control" required>
-                                                    <label for="start_date" class="text-dark fw-bold">Start Date</label>
+                                                <div class="position-relative mb-3 mb-md-0">
+                                                    <label for="start_date" class="fw-bold position-absolute text-light" 
+                                                        style="top: -10px; left: 15px; background-color: #212529; padding: 0 5px;">Start Date</label>
+                                                    <input type="date" id="start_date" name="start_date" class="form-control fw-bold bg-dark border border-2 border-secondary text-light" 
+                                                        style="height: 60px; padding-top: 15px; padding-bottom: 15px;" required>
+                                                    <div class="invalid-feedback">Please set a date.</div>
                                                 </div>
                                             </div>
                                             <div class="col-md-6 mb-3">
-                                                <div class="form-floating mb-3 mb-md-0">
-                                                    <input type="date" id="end_date" name="end_date" class="form-control" required>
-                                                    <label for="end_date" class="text-dark fw-bold">End Date</label>
+                                                <div class="position-relative mb-3 mb-md-0">
+                                                    <label for="end_date" class="fw-bold position-absolute text-light" 
+                                                        style="top: -10px; left: 15px; background-color: #212529; padding: 0 5px;">End Date</label>
+                                                    <input type="date" id="end_date" name="end_date" class="form-control fw-bold bg-dark border border-2 border-secondary text-light" 
+                                                        style="height: 60px; padding-top: 15px; padding-bottom: 15px;" required>
+                                                    <div class="invalid-feedback">Please set a date.</div>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="mb-3">
-                                            <div class="form-floating mb-3 mb-md-0">
-                                                <input type="file" id="proof" name="proof[]" class="form-control mb-2" accept="*/*" multiple>
-                                                <label for="proof" class="text-dark fw-bold">Attach Proof</label>
+                                            <div class="position-relative mb-3 mb-md-0">
+                                                <label for="proof" class="fw-bold position-absolute text-light" 
+                                                    style="top: -10px; left: 15px; background-color: #212529; padding: 0 5px;">Attach Proof</label>
+                                                <input type="file" id="proof" name="proof[]" class="form-control fw-bold bg-dark border border-2 border-secondary text-light" 
+                                                    style="height: 60px; padding-top: 15px; padding-bottom: 15px;" accept="*/*" multiple>
                                                 <small class="form-text text-warning">Note: Please upload the necessary proof (image or PDF) to support your leave request. You may upload multiple files,
-                                                 but a single file is sufficient for your request to be considered valid.</small>
+                                                but a single file is sufficient for your request to be considered valid.</small>
                                             </div>
                                         </div>
                                         <div class="d-flex justify-content-end">
@@ -440,22 +528,117 @@ $conn->close();
         //LEAVE DAYS END
 
 
+        //LEAVE REQUEST
+        document.addEventListener('DOMContentLoaded', function () {
+            const leaveType = document.getElementById('leave_type');
+            const leaveDays = document.getElementById('leave_days');
+            const startDate = document.getElementById('start_date');
+            const endDate = document.getElementById('end_date');
+            let holidays = [];
+
+            // Fetch holidays from the server
+            fetch('../../employee_db/getHolidays.php')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Holidays fetched:', data);
+                    if (Array.isArray(data)) {
+                        holidays = data;
+                    } else {
+                        console.error('Expected an array of holidays, but received:', data);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching holidays:', error);
+                });
+
+            function calculateEndDate(startDate, days) {
+                let count = 0;
+                let currentDate = new Date(startDate);
+                
+                while (count < days) {
+                    currentDate.setDate(currentDate.getDate() + 1);
+
+                    const currentDateString = currentDate.toISOString().split('T')[0];
+                    if (currentDate.getDay() !== 0 && !holidays.includes(currentDateString)) {
+                        count++;
+                    }
+                }
+                return currentDate.toISOString().split('T')[0];
+            }
+
+            function isInvalidStartDate(date) {
+                const dateString = date.toISOString().split('T')[0];
+                const todayString = new Date().toISOString().split('T')[0]; // Today's date in YYYY-MM-DD format
+
+                // Check if the date is today or a holiday or a Sunday
+                return date.getDay() === 0 || holidays.includes(dateString) || dateString === todayString;
+            }
+
+            // Event listener for start date change
+            startDate.addEventListener('change', function () {
+                const selectedStartDate = new Date(startDate.value);
+                
+                // Check if the selected start date is invalid
+                if (isInvalidStartDate(selectedStartDate)) {
+                    alert("You cannot file leave on Sundays, holidays, or the current day.");
+                    startDate.value = ''; // Clear the selected start date
+                    endDate.value = ''; // Clear the end date as well
+                    return;
+                }
+
+                if (leaveType.value === 'Paternity Leave' && startDate.value) {
+                    const endDateValue = calculateEndDate(startDate.value, 7);
+                    endDate.value = endDateValue;
+                } else if (leaveType.value === 'Maternity Leave' && startDate.value) {
+                    const endDateValue = calculateEndDate(startDate.value, 105);
+                    endDate.value = endDateValue;
+                } else {
+                    endDate.value = '';
+                }
+            });
+        });
+
+        //LEAVE REQUEST END
+
+        //GENDER BASED
         // Get the gender from PHP
-        const gender = "<?php echo $gender; ?>";
+        const gender = "<?php echo addslashes($gender); ?>";
 
-        const maternityLeaveOption = document.querySelector('.maternity-leave');
-        const paternityLeaveOption = document.querySelector('.paternity-leave');
+        const femaleLeaveOptions = document.querySelectorAll('.female-leave');
+        const maleLeaveOptions = document.querySelectorAll('.male-leave');
 
+        // Hide all gender-specific options by default
+        femaleLeaveOptions.forEach(option => option.style.display = 'none');
+        maleLeaveOptions.forEach(option => option.style.display = 'none');
+
+        // Show gender-specific leave options based on the user's gender
         if (gender === 'Female') {
-            maternityLeaveOption.style.display = 'block';  // Show Maternity Leave
+            femaleLeaveOptions.forEach(option => option.style.display = 'block');  // Show Female Leave Options
         } else if (gender === 'Male') {
-            paternityLeaveOption.style.display = 'block';  // Show Paternity Leave
+            maleLeaveOptions.forEach(option => option.style.display = 'block');  // Show Male Leave Options
         }
-
 
         function resetForm() {
             document.getElementById('leave-request-form').reset();  // Reset the form
         }
+        //GENDER BASED
+
+        //VALIDATION
+        (function () {
+            'use strict';
+            var forms = document.querySelectorAll('.needs-validation');
+            Array.prototype.slice.call(forms)
+                .forEach(function (form) {
+                    form.addEventListener('submit', function (event) {
+                        if (!form.checkValidity()) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+        })();
+        //VALIDATION
 
 </script>
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'> </script>

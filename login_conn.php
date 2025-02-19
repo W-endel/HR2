@@ -102,6 +102,16 @@ if ($result->num_rows > 0) {
             $conn->close();
             header("Location: ../HR2/employee/supervisor/dashboard.php"); // Redirect to supervisor dashboard
             exit();
+        } elseif ($employeeData['position'] === 'Field Worker') {
+            $stmt->close();
+            $conn->close();
+            header("Location: ../HR2/employee/fieldWorker/dashboard.php"); // Redirect to supervisor dashboard
+            exit();
+        } elseif ($employeeData['position'] === 'Contractual') {
+            $stmt->close();
+            $conn->close();
+            header("Location: ../HR2/employee/contractual/dashboard.php"); // Redirect to supervisor dashboard
+            exit();
         } else {
             // Handle other positions or unknown positions
             $error = urlencode("Invalid position detected.");

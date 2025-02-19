@@ -331,12 +331,12 @@ document.getElementById('captureFaceBtn').addEventListener('click', () => {
 
 
         const positionsByDepartment = {
-            "Finance Department": ["Financial Controller", "Accountant", "Credit Analyst", "Supervisor", "Staff"],
-            "Administration Department": ["Facilities Manager", "Operations Manager", "Customer Service Representative", "Supervisor", "Staff"],
-            "Sales Department": ["Sales Manager", "Sales Representative", "Marketing Coordinator", "Supervisor", "Staff"],
-            "Credit Department": ["Loan Officer", "Loan Collection Officer", "Credit Risk Analyst", "Supervisor", "Staff"],
-            "Human Resource Department": ["HR Manager", "Recruitment Specialists", "Training Coordinator", "Supervisor", "Staff"],
-            "IT Department": ["IT Manager", "Network Administrator", "System Administrator", "IT Support Specialist", "Supervisor", "Staff"]
+            "Finance Department": ["Financial Controller", "Accountant", "Credit Analyst", "Supervisor", "Staff", "Field Worker", "Contractual"],
+            "Administration Department": ["Facilities Manager", "Operations Manager", "Customer Service Representative", "Supervisor", "Staff", "Field Worker", "Contractual"],
+            "Sales Department": ["Sales Manager", "Sales Representative", "Marketing Coordinator", "Supervisor", "Staff", "Field Worker", "Contractual"],
+            "Credit Department": ["Loan Officer", "Loan Collection Officer", "Credit Risk Analyst", "Supervisor", "Staff", "Field Worker", "Contractual"],
+            "Human Resource Department": ["HR Manager", "Recruitment Specialists", "Training Coordinator", "Supervisor", "Staff", "Field Worker", "Contractual"],
+            "IT Department": ["IT Manager", "Network Administrator", "System Administrator", "IT Support Specialist", "Supervisor", "Staff", "Field Worker", "Contractual"]
         };
 
         function filterPositions() {

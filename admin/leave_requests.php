@@ -2,7 +2,7 @@
 session_start();
 
 if (!isset($_SESSION['a_id'])) {
-    header("Location: ../admin/login.php");
+    header("Location: ../login.php");
     exit();
 }
 
@@ -20,7 +20,7 @@ $result = $stmt->get_result();
 $adminInfo = $result->fetch_assoc();
 
 // Fetch all leave requests that have been approved or denied by the supervisor
-$sql = "SELECT lr.leave_id, e.e_id, e.firstname, e.lastname, e.department, e.available_leaves, lr.start_date, lr.end_date, lr.leave_type, lr.proof, lr.status, lr.created_at
+$sql = "SELECT lr.leave_id, e.e_id, e.firstname, e.lastname, e.department, lr.start_date, lr.end_date, lr.leave_type, lr.proof, lr.status, lr.created_at
         FROM leave_requests lr
         JOIN employee_register e ON lr.e_id = e.e_id
         WHERE lr.supervisor_approval = 'Supervisor Approved' AND lr.status = 'Supervisor Approved' ORDER BY created_at ASC";
@@ -50,82 +50,167 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
         exit();
     }
 
-    // Fetch the specific leave request
-    $sql = "SELECT e.department, e.e_id, e.firstname, e.lastname, e.available_leaves, lr.start_date, lr.end_date, lr.leave_type, lr.proof, lr.status
-            FROM leave_requests lr
-            JOIN employee_register e ON lr.e_id = e.e_id
-            WHERE lr.leave_id = ?";
-    $action_stmt = $conn->prepare($sql);
-    $action_stmt->bind_param("i", $leave_id);
-    $action_stmt->execute();
-    $action_result = $action_stmt->get_result();
+// Fetch the specific leave request
+$sql = "SELECT e.department, e.e_id, e.firstname, e.lastname, lr.start_date, lr.end_date, lr.leave_type, lr.proof, lr.status, e.gender,
+               el.bereavement_leave, el.emergency_leave, el.maternity_leave, el.mcw_special_leave, el.parental_leave,
+               el.service_incentive_leave, el.sick_leave, el.vacation_leave, el.vawc_leave, el.bereavement_leave_male,
+               el.emergency_leave_male, el.parental_leave_male, el.paternity_leave_male, el.service_incentive_leave_male,
+               el.sick_leave_male, el.vacation_leave_male
+        FROM leave_requests lr
+        JOIN employee_register e ON lr.e_id = e.e_id
+        JOIN employee_leaves el ON el.employee_id = e.e_id
+        WHERE lr.leave_id = ?";
+$action_stmt = $conn->prepare($sql);
+$action_stmt->bind_param("i", $leave_id);
+$action_stmt->execute();
+$action_result = $action_stmt->get_result();
 
-    if ($action_result->num_rows > 0) {
-        $row = $action_result->fetch_assoc();
-        $available_leaves = $row['available_leaves'];
-        $start_date = $row['start_date'];
-        $end_date = $row['end_date'];
+if ($action_result->num_rows > 0) {
+    $row = $action_result->fetch_assoc();
+    
+    // Determine which leave type column to use based on gender and leave_type
+    $leave_type = $row['leave_type'];
+    $gender = $row['gender'];
+    
+    switch ($leave_type) {
+        case 'Bereavement Leave':
+            $available_balance = ($gender === 'Male') ? $row['bereavement_leave_male'] : $row['bereavement_leave'];
+            break;
+        case 'Emergency Leave':
+            $available_balance = ($gender === 'Male') ? $row['emergency_leave_male'] : $row['emergency_leave'];
+            break;
+        case 'Maternity Leave':
+            $available_balance = $row['maternity_leave'];
+            break;
+        case 'MCW Special Leave':
+            $available_balance = $row['mcw_special_leave'];
+            break;
+        case 'Parental Leave':
+            $available_balance = ($gender === 'Male') ? $row['parental_leave_male'] : $row['parental_leave'];
+            break;
+        case 'Paternity Leave':
+            $available_balance = $row['paternity_leave_male']; // For male employees only
+            break;
+        case 'Service Incentive Leave':
+            $available_balance = ($gender === 'Male') ? $row['service_incentive_leave_male'] : $row['service_incentive_leave'];
+            break;
+        case 'Sick Leave':
+            $available_balance = ($gender === 'Male') ? $row['sick_leave_male'] : $row['sick_leave'];
+            break;
+        case 'Vacation Leave':
+            $available_balance = ($gender === 'Male') ? $row['vacation_leave_male'] : $row['vacation_leave'];
+            break;
+        case 'VAWC Leave':
+            $available_balance = $row['vawc_leave'];
+            break;
+        default:
+            $available_balance = 0; // Default to 0 if leave_type is not recognized
+            break;
+    }
 
-        // Calculate total leave days excluding Sundays and holidays
-        $leave_days = 0;
-        $current_date = strtotime($start_date);
+    $start_date = $row['start_date'];
+    $end_date = $row['end_date'];
 
-        while ($current_date <= strtotime($end_date)) {
-            $current_date_str = date('Y-m-d', $current_date);
-            if (date('N', $current_date) != 7 && !in_array($current_date_str, $holidays)) {
-                $leave_days++;
-            }
-            $current_date = strtotime("+1 day", $current_date);
+    // Calculate total leave days excluding Sundays and holidays
+    $leave_days = 0;
+    $current_date = strtotime($start_date);
+
+    while ($current_date <= strtotime($end_date)) {
+        $current_date_str = date('Y-m-d', $current_date);
+        if (date('N', $current_date) != 7 && !in_array($current_date_str, $holidays)) {
+            $leave_days++;
         }
+        $current_date = strtotime("+1 day", $current_date);
+    }
 
-        if ($status === 'approve') {
-            if ($leave_days > $available_leaves) {
-                header("Location: ../admin/leave_requests.php?status=insufficient_balance");
-                exit();
-            } else {
-                $new_balance = $available_leaves - $leave_days;
-                $update_sql = "UPDATE leave_requests lr 
-                               JOIN employee_register e ON lr.e_id = e.e_id
-                               SET lr.status = 'Approved', lr.admin_approval = 'Admin Approved', lr.admin_id = ?, e.available_leaves = ? 
-                               WHERE lr.leave_id = ?";
+    if ($status === 'approve') {
+        if ($leave_days > $available_balance) {
+            header("Location: ../admin/leave_requests.php?status=insufficient_balance");
+            exit();
+        } else {
+            $new_balance = $available_balance - $leave_days;
 
-                $update_stmt = $conn->prepare($update_sql);
-                $update_stmt->bind_param("iii", $adminId, $new_balance, $leave_id);
-
-                if ($update_stmt->execute()) {
-                    // Log the activity for approval
-                    $action_type = "Leave Request Approved";
-                    $affected_feature = "Leave Information";
-                    $details = "Leave request from {$row['firstname']} {$row['lastname']} ({$row['e_id']}) has been approved | Leave day(s): $leave_days.";
-                    log_activity($adminId, $action_type, $affected_feature, $details);
-
-                    header("Location: ../admin/leave_requests.php?status=approved");
-                } else {
-                    error_log("Error updating leave balance: " . $conn->error);
-                    header("Location: ../admin/leave_requests.php?status=error");
-                }
+            // Prepare the update query based on the leave type
+            switch ($leave_type) {
+                case 'Bereavement Leave':
+                    $balance_field = ($gender === 'Male') ? 'bereavement_leave_male' : 'bereavement_leave';
+                    break;
+                case 'Emergency Leave':
+                    $balance_field = ($gender === 'Male') ? 'emergency_leave_male' : 'emergency_leave';
+                    break;
+                case 'Maternity Leave':
+                    $balance_field = 'maternity_leave';
+                    break;
+                case 'MCW Special Leave':
+                    $balance_field = 'mcw_special_leave';
+                    break;
+                case 'Parental Leave':
+                    $balance_field = ($gender === 'Male') ? 'parental_leave_male' : 'parental_leave';
+                    break;
+                case 'Paternity Leave':
+                    $balance_field = 'paternity_leave_male'; // Only for male employees
+                    break;
+                case 'Service Incentive Leave':
+                    $balance_field = ($gender === 'Male') ? 'service_incentive_leave_male' : 'service_incentive_leave';
+                    break;
+                case 'Sick Leave':
+                    $balance_field = ($gender === 'Male') ? 'sick_leave_male' : 'sick_leave';
+                    break;
+                case 'Vacation Leave':
+                    $balance_field = ($gender === 'Male') ? 'vacation_leave_male' : 'vacation_leave';
+                    break;
+                case 'VAWC Leave':
+                    $balance_field = 'vawc_leave';
+                    break;
+                default:
+                    $balance_field = ''; // Default to an empty field
+                    break;
             }
-        } elseif ($status === 'deny') {
-            $deny_sql = "UPDATE leave_requests SET status = 'Denied', admin_approval = 'Admin Denied', admin_id = ? WHERE leave_id = ?";
-            $deny_stmt = $conn->prepare($deny_sql);
-            $deny_stmt->bind_param("ii", $adminId, $leave_id);
 
-            if ($deny_stmt->execute()) {
-                // Log the activity for denial
-                $action_type = "Leave Request Denied";
+            $update_sql = "UPDATE leave_requests lr 
+                           JOIN employee_register e ON lr.e_id = e.e_id
+                           JOIN employee_leaves el ON el.employee_id = e.e_id
+                           SET lr.status = 'Approved', lr.admin_approval = 'Admin Approved', lr.admin_id = ?, el.{$balance_field} = ? 
+                           WHERE lr.leave_id = ?";
+
+            $update_stmt = $conn->prepare($update_sql);
+            $update_stmt->bind_param("iii", $adminId, $new_balance, $leave_id);
+
+            if ($update_stmt->execute()) {
+                // Log the activity for approval
+                $action_type = "Leave Request Approved";
                 $affected_feature = "Leave Information";
-                $details = "Leave request from {$row['firstname']} {$row['lastname']} ({$row['e_id']}) has been denied.";
+                $details = "Leave request from {$row['firstname']} {$row['lastname']} ({$row['e_id']}) has been approved | Leave day(s): $leave_days.";
                 log_activity($adminId, $action_type, $affected_feature, $details);
 
-                header("Location: ../admin/leave_requests.php?status=denied");
+                header("Location: ../admin/leave_requests.php?status=approved");
             } else {
+                error_log("Error updating leave balance: " . $conn->error);
                 header("Location: ../admin/leave_requests.php?status=error");
             }
         }
-    } else {
-        header("Location: ../admin/leave_requests.php?status=not_found");
+    } elseif ($status === 'deny') {
+        $deny_sql = "UPDATE leave_requests SET status = 'Denied', admin_approval = 'Admin Denied', admin_id = ? WHERE leave_id = ?";
+        $deny_stmt = $conn->prepare($deny_sql);
+        $deny_stmt->bind_param("ii", $adminId, $leave_id);
+
+        if ($deny_stmt->execute()) {
+            // Log the activity for denial
+            $action_type = "Leave Request Denied";
+            $affected_feature = "Leave Information";
+            $details = "Leave request from {$row['firstname']} {$row['lastname']} ({$row['e_id']}) has been denied.";
+            log_activity($adminId, $action_type, $affected_feature, $details);
+
+            header("Location: ../admin/leave_requests.php?status=denied");
+        } else {
+            header("Location: ../admin/leave_requests.php?status=error");
+        }
     }
-    exit();
+} else {
+    header("Location: ../admin/leave_requests.php?status=not_found");
+}
+exit();
+
 }
 
 // Function to log activity
@@ -376,7 +461,6 @@ function log_activity($adminId, $action_type, $affected_feature, $details) {
                                         <th>Employee ID</th>
                                         <th>Employee Name</th>
                                         <th>Department</th>
-                                        <th>Leave Balance</th>
                                         <th>Duration of Leave</th>
                                         <th>Deduction Leave</th>
                                         <th>Reason</th>
@@ -415,7 +499,6 @@ function log_activity($adminId, $action_type, $affected_feature, $details) {
                                             <td><?php echo htmlspecialchars($row['e_id']); ?></td>
                                             <td><?php echo htmlspecialchars($row['firstname'] . ' ' . $row['lastname']); ?></td>
                                             <td><?php echo htmlspecialchars($row['department']); ?></td>
-                                            <td><?php echo htmlspecialchars($row['available_leaves']); ?></td>
                                             <td><?php echo htmlspecialchars(date("F j, Y", strtotime($row['start_date']))) . ' <span class="text-warning"> | </span> ' . htmlspecialchars(date("F j, Y", strtotime($row['end_date']))); ?></td>
                                             <td><?php echo htmlspecialchars($leave_days); ?> day/s</td>
                                             <td><?php echo htmlspecialchars($row['leave_type']); ?></td>

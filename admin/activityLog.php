@@ -61,7 +61,7 @@ $stmt->close();
                 <thead class="thead-light">
                     <tr class="text-center text-light">
                         <th>Timestamp</th>
-                        <th>Admin Username</th>
+                        <th>Action Taken By</th>
                         <th>Action</th>
                         <th>Affected Feature</th>
                         <th>Details</th>

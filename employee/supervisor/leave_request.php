@@ -2,7 +2,7 @@
 session_start();
 
 if (!isset($_SESSION['e_id'])) {
-    header("Location: ../../employee/login.php");
+    header("Location: ../../login.php");
     exit();
 }
 
@@ -21,7 +21,7 @@ $result = $stmt->get_result();
 $employeeInfo = $result->fetch_assoc();
 
 // Fetch all pending leave requests for supervisors to handle
-$sql = "SELECT lr.leave_id, e.e_id, e.firstname, e.lastname, e.department, e.available_leaves, lr.start_date, lr.end_date, lr.leave_type, lr.proof, lr.status, lr.created_at
+$sql = "SELECT lr.leave_id, e.e_id, e.firstname, e.lastname, e.department, lr.start_date, lr.end_date, lr.leave_type, lr.proof, lr.status, lr.created_at
         FROM leave_requests lr
         JOIN employee_register e ON lr.e_id = e.e_id
         WHERE lr.status = 'Pending' ORDER BY created_at ASC";  // Fetch only Pending requests
@@ -46,7 +46,7 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
     $status = $_GET['status'];
 
     // Fetch the specific leave request
-    $sql = "SELECT e.department, e.e_id, e.firstname, e.lastname, e.available_leaves, lr.start_date, lr.end_date, lr.leave_type, lr.proof, lr.status
+    $sql = "SELECT e.department, e.e_id, e.firstname, e.lastname, lr.start_date, lr.end_date, lr.leave_type, lr.proof, lr.status
             FROM leave_requests lr
             JOIN employee_register e ON lr.e_id = e.e_id
             WHERE lr.leave_id = ?";
@@ -57,7 +57,6 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
 
     if ($action_result->num_rows > 0) {
         $row = $action_result->fetch_assoc();
-        $available_leaves = $row['available_leaves'];
         $start_date = $row['start_date'];
         $end_date = $row['end_date'];
 
@@ -327,7 +326,6 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
                                         <th>Employee ID</th>
                                         <th>Employee Name</th>
                                         <th>Department</th>
-                                        <th>Leave Balance</th>
                                         <th>Duration of Leave</th>
                                         <th>Deduction Leave</th>
                                         <th>Reason</th>
@@ -366,7 +364,6 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
                                             <td><?php echo htmlspecialchars($row['e_id']); ?></td>
                                             <td><?php echo htmlspecialchars($row['firstname'] . ' ' . $row['lastname']); ?></td>
                                             <td><?php echo htmlspecialchars($row['department']); ?></td>
-                                            <td><?php echo htmlspecialchars($row['available_leaves']); ?></td>
                                             <td><?php echo htmlspecialchars(date("F j, Y", strtotime($row['start_date']))) . ' <span class="text-warning"> | </span> ' . htmlspecialchars(date("F j, Y", strtotime($row['end_date']))); ?></td>
                                             <td><?php echo htmlspecialchars($leave_days); ?> day/s</td>
                                             <td><?php echo htmlspecialchars($row['leave_type']); ?></td>
