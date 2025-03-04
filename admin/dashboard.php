@@ -1,9 +1,8 @@
-
 <?php
 session_start();
 
 if (!isset($_SESSION['a_id'])) {
-    header("Location: ../admin/login.php");
+    header("Location: ../login.php");
     exit();
 }
 
@@ -31,34 +30,6 @@ $profilePicture = !empty($adminInfo['pfp']) ? $adminInfo['pfp'] : '../img/defaul
 
 // Close statement and connection
 $stmt->close();
-
-// Fetch notifications
-$sql = "SELECT id, message, created_at, is_read FROM notifications ORDER BY created_at DESC";
-$result = $conn->query($sql);
-$notifications = [];
-while ($row = $result->fetch_assoc()) {
-    $notifications[] = $row;
-}
-
-// Fetch leave notifications
-$sql = "SELECT id, message, created_at, is_read FROM leave_notifications ORDER BY created_at DESC";
-$result = $conn->query($sql);
-while ($row = $result->fetch_assoc()) {
-    $notifications[] = $row;
-}
-
-// Fetch new employee notifications
-$sql = "SELECT id, message, created_at, is_read FROM notifications ORDER BY created_at DESC";
-$result = $conn->query($sql);
-while ($row = $result->fetch_assoc()) {
-    $notifications[] = $row;
-}
-
-// Sort notifications by created_at
-usort($notifications, function($a, $b) {
-    return strtotime($b['created_at']) - strtotime($a['created_at']);
-});
-
 $conn->close();
 ?>
 
@@ -394,137 +365,6 @@ $conn->close();
             }
         });
         //for leaveStatusChart end
-
-        //for calendar only
-        let calendar; // Declare calendar variable globally
-
-        function toggleCalendar() {
-            const calendarContainer = document.getElementById('calendarContainer');
-
-            // Toggle visibility of the calendar container
-            if (calendarContainer.style.display === 'none' || calendarContainer.style.display === '') {
-                calendarContainer.style.display = 'block';
-
-                // Initialize the calendar if it hasn't been initialized yet
-                if (!calendar) {
-                    initializeCalendar();
-                }
-            } else {
-                calendarContainer.style.display = 'none';
-            }
-        }
-
-        // Function to initialize FullCalendar
-        function initializeCalendar() {
-            const calendarEl = document.getElementById('calendar');
-            calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                },
-                height: 440,  // Set the height of the calendar to make it small
-                events: {
-                    url: '../db/holiday.php',  // Endpoint for fetching events
-                    method: 'GET',
-                    failure: function() {
-                        alert('There was an error fetching events!');
-                    }
-                }
-            });
-
-            calendar.render();
-        }
-
-// Set the current date when the page loads
-document.addEventListener('DOMContentLoaded', function () {
-    const currentDateElement = document.getElementById('currentDate');
-    const currentDate = new Date().toLocaleDateString(); // Get the current date
-    currentDateElement.textContent = currentDate; // Set the date text
-});
-
-// Close the calendar when clicking outside of it
-document.addEventListener('click', function(event) {
-    const calendarContainer = document.getElementById('calendarContainer');
-    const calendarButton = document.querySelector('button[onclick="toggleCalendar()"]');
-
-    // Hide the calendar if the user clicks outside of the calendar and button
-    if (!calendarContainer.contains(event.target) && !calendarButton.contains(event.target)) {
-        calendarContainer.style.display = 'none';
-    }
-});
-        //for calendar only end
-
-        //for leave request (error)
- document.addEventListener('DOMContentLoaded', function () {
-    const calendarEl = document.getElementById('calendar');
-    const calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth', // Basic view to confirm setup
-        headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth'
-        }
-    });
-    calendar.render();
-    //console.log("Calendar initialized and rendered");
-
-            function fetchLeaveData(date) {
-                fetch(`leave_data.php?date=${date}`)
-                .then(response => response.json())
-                .then(data => {
-                    let leaveDetails = 'Employees on leave:\n';
-                    if (data.length > 0) {
-                        data.forEach(employee => {
-                            leaveDetails += `${employee.name} (${employee.leave_type})\n`;
-                        });
-                    } else {
-                        leaveDetails = 'No employees on leave for this day.';
-                    }
-                    alert(leaveDetails); // You can replace this with a modal or a more styled output
-                })
-                .catch(error => {
-                    console.error('Error fetching leave data:', error);
-                    alert('An error occurred while fetching leave data.');
-                });
-            }
-        });
-            //for leave request (error) end
-
-            function setCurrentTime() {
-    const currentTimeElement = document.getElementById('currentTime');
-    const currentDateElement = document.getElementById('currentDate');
-
-    // Get the current date and time in UTC
-    const currentDate = new Date();
-    
-    // Adjust time to Philippine Time (UTC+8)
-    currentDate.setHours(currentDate.getHours() + 0);
-
-    // Extract hours, minutes, and seconds
-    const hours = currentDate.getHours();
-    const minutes = currentDate.getMinutes();
-    const seconds = currentDate.getSeconds();
-
-    // Format hours, minutes, and seconds to ensure they are always two digits
-    const formattedHours = hours < 10 ? '0' + hours : hours;
-    const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
-    const formattedSeconds = seconds < 10 ? '0' + seconds : seconds;
-
-    // Set the current time
-    currentTimeElement.textContent = `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
-
-    // Set the current date
-    currentDateElement.textContent = currentDate.toLocaleDateString();
-}
-
-// Initial call to set the current time and date
-setCurrentTime();
-
-// Update the current time every second
-setInterval(setCurrentTime, 1000);
-
 
 
     // Dummy Data for Employee Performance

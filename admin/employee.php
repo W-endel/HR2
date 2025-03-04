@@ -45,30 +45,30 @@ $result = $conn->query($sql);
     </style>
 </head>
 <body class="sb-nav-fixed bg-black">
-    <nav class="sb-topnav navbar navbar-expand navbar-dark border-bottom border-1 border-warning bg-dark">
+    <nav class="sb-topnav navbar navbar-expand navbar-dark border-bottom border-1 border-secondary bg-dark">
         <a class="navbar-brand ps-3 text-muted" href="../admin/dashboard.php">Admin Portal</a>
         <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars text-light"></i></button>
-            <div class="d-flex ms-auto me-0 me-md-3 my-2 my-md-0 align-items-center">
-                <div class="text-light me-3 p-2 rounded shadow-sm bg-gradient" id="currentTimeContainer" 
-                    style="background: linear-gradient(45deg, #333333, #444444); border-radius: 5px;">
-                    <span class="d-flex align-items-center">
-                        <span class="pe-2">
-                            <i class="fas fa-clock"></i> 
-                            <span id="currentTime">00:00:00</span>
-                        </span>
-                        <button class="btn btn-outline-warning btn-sm ms-2" type="button" onclick="toggleCalendar()">
-                            <i class="fas fa-calendar-alt"></i>
-                            <span id="currentDate">00/00/0000</span>
-                        </button>
+        <div class="d-flex ms-auto me-0 me-md-3 my-2 my-md-0 align-items-center">
+            <div class="text-light me-3 p-2 rounded shadow-sm bg-gradient" id="currentTimeContainer" 
+                style="background: linear-gradient(45deg, #333333, #444444); border-radius: 5px;">
+                <span class="d-flex align-items-center">
+                    <span class="pe-2">
+                        <i class="fas fa-clock"></i> 
+                        <span id="currentTime">00:00:00</span>
                     </span>
-                </div>
-                <form class="d-none d-md-inline-block form-inline">
-                    <div class="input-group">
-                        <input class="form-control" type="text" placeholder="Search for..." aria-label="Search for..." aria-describedby="btnNavbarSearch" />
-                        <button class="btn btn-warning" id="btnNavbarSearch" type="button"><i class="fas fa-search"></i></button>
-                    </div>
-                </form>
+                    <button class="btn btn-outline-warning btn-sm ms-2" type="button" onclick="toggleCalendar()">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span id="currentDate">00/00/0000</span>
+                    </button>
+                </span>
             </div>
+            <form class="d-none d-md-inline-block form-inline">
+                <div class="input-group">
+                    <input class="form-control" type="text" placeholder="Search for..." aria-label="Search for..." aria-describedby="btnNavbarSearch" />
+                    <button class="btn btn-warning" id="btnNavbarSearch" type="button"><i class="fas fa-search"></i></button>
+                </div>
+            </form>
+        </div>
     </nav>
     <div id="layoutSidenav">
         <div id="layoutSidenav_nav">
@@ -113,7 +113,7 @@ $result = $conn->query($sql);
                                 </span>
                             </li>
                         </ul>
-                        <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-warning mt-3">Admin Dashboard</div>
+                        <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-secondary mt-3">Admin Dashboard</div>
                         <a class="nav-link text-light" href="../admin/dashboard.php">
                             <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
                             Dashboard
@@ -162,7 +162,7 @@ $result = $conn->query($sql);
                                 <a class="nav-link text-light" href="../admin/recognition.php">Generate Certificate</a>
                             </nav>
                         </div>
-                        <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-warning mt-3">Account Management</div>
+                        <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-secondary mt-3">Account Management</div>
                         <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
                             <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
                             Accounts
@@ -179,7 +179,7 @@ $result = $conn->query($sql);
                         </div>
                     </div>
                 </div>
-                <div class="sb-sidenav-footer bg-black text-light border-top border-1 border-warning">
+                <div class="sb-sidenav-footer bg-black text-light border-top border-1 border-secondary">
                     <div class="small">Logged in as: <?php echo htmlspecialchars($adminInfo['role']); ?></div>
                 </div>
             </nav>
@@ -199,7 +199,7 @@ $result = $conn->query($sql);
                     </div>               
                     <div class=""></div>
                     <div class="card mb-4 bg-dark text-light">
-                        <div class="card-header border-bottom border-1 border-warning d-flex justify-content-between align-items-center">
+                        <div class="card-header border-bottom border-1 border-secondary d-flex justify-content-between align-items-center">
                             <span>
                                 <i class="fas fa-table me-1"></i>
                                 Employee Accounts
@@ -338,14 +338,14 @@ $result = $conn->query($sql);
                 <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content bg-dark text-light">
-                            <div class="modal-header border-bottom border-warning">
+                            <div class="modal-header border-bottom border-secondary">
                                 <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
                                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
                                 Are you sure you want to log out?
                             </div>
-                            <div class="modal-footer border-top border-warning">
+                            <div class="modal-footer border-top border-secondary">
                                 <button type="button" class="btn border-secondary text-light" data-bs-dismiss="modal">Cancel</button>
                                 <form action="../admin/logout.php" method="POST">
                                     <button type="submit" class="btn btn-danger">Logout</button>
@@ -354,7 +354,7 @@ $result = $conn->query($sql);
                         </div>
                     </div>
                 </div>  
-            <footer class="py-4 bg-dark text-light mt-auto border-top border-warning">
+            <footer class="py-4 bg-dark text-light mt-auto border-top border-secondary">
                 <div class="container-fluid px-4">
                     <div class="d-flex align-items-center justify-content-between small">
                         <div class="text-muted">Copyright &copy; Your Website 2024</div>

@@ -182,7 +182,15 @@ if ($action_result->num_rows > 0) {
                 $affected_feature = "Leave Information";
                 $details = "Leave request from {$row['firstname']} {$row['lastname']} ({$row['e_id']}) has been approved | Leave day(s): $leave_days.";
                 log_activity($adminId, $action_type, $affected_feature, $details);
-
+            
+                // Notify the employee
+                $employeeId = $row['e_id']; // Get the employee's ID
+                $message = "Your leave request has been approved. Leave days: $leave_days.";
+                $notificationSql = "INSERT INTO notifications (employee_id, message) VALUES (?, ?)";
+                $notificationStmt = $conn->prepare($notificationSql);
+                $notificationStmt->bind_param("is", $employeeId, $message);
+                $notificationStmt->execute();
+            
                 header("Location: ../admin/leave_requests.php?status=approved");
             } else {
                 error_log("Error updating leave balance: " . $conn->error);
@@ -221,7 +229,18 @@ if ($action_result->num_rows > 0) {
             $affected_feature = "Leave Information";
             $details = "Leave request from {$row['firstname']} {$row['lastname']} ({$row['e_id']}) has been denied by the admin.";
             log_activity($adminId, $action_type, $affected_feature, $details);
-    
+        
+            // Notify the employee
+            $employeeId = $row['e_id']; // Get the employee's ID
+            $message = "Your leave request has been denied.";
+            if (!empty($admin_comments)) {
+                $message .= " Reason: " . $admin_comments;
+            }
+            $notificationSql = "INSERT INTO notifications (employee_id, message) VALUES (?, ?)";
+            $notificationStmt = $conn->prepare($notificationSql);
+            $notificationStmt->bind_param("is", $employeeId, $message);
+            $notificationStmt->execute();
+        
             // Redirect to admin's leave request page
             header("Location: ../admin/leave_requests.php?status=success");
         } else {
@@ -520,88 +539,14 @@ function log_activity($adminId, $action_type, $affected_feature, $details) {
         </div>
     </div>
 <script>
-    //CALENDAR 
-    let calendar;
-        function toggleCalendar() {
-            const calendarContainer = document.getElementById('calendarContainer');
-                if (calendarContainer.style.display === 'none' || calendarContainer.style.display === '') {
-                    calendarContainer.style.display = 'block';
-                    if (!calendar) {
-                        initializeCalendar();
-                        }
-                    } else {
-                        calendarContainer.style.display = 'none';
-                    }
-        }
-
-        function initializeCalendar() {
-            const calendarEl = document.getElementById('calendar');
-                calendar = new FullCalendar.Calendar(calendarEl, {
-                    initialView: 'dayGridMonth',
-                    headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                    },
-                    height: 440,  
-                    events: {
-                    url: '../db/holiday.php',  
-                    method: 'GET',
-                    failure: function() {
-                    alert('There was an error fetching events!');
-                    }
-                    }
-                });
-
-                calendar.render();
-        }
-
-        document.addEventListener('DOMContentLoaded', function () {
-            const currentDateElement = document.getElementById('currentDate');
-            const currentDate = new Date().toLocaleDateString(); 
-            currentDateElement.textContent = currentDate; 
-        });
-
-        document.addEventListener('click', function(event) {
-            const calendarContainer = document.getElementById('calendarContainer');
-            const calendarButton = document.querySelector('button[onclick="toggleCalendar()"]');
-
-                if (!calendarContainer.contains(event.target) && !calendarButton.contains(event.target)) {
-                    calendarContainer.style.display = 'none';
-                    }
-        });
-        //CALENDAR END
-
-        //TIME 
-        function setCurrentTime() {
-            const currentTimeElement = document.getElementById('currentTime');
-            const currentDateElement = document.getElementById('currentDate');
-
-            const currentDate = new Date();
-    
-            currentDate.setHours(currentDate.getHours() + 0);
-                const hours = currentDate.getHours();
-                const minutes = currentDate.getMinutes();
-                const seconds = currentDate.getSeconds();
-                const formattedHours = hours < 10 ? '0' + hours : hours;
-                const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
-                const formattedSeconds = seconds < 10 ? '0' + seconds : seconds;
-
-            currentTimeElement.textContent = `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
-            currentDateElement.textContent = currentDate.toLocaleDateString();
-        }
-        setCurrentTime();
-        setInterval(setCurrentTime, 1000);
-        //TIME END
-
-        //LEAVE STATUS 
-        function confirmAction(action, leaveId) {
-            let confirmation = confirm(`Are you sure you want to ${action} this leave request?`);
-                if (confirmation) {
-                window.location.href = `leave_requests.php?leave_id=${leaveId}&status=${action}`;
-                }
-        }
-        //LEAVE STATUS END
+    //LEAVE STATUS 
+    function confirmAction(action, leaveId) {
+        let confirmation = confirm(`Are you sure you want to ${action} this leave request?`);
+            if (confirmation) {
+            window.location.href = `leave_requests.php?leave_id=${leaveId}&status=${action}`;
+            }
+    }
+    //LEAVE STATUS END
 
 
     // Automatically hide the alert after 10 seconds (10,000 milliseconds)

@@ -36,42 +36,36 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit();
     }
 
-        // Check available leaves for the employee
-    // Modify your SQL query to also fetch the gender
-   // Modify your SQL query to specify the gender column from the employee_register table
+    // Check available leaves for the employee
     $sql = "SELECT 
-    employee_register.gender, 
-    bereavement_leave, 
-    emergency_leave, 
-    maternity_leave, 
-    mcw_special_leave, 
-    parental_leave, 
-    service_incentive_leave, 
-    sick_leave, 
-    vacation_leave, 
-    vawc_leave,
-    bereavement_leave_male,
-    emergency_leave_male,
-    parental_leave_male,
-    paternity_leave_male,
-    service_incentive_leave_male,
-    sick_leave_male,
-    vacation_leave_male 
-    FROM employee_leaves 
-    INNER JOIN employee_register ON employee_leaves.employee_id = employee_register.e_id 
-    WHERE employee_id = ?";
+            employee_register.gender, 
+            bereavement_leave, 
+            emergency_leave, 
+            maternity_leave, 
+            mcw_special_leave, 
+            parental_leave, 
+            service_incentive_leave, 
+            sick_leave, 
+            vacation_leave, 
+            vawc_leave,
+            bereavement_leave_male,
+            emergency_leave_male,
+            parental_leave_male,
+            paternity_leave_male,
+            service_incentive_leave_male,
+            sick_leave_male,
+            vacation_leave_male 
+            FROM employee_leaves 
+            INNER JOIN employee_register ON employee_leaves.employee_id = employee_register.e_id 
+            WHERE employee_id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param('i', $employeeId);
     $stmt->execute();
     $result = $stmt->get_result();
 
-        if ($result->num_rows > 0) {
+    if ($result->num_rows > 0) {
         $leavesInfo = $result->fetch_assoc();
-
-        // Fetch the gender information
         $employeeGender = $leavesInfo['gender'];
-
-        // Get the available balance based on gender and leave type
         $availableLeaveBalance = 0;
 
         if ($employeeGender === 'Male') {
@@ -100,9 +94,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 default:
                     error_log("Unknown leave type for male employee: " . $leaveType);
                     $availableLeaveBalance = 0;
-                break;
+                    break;
             }
-
         } else {
             switch ($leaveType) {
                 case 'Bereavement Leave':
@@ -135,18 +128,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
         }
 
-// Your existing code for calculating leave days and handling the leave request follows...
-
         // Calculate the number of requested leave days
         try {
             $startDateObj = new DateTime($startDate);
             $endDateObj = new DateTime($endDate);
             $leaveDaysRequested = $endDateObj->diff($startDateObj)->days + 1;
 
-            // Debug: Log requested days and available leave balance
-            error_log("Leave Days Requested: $leaveDaysRequested, Available Leave Balance: $availableLeaveBalance");
-
-            // Compare the requested leave days to available leave balance
             if ($leaveDaysRequested > $availableLeaveBalance) {
                 $_SESSION['status_message'] = "<strong>Error:</strong> You don't have enough leave days for this type.";
                 header("Location: ../../employee/supervisor/leave_file.php");
@@ -159,32 +146,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             exit();
         }
     } else {
-        // No leave information found for the employee
         error_log("No leave information found for employee_id: " . $employeeId);
         $_SESSION['status_message'] = "<strong>Error:</strong> Employee leave information not found.";
         header("Location: ../../employee/supervisor/leave_file.php");
         exit();
     }
 
-
     // Handle multiple file uploads
-    $proofFiles = [];  // Initialize an array to hold the file names
-    $uploadDir = '../../proof/';  // Directory to store uploaded files
+    $proofFiles = [];
+    $uploadDir = '../../proof/';
 
     if (isset($_FILES['proof']) && !empty($_FILES['proof']['name'][0])) {
         $files = $_FILES['proof'];
 
-        // Loop through each uploaded file
         foreach ($files['tmp_name'] as $key => $tmpName) {
             if ($files['error'][$key] === UPLOAD_ERR_OK) {
                 $fileTmpPath = $tmpName;
                 $fileName = $files['name'][$key];
                 $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-
-                // Generate a unique name for the file
                 $newFileName = uniqid('proof_', true) . '.' . $fileExtension;
 
-                // Validate file type and size
                 $allowedExtensions = ['jpg', 'jpeg', 'png', 'pdf', 'doc', 'docx', 'txt'];
                 $maxFileSize = 5 * 1024 * 1024; // 5 MB
 
@@ -200,10 +181,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     exit();
                 }
 
-                // Move the file to the uploads directory
                 $destFilePath = $uploadDir . $newFileName;
                 if (move_uploaded_file($fileTmpPath, $destFilePath)) {
-                    $proofFiles[] = $newFileName;  // Store only the file name
+                    $proofFiles[] = $newFileName;
                 } else {
                     $_SESSION['status_message'] = "<strong>Error:</strong> Could not move the uploaded file.";
                     header("Location: ../../employee/supervisor/leave_file.php");
@@ -217,21 +197,42 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
 
-    // Insert the leave request into the database, including the proof file paths
+    // Insert the leave request into the database
     $sql = "INSERT INTO leave_requests (e_id, start_date, end_date, leave_type, proof, status) 
             VALUES (?, ?, ?, ?, ?, 'Supervisor Approved')";
     $stmt = $conn->prepare($sql);
-
-    // Prepare the file paths to store in the database (comma-separated if multiple files)
-    $proofFilePaths = implode(',', $proofFiles);  // Store only the file names (relative to 'proof' folder)
-
-    // Bind parameters
+    $proofFilePaths = implode(',', $proofFiles);
     $stmt->bind_param('issss', $employeeId, $startDate, $endDate, $leaveType, $proofFilePaths);
 
-    // Execute the query
     if ($stmt->execute()) {
         if ($stmt->affected_rows > 0) {
-            $_SESSION['status_message'] = "<strong>Success:</strong> Leave request submitted successfully.";
+            // Fetch all admin IDs
+            $adminQuery = "SELECT a_id FROM admin_register";
+            $adminResult = $conn->query($adminQuery);
+    
+            if ($adminResult->num_rows > 0) {
+                // Loop through each admin and insert a notification
+                while ($adminRow = $adminResult->fetch_assoc()) {
+                    $adminId = $adminRow['a_id']; // Get the admin ID
+    
+                    // Notify the admin
+                    $message = "New leave request submitted by Employee ID: $employeeId.";
+                    $notificationSql = "INSERT INTO notifications (admin_id, message) VALUES (?, ?)";
+                    $notificationStmt = $conn->prepare($notificationSql);
+                    $notificationStmt->bind_param("is", $adminId, $message);
+    
+                    if (!$notificationStmt->execute()) {
+                        // Log the error if notification insertion fails
+                        error_log("Failed to notify admin ID: $adminId. Error: " . $notificationStmt->error);
+                    }
+                }
+    
+                $_SESSION['status_message'] = "<strong>Success:</strong> Leave request submitted successfully.";
+            } else {
+                $_SESSION['status_message'] = "<strong>Error:</strong> No admins found.";
+                header("Location: ../../employee/supervisor/leave_file.php");
+                exit();
+            }
         } else {
             $_SESSION['status_message'] = "<strong>Error:</strong> Leave request was not inserted.";
         }
