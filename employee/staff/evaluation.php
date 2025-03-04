@@ -5,8 +5,8 @@ session_start();
 include '../../db/db_conn.php'; 
 
 // Redirect to login page if employee is not logged in
-if (!isset($_SESSION['e_id'])) {
-    header("Location: ../../employee/login.php");
+if (!isset($_SESSION['e_id']) || !isset($_SESSION['position']) || $_SESSION['position'] !== 'Staff') {
+    header("Location: ../../login.php");
     exit();
 }
 

@@ -219,7 +219,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // Insert the leave request into the database, including the proof file paths
     $sql = "INSERT INTO leave_requests (e_id, start_date, end_date, leave_type, proof, status) 
-            VALUES (?, ?, ?, ?, ?, 'pending')";
+            VALUES (?, ?, ?, ?, ?, 'Supervisor Approved')";
     $stmt = $conn->prepare($sql);
 
     // Prepare the file paths to store in the database (comma-separated if multiple files)

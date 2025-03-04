@@ -1,7 +1,7 @@
 <?php
 session_start();
-if (!isset($_SESSION['e_id']))  {
-    header("Location: ../../employee/login.php"); // Redirect to login if not logged in
+if (!isset($_SESSION['e_id']) || !isset($_SESSION['position']) || $_SESSION['position'] !== 'Staff') {
+    header("Location: ../../login.php");
     exit();
 }
 

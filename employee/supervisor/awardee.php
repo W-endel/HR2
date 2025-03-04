@@ -1,10 +1,10 @@
 <?php
     // Start session and check admin login
-    session_start();
-    if (!isset($_SESSION['e_id'])) {
-        header("Location: ../../employee/login.php");
-        exit();
-    }
+session_start();
+if (!isset($_SESSION['e_id']) || !isset($_SESSION['position']) || $_SESSION['position'] !== 'Supervisor') {
+    header("Location: ../../login.php");
+    exit();
+}
 
     // Include database connection
     include '../../db/db_conn.php';

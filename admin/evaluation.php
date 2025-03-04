@@ -58,145 +58,9 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body class="sb-nav-fixed bg-black">
-    <nav class="sb-topnav navbar navbar-expand navbar-dark border-bottom border-1 border-warning bg-dark">
-        <a class="navbar-brand ps-3 text-muted" href="../admin/dashboard.php">Microfinance</a>
-        <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars text-light"></i></button>
-            <div class="d-flex ms-auto me-0 me-md-3 my-2 my-md-0 align-items-center">
-                <div class="text-light me-3 p-2 rounded shadow-sm bg-gradient" id="currentTimeContainer" 
-                    style="background: linear-gradient(45deg, #333333, #444444); border-radius: 5px;">
-                    <span class="d-flex align-items-center">
-                        <span class="pe-2">
-                            <i class="fas fa-clock"></i> 
-                            <span id="currentTime">00:00:00</span>
-                        </span>
-                        <button class="btn btn-outline-warning btn-sm ms-2" type="button" onclick="toggleCalendar()">
-                            <i class="fas fa-calendar-alt"></i>
-                            <span id="currentDate">00/00/0000</span>
-                        </button>
-                    </span>
-                </div>
-                <form class="d-none d-md-inline-block form-inline">
-                    <div class="input-group">
-                        <input class="form-control" type="text" placeholder="Search for..." aria-label="Search for..." aria-describedby="btnNavbarSearch" />
-                        <button class="btn btn-warning" id="btnNavbarSearch" type="button"><i class="fas fa-search"></i></button>
-                    </div>
-                </form>
-            </div>
-    </nav>
+    <?php include 'navbar.php'; ?>
     <div id="layoutSidenav">
-        <div id="layoutSidenav_nav">
-            <nav class="sb-sidenav accordion bg-dark" id="sidenavAccordion">
-                <div class="sb-sidenav-menu ">
-                    <div class="nav">
-                        <div class="sb-sidenav-menu-heading text-center text-muted">Your Profile</div>
-                        <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
-                            <li class="nav-item dropdown text">
-                                <a class="nav-link dropdown-toggle text-light d-flex justify-content-center ms-4" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <img src="<?php echo (!empty($adminInfo['pfp']) && $adminInfo['pfp'] !== 'defaultpfp.png') 
-                                        ? htmlspecialchars($adminInfo['pfp']) 
-                                        : '../img/defaultpfp.jpg'; ?>" 
-                                        class="rounded-circle border border-light" width="120" height="120" alt="Profile Picture" />
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                    <li><a class="dropdown-item" href="../admin/profile.php">Profile</a></li>
-                                    <li><a class="dropdown-item" href="#!">Settings</a></li>
-                                    <li><a class="dropdown-item" href="#!">Activity Log</a></li>
-                                    <li><hr class="dropdown-divider" /></li>
-                                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">Logout</a></li>
-                                </ul>
-                            </li>
-                            <li class="nav-item text-light d-flex ms-3 flex-column align-items-center text-center">
-                                <span class="big text-light mb-1">
-                                    <?php
-                                        if ($adminInfo) {
-                                        echo htmlspecialchars($adminInfo['firstname'] . ' ' . $adminInfo['middlename'] . ' ' . $adminInfo['lastname']);
-                                        } else {
-                                        echo "Admin information not available.";
-                                        }
-                                    ?>
-                                </span>      
-                                <span class="big text-light">
-                                    <?php
-                                        if ($adminInfo) {
-                                        echo htmlspecialchars($adminInfo['role']);
-                                        } else {
-                                        echo "User information not available.";
-                                        }
-                                    ?>
-                                </span>
-                            </li>
-                        </ul>
-                        <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-warning mt-3">Admin Dashboard</div>
-                        <a class="nav-link text-light" href="../admin/dashboard.php">
-                            <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
-                            Dashboard
-                        </a>
-                        <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseTAD" aria-expanded="false" aria-controls="collapseTAD">
-                            <div class="sb-nav-link-icon"><i class="fa fa-address-card"></i></div>
-                            Time and Attendance
-                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                        </a>
-                        <div class="collapse" id="collapseTAD" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
-                            <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link text-light" href="../admin/attendance.php">Attendance</a>
-                                <a class="nav-link text-light" href="../admin/timesheet.php">Timesheet</a>
-                            </nav>
-                        </div>
-                        <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLM" aria-expanded="false" aria-controls="collapseLM">
-                            <div class="sb-nav-link-icon"><i class="fas fa-calendar-times"></i></div>
-                            Leave Management
-                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                        </a>
-                        <div class="collapse" id="collapseLM" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
-                            <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link text-light" href="../admin/leave_requests.php">Leave Requests</a>
-                                <a class="nav-link text-light" href="../admin/leave_history.php">Leave History</a>
-                                <a class="nav-link text-light"  href="../admin/leave_allocation.php">Set Leave</a>
-                            </nav>
-                        </div>
-                        <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePM" aria-expanded="false" aria-controls="collapsePM">
-                            <div class="sb-nav-link-icon"><i class="fas fa-line-chart"></i></div>
-                            Performance Management
-                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                        </a>
-                        <div class="collapse" id="collapsePM" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
-                            <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link text-light" href="../admin/evaluation.php">Evaluation</a>
-                            </nav>
-                        </div>
-                        <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseSR" aria-expanded="false" aria-controls="collapseSR">
-                            <div class="sb-nav-link-icon"><i class="fa fa-address-card"></i></div>
-                            Social Recognition
-                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                        </a>
-                        <div class="collapse" id="collapseSR" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
-                            <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link text-light" href="../admin/awardee.php">Awardee</a>
-                                <a class="nav-link text-light" href="../admin/recognition.php">Generate Certificate</a>
-                            </nav>
-                        </div>
-                        <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-warning">Account Management</div>
-                        <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
-                            <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
-                            Accounts
-                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                        </a>
-                        <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
-                            <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link text-light" href="../admin/calendar.php">Calendar</a>
-                                <a class="nav-link text-light" href="../admin/admin.php">Admin Accounts</a>
-                                <a class="nav-link text-light" href="../admin/employee.php">Employee Accounts</a>
-                            </nav>
-                        </div>
-                        <div class="collapse" id="collapsePages" aria-labelledby="headingTwo" data-bs-parent="#sidenavAccordion">
-                        </div>
-                    </div>
-                </div>
-                <div class="sb-sidenav-footer bg-black text-light border-top border-1 border-warning">
-                    <div class="small">Logged in as: <?php echo htmlspecialchars($adminInfo['role']); ?></div>
-                </div>
-            </nav>
-        </div>
+        <?php include 'sidebar.php'; ?>
         <div id="layoutSidenav_content">
             <main class="bg-black">
                 <div class="container-fluid position-relative px-4">
@@ -223,7 +87,7 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                                 </div>
                                 <div id="financeInfo" class=" bg-dark text-dark">
                                     <div class="card-body">
-                                        <h5 class="text-center mb-4 text-light">Finance Department Evaluation Status</h5>
+                                        <h5 class="text-center mb-4 text-light">Finance Evaluation Status</h5>
                                         <div class="text-center mb-3">
                                             <span class="badge badge-primary mx-1">Total Employees: <?php echo $financeData['total']; ?></span>
                                             <span class="badge badge-success mx-1">Evaluated: <?php echo $financeData['evaluated']; ?></span>
@@ -448,7 +312,7 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                                 </div>
                                 <div id="itInfo" class="bg-dark text-dark">
                                     <div class="card-body">
-                                        <h5 class="text-center mb-4 text-light">It Evaluation Status</h5>
+                                        <h5 class="text-center mb-4 text-light">IT Evaluation Status</h5>
                                         <div class="text-center mb-3">
                                             <span class="badge badge-primary mx-1">Total Employees: <?php echo $itData['total']; ?></span>
                                             <span class="badge badge-success mx-1">Evaluated: <?php echo $itData['evaluated']; ?></span>
@@ -489,14 +353,14 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                 <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content bg-dark text-light">
-                            <div class="modal-header border-bottom border-warning">
+                            <div class="modal-header border-bottom border-secondary">
                                 <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
                                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
                                 Are you sure you want to log out?
                             </div>
-                            <div class="modal-footer border-top border-warning">
+                            <div class="modal-footer border-top border-secondary">
                                 <button type="button" class="btn border-secondary text-light" data-bs-dismiss="modal">Cancel</button>
                                 <form action="../admin/logout.php" method="POST">
                                     <button type="submit" class="btn btn-danger">Logout</button>
@@ -505,18 +369,7 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                         </div>
                     </div>
                 </div>  
-            <footer class="py-4 bg-dark text-light mt-auto border-top border-warning">
-                <div class="container-fluid px-4">
-                    <div class="d-flex align-items-center justify-content-between small">
-                        <div class="text-muted">Copyright &copy; Your Website 2024</div>
-                        <div>
-                            <a href="#">Privacy Policy</a>
-                            &middot;
-                            <a href="#">Terms & Conditions</a>
-                        </div>
-                    </div>
-                </div>
-            </footer>
+            <?php include 'footer.php'; ?>                                 
         </div>
     </div>
 <script>

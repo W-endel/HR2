@@ -1,15 +1,15 @@
 <?php
 session_start();
 
-if (!isset($_SESSION['e_id'])) {
+if (!isset($_SESSION['e_id']) || !isset($_SESSION['position']) || $_SESSION['position'] !== 'Supervisor') {
     header("Location: ../../login.php");
     exit();
 }
 
 include '../../db/db_conn.php';
 
-// Fetch supervisor's ID from the session (assuming the supervisor is logged in)
-$supervisorId = $_SESSION['e_id']; // Assuming the supervisor's ID is stored in the session when logged in
+// Fetch supervisor's ID from the session
+$supervisorId = $_SESSION['e_id'];
 
 // Fetch user info
 $employeeId = $_SESSION['e_id'];
@@ -92,16 +92,30 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
                 header("Location: ../../employee/supervisor/leave_request.php?status=error");
             }
         } elseif ($status === 'deny') {
-            // Deny the leave request and delete it
-            $delete_sql = "UPDATE leave_requests SET status = 'Denied', supervisor_approval = 'Supervisor Denied', admin_approval = 'Supervisor Denied', supervisor_id = ? WHERE leave_id = ?";
-            $delete_stmt = $conn->prepare($delete_sql);
-            $delete_stmt->bind_param("ii", $supervisorId, $leave_id);
+            // Check if a comment is provided
+            if (isset($_GET['supervisor_comments'])) {
+                $supervisor_comments = $_GET['supervisor_comments'];
 
-            if ($delete_stmt->execute()) {
-                // After denial, redirect to supervisor's leave balance page
-                header("Location: ../../employee/supervisor/leave_request.php?status=success");
+                // Deny the leave request and add the supervisor's comment
+                $delete_sql = "UPDATE leave_requests 
+                                SET status = 'Denied', 
+                                    supervisor_approval = 'Supervisor Denied', 
+                                    admin_approval = 'Supervisor Denied', 
+                                    supervisor_id = ?, 
+                                    supervisor_comments = ? 
+                                WHERE leave_id = ?";
+                $delete_stmt = $conn->prepare($delete_sql);
+                $delete_stmt->bind_param("isi", $supervisorId, $supervisor_comments, $leave_id);
+
+                if ($delete_stmt->execute()) {
+                    // After denial, redirect to supervisor's leave balance page
+                    header("Location: ../../employee/supervisor/leave_request.php?status=success");
+                } else {
+                    header("Location: ../../employee/supervisor/leave_request.php?status=error");
+                }
             } else {
-                header("Location: ../../employee/supervisor/leave_request.php?status=error");
+                // If no comment is provided, show an error
+                header("Location: ../../employee/supervisor/leave_request.php?status=no_comment");
             }
         }
     } else {
@@ -111,7 +125,6 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
     exit();
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -352,99 +365,100 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
                                                 }
                                             ?>
                                         <tr>
-                                        <td>
-                                            <?php 
-                                                if (isset($row['created_at'])) {
-                                                    echo htmlspecialchars(date("F j, Y", strtotime($row['created_at']))) . ' <span class="text-warning"> | </span> ' . htmlspecialchars(date("g:i A", strtotime($row['created_at'])));
-                                                } else {
-                                                    echo "Not Available";
-                                                }
-                                            ?>
-                                        </td>
-                                            <td><?php echo htmlspecialchars($row['e_id']); ?></td>
-                                            <td><?php echo htmlspecialchars($row['firstname'] . ' ' . $row['lastname']); ?></td>
-                                            <td><?php echo htmlspecialchars($row['department']); ?></td>
-                                            <td><?php echo htmlspecialchars(date("F j, Y", strtotime($row['start_date']))) . ' <span class="text-warning"> | </span> ' . htmlspecialchars(date("F j, Y", strtotime($row['end_date']))); ?></td>
-                                            <td><?php echo htmlspecialchars($leave_days); ?> day/s</td>
-                                            <td><?php echo htmlspecialchars($row['leave_type']); ?></td>
                                             <td>
-                                                <?php if (!empty($row['proof'])): ?>
-                                                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#proofModal<?php echo $row['proof']; ?>">View</button>
-                                                <?php else: ?>
-                                                    No proof provided
-                                                <?php endif; ?>
+                                                <?php 
+                                                    if (isset($row['created_at'])) {
+                                                        echo htmlspecialchars(date("F j, Y", strtotime($row['created_at']))) . ' <span class="text-warning"> | </span> ' . htmlspecialchars(date("g:i A", strtotime($row['created_at'])));
+                                                    } else {
+                                                        echo "Not Available";
+                                                    }
+                                                ?>
                                             </td>
-                                            <div class="modal fade" id="proofModal<?php echo $row['proof']; ?>" tabindex="-1" aria-labelledby="proofModalLabel<?php echo $row['proof']; ?>" aria-hidden="true">
-                                                <div class="modal-dialog modal-dialog-centered">
-                                                    <div class="modal-content bg-dark text-light" style="width: 600px; height: 500px;">
-                                                        <div class="modal-header border-bottom border-warning">
-                                                            <h5 class="modal-title" id="proofModalLabel<?php echo $row['proof']; ?>">Proof of Leave</h5>
-                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <div class="modal-body d-flex align-items-center justify-content-center" style="overflow-y: auto; height: calc(100% - 80px);">
-                                                            <div id="proofCarousel<?php echo $row['proof']; ?>" class="carousel slide d-flex align-items-center justify-content-center" data-bs-ride="false">
-                                                                <div class="carousel-inner">
-                                                                    <?php
-                                                                        // Assuming proof field contains a comma-separated list of file names
-                                                                        $filePaths = explode(',', $row['proof']);  
-                                                                        $isActive = true;  // To set the first item as active
-                                                                        $fileCount = count($filePaths);  // Count the number of files
-                                                                        $baseURL = 'http://localhost/HR2/proof/';  // Define the base URL for file access
+                                                <td><?php echo htmlspecialchars($row['e_id']); ?></td>
+                                                <td><?php echo htmlspecialchars($row['firstname'] . ' ' . $row['lastname']); ?></td>
+                                                <td><?php echo htmlspecialchars($row['department']); ?></td>
+                                                <td><?php echo htmlspecialchars(date("F j, Y", strtotime($row['start_date']))) . ' <span class="text-warning"> | </span> ' . htmlspecialchars(date("F j, Y", strtotime($row['end_date']))); ?></td>
+                                                <td><?php echo htmlspecialchars($leave_days); ?> day/s</td>
+                                                <td><?php echo htmlspecialchars($row['leave_type']); ?></td>
+                                                <td>
+                                                    <?php if (!empty($row['proof'])): ?>
+                                                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#proofModal<?php echo $row['proof']; ?>">View</button>
+                                                    <?php else: ?>
+                                                        No proof provided
+                                                    <?php endif; ?>
+                                                </td>
+                                                <div class="modal fade" id="proofModal<?php echo $row['proof']; ?>" tabindex="-1" aria-labelledby="proofModalLabel<?php echo $row['proof']; ?>" aria-hidden="true">
+                                                    <div class="modal-dialog modal-dialog-centered">
+                                                        <div class="modal-content bg-dark text-light" style="width: 600px; height: 500px;">
+                                                            <div class="modal-header border-bottom border-warning">
+                                                                <h5 class="modal-title" id="proofModalLabel<?php echo $row['proof']; ?>">Proof of Leave</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body d-flex align-items-center justify-content-center" style="overflow-y: auto; height: calc(100% - 80px);">
+                                                                <div id="proofCarousel<?php echo $row['proof']; ?>" class="carousel slide d-flex align-items-center justify-content-center" data-bs-ride="false">
+                                                                    <div class="carousel-inner">
+                                                                        <?php
+                                                                            // Assuming proof field contains a comma-separated list of file names
+                                                                            $filePaths = explode(',', $row['proof']);  
+                                                                            $isActive = true;  // To set the first item as active
+                                                                            $fileCount = count($filePaths);  // Count the number of files
+                                                                            $baseURL = 'http://localhost/HR2/proof/';  // Define the base URL for file access
 
-                                                                        foreach ($filePaths as $filePath) {
-                                                                            $filePath = trim($filePath);  // Clean the file path
-                                                                            $fullFilePath = $baseURL . $filePath;  // Construct the full URL for the file
-                                                                            $fileExtension = pathinfo($filePath, PATHINFO_EXTENSION);
+                                                                            foreach ($filePaths as $filePath) {
+                                                                                $filePath = trim($filePath);  // Clean the file path
+                                                                                $fullFilePath = $baseURL . $filePath;  // Construct the full URL for the file
+                                                                                $fileExtension = pathinfo($filePath, PATHINFO_EXTENSION);
 
-                                                                            // Check if the file is an image (e.g., jpg, jpeg, png, gif)
-                                                                            $imageTypes = ['jpg', 'jpeg', 'png', 'gif'];
-                                                                            if (in_array(strtolower($fileExtension), $imageTypes)) {
-                                                                                echo '<div class="carousel-item ' . ($isActive ? 'active' : '') . '">';
-                                                                                echo '<img src="' . htmlspecialchars($fullFilePath) . '" alt="Proof of Leave" class="d-block w-100" style="max-height: 400px; object-fit: contain;">';
-                                                                                echo '</div>';
-                                                                                $isActive = false;
+                                                                                // Check if the file is an image (e.g., jpg, jpeg, png, gif)
+                                                                                $imageTypes = ['jpg', 'jpeg', 'png', 'gif'];
+                                                                                if (in_array(strtolower($fileExtension), $imageTypes)) {
+                                                                                    echo '<div class="carousel-item ' . ($isActive ? 'active' : '') . '">';
+                                                                                    echo '<img src="' . htmlspecialchars($fullFilePath) . '" alt="Proof of Leave" class="d-block w-100" style="max-height: 400px; object-fit: contain;">';
+                                                                                    echo '</div>';
+                                                                                    $isActive = false;
+                                                                                }
+                                                                                // Check if the file is a PDF (this will just show an embed for PDFs)
+                                                                                elseif (strtolower($fileExtension) === 'pdf') {
+                                                                                    echo '<div class="carousel-item ' . ($isActive ? 'active' : '') . '">';
+                                                                                    echo '<embed src="' . htmlspecialchars($fullFilePath) . '" type="application/pdf" width="100%" height="400px" />';
+                                                                                    echo '</div>';
+                                                                                    $isActive = false;
+                                                                                }
+                                                                                // Handle other document types (e.g., docx, txt) – just provide a link to view the document
+                                                                                else {
+                                                                                    echo '<div class="carousel-item ' . ($isActive ? 'active' : '') . '">';
+                                                                                    echo '<a href="' . htmlspecialchars($fullFilePath) . '" target="_blank" class="btn btn-primary">View Document</a>';
+                                                                                    echo '</div>';
+                                                                                    $isActive = false;
+                                                                                }
                                                                             }
-                                                                            // Check if the file is a PDF (this will just show an embed for PDFs)
-                                                                            elseif (strtolower($fileExtension) === 'pdf') {
-                                                                                echo '<div class="carousel-item ' . ($isActive ? 'active' : '') . '">';
-                                                                                echo '<embed src="' . htmlspecialchars($fullFilePath) . '" type="application/pdf" width="100%" height="400px" />';
-                                                                                echo '</div>';
-                                                                                $isActive = false;
-                                                                            }
-                                                                            // Handle other document types (e.g., docx, txt) – just provide a link to view the document
-                                                                            else {
-                                                                                echo '<div class="carousel-item ' . ($isActive ? 'active' : '') . '">';
-                                                                                echo '<a href="' . htmlspecialchars($fullFilePath) . '" target="_blank" class="btn btn-primary">View Document</a>';
-                                                                                echo '</div>';
-                                                                                $isActive = false;
-                                                                            }
-                                                                        }
-                                                                    ?>
+                                                                        ?>
+                                                                    </div>
                                                                 </div>
                                                             </div>
-                                                        </div>
-                                                        <?php if ($fileCount > 1): ?>
-                                                            <button class="carousel-control-prev btn btn-secondary position-absolute top-50 start-0 translate-middle-y w-auto" type="button" data-bs-target="#proofCarousel<?php echo $row['proof']; ?>" data-bs-slide="prev">
-                                                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                                                <span class="visually-hidden">Previous</span>
-                                                            </button>
-                                                            <button class="carousel-control-next btn btn-secondary position-absolute top-50 end-0 translate-middle-y w-auto" type="button" data-bs-target="#proofCarousel<?php echo $row['proof']; ?>" data-bs-slide="next">
-                                                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                                                <span class="visually-hidden">Next</span>
-                                                            </button>
-                                                        <?php endif; ?>
-
-                                                        <div class="modal-footer border-top border-warning">
-                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                            <?php if ($fileCount > 1): ?>
+                                                                <button class="carousel-control-prev btn btn-secondary position-absolute top-50 start-0 translate-middle-y w-auto" type="button" data-bs-target="#proofCarousel<?php echo $row['proof']; ?>" data-bs-slide="prev">
+                                                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                                                    <span class="visually-hidden">Previous</span>
+                                                                </button>
+                                                                <button class="carousel-control-next btn btn-secondary position-absolute top-50 end-0 translate-middle-y w-auto" type="button" data-bs-target="#proofCarousel<?php echo $row['proof']; ?>" data-bs-slide="next">
+                                                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                                                    <span class="visually-hidden">Next</span>
+                                                                </button>
+                                                            <?php endif; ?>
+                                                            <div class="modal-footer border-top border-warning">
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                            <td class="text-center">
-                                                <div class="d-flex justify-content-center mb-0">
-                                                <button class="btn btn-success btn-sm me-2" onclick="confirmAction('approve', <?php echo $row['leave_id']; ?>)">Approve</button>
-                                                <button class="btn btn-danger btn-sm" onclick="confirmAction('deny', <?php echo $row['leave_id']; ?>)">Deny</button>
-                                            </td>
+                                                <td class="text-center">
+                                                    <div class="d-flex justify-content-center mb-0">
+                                                        <button class="btn btn-success btn-sm me-2" onclick="confirmAction('approve', <?php echo $row['leave_id']; ?>)">Approve</button>
+                                                        <button class="btn btn-danger btn-sm" onclick="confirmAction('deny', <?php echo $row['leave_id']; ?>)">Deny</button>
+                                                    </div>
+                                                </td>
+                                            </tr>
                                         <?php endwhile; ?>
                                     <?php endif; ?>
                                 </tbody>
@@ -453,6 +467,42 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
                     </div>
                 </div>
             </main>
+                <!-- Deny Reason Modal -->
+                <div class="modal fade" id="denyReasonModal" tabindex="-1" aria-labelledby="denyReasonModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content bg-dark text-light">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="denyReasonModalLabel">Reason for Denial</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <textarea id="denyReason" class="form-control" placeholder="Enter reason for denial..." rows="3"></textarea>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-danger" onclick="submitDeny()">Submit</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Custom Confirmation Modal -->
+                <div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content bg-dark text-light">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="confirmationModalLabel">Confirm Denial</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                Are you sure you want to deny this leave request?
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-danger" onclick="proceedWithDenial()">Yes, Deny</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             <footer class="py-4 bg-dark text-light mt-auto border-top border-warning">
                 <div class="container-fluid px-4">
                     <div class="d-flex align-items-center justify-content-between small">
@@ -542,17 +592,7 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
         setInterval(setCurrentTime, 1000);
         //TIME END
 
-        //LEAVE STATUS 
-        function confirmAction(action, requestId) {
-            let confirmation = confirm(`Are you sure you want to ${action} this leave request?`);
-                if (confirmation) {
-                window.location.href = `leave_request.php?leave_id=${requestId}&status=${action}`;
-                }
-        }
-        //LEAVE STATUS END
-
-
-    // Automatically hide the alert after 10 seconds (10,000 milliseconds)
+        // Automatically hide the alert after 10 seconds (10,000 milliseconds)
     setTimeout(function() {
         var alertElement = document.getElementById('status-alert');
         if (alertElement) {
@@ -565,6 +605,64 @@ if (isset($_GET['leave_id']) && isset($_GET['status'])) {
         }
     }, 5000); // 10 seconds delay
 
+
+    let currentLeaveId = null; // Variable to store the leave ID
+    let denyReason = ''; // Variable to store the denial reason
+
+    function confirmAction(action, leaveId) {
+        if (action === 'deny') {
+            // For denial, show the modal to collect the reason
+            currentLeaveId = leaveId; // Store the leave ID
+            const denyReasonModal = new bootstrap.Modal(document.getElementById('denyReasonModal'));
+            denyReasonModal.show(); // Show the modal
+        } else {
+            // For approval or other actions, use a confirmation dialog
+            let confirmation = confirm(`Are you sure you want to ${action} this leave request?`);
+            if (confirmation) {
+                window.location.href = `leave_request.php?leave_id=${leaveId}&status=${action}`;
+            }
+        }
+    }
+
+    function submitDeny() {
+        denyReason = document.getElementById('denyReason').value;
+
+        if (!denyReason) {
+            alert('Please enter a reason for denial.');
+            return;
+        }
+
+        // Hide the reason modal
+        const denyReasonModal = bootstrap.Modal.getInstance(document.getElementById('denyReasonModal'));
+        denyReasonModal.hide();
+
+        // Show the custom confirmation modal
+        const confirmationModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+        confirmationModal.show();
+    }
+
+    function proceedWithDenial() {
+        // Send the data to the server
+        fetch(`leave_request.php?leave_id=${currentLeaveId}&status=deny&supervisor_comments=${encodeURIComponent(denyReason)}`, {
+            method: 'GET',
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('Leave request denied successfully.');
+                location.reload(); // Reload the page to reflect changes
+            } else {
+                alert('Failed to deny leave request.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while processing your request.');
+        });
+
+        // Close the confirmation modal
+        const confirmationModal = bootstrap.Modal.getInstance(document.getElementById('confirmationModal'));
+        confirmationModal.hide();
+    }
 
 </script>
 <!-- Only keep the latest Bootstrap 5 version -->

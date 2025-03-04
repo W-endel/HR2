@@ -2,9 +2,9 @@
 session_start();
 include '../db/db_conn.php';
 
-// Ensure the employee is logged in
-if (!isset($_SESSION['e_id'])) {
-    die("Error: User is not logged in.");
+if (!isset($_SESSION['e_id']) || !isset($_SESSION['position']) || $_SESSION['position'] !== 'Staff') {
+    header("Location: ../../login.php");
+    exit();
 }
 
 $employeeId = $_SESSION['e_id'];

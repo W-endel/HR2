@@ -13,6 +13,32 @@ include '../db/db_conn.php';
 $role = 'employee';
 $department = 'Administration Department';
 
+// Check if it is the first week of the month
+$currentDay = date('j'); // Current day of the month (1-31)
+$isFirstWeek = ($currentDay <= 7); // First week is days 1-7
+
+// Set the evaluation period to the previous month if it is the first week
+if ($isFirstWeek) {
+    // Handle January edge case
+    if (date('m') == '01') {
+        $evaluationMonth = '12'; // December
+        $evaluationYear = date('Y') - 1; // Previous year
+    } else {
+        $evaluationMonth = date('m', strtotime('last month')); // Previous month
+        $evaluationYear = date('Y', strtotime('last month'));  // Year of the previous month
+    }
+
+    // Format evaluation period and end date
+    $evaluationPeriod = date('F Y', strtotime('last month')); // Format: February 2024
+    $evaluationEndDate = date('F j, Y', strtotime(date('Y-m-') . '07')); // Format: March 7, 2024
+} else {
+    // If it is not the first week, evaluations are closed
+    $evaluationMonth = null;
+    $evaluationYear = null;
+    $evaluationPeriod = null;
+    $evaluationEndDate = null;
+}
+
 // Fetch employee records where role is 'employee' and department is 'Administration Department'
 $sql = "SELECT e_id, firstname, lastname, role, position FROM employee_register WHERE role = ? AND department = ?";
 $stmt = $conn->prepare($sql);
@@ -80,8 +106,18 @@ $conn->close();
 
 <body class="bg-dark text-light">
     <div class="container mt-5">
-        <h2 class="text-center text-primary mb-4">Administration Department Evaluation</h2>
-
+        <h2 class="text-center text-light mb-4">Administration Department</h2>
+        
+        <!-- Display Evaluation Period -->
+        <?php if ($isFirstWeek): ?>
+            <p class="text-center text-warning">
+                Evaluation is open for <?php echo $evaluationPeriod; ?> until <?php echo $evaluationEndDate; ?>.
+            </p>
+        <?php else: ?>
+            <p class="text-center text-danger">
+                Evaluations are closed. They will open in the first week of the next month.
+            </p>
+        <?php endif; ?>
         <!-- Employee Evaluation Table -->
         <div class="table-responsive">
             <table class="table table-striped table-hover text-dark">
@@ -103,7 +139,7 @@ $conn->close();
                                 <td>
                                     <button class="btn btn-success" 
                                         onclick="evaluateEmployee(<?php echo $employee['e_id']; ?>, '<?php echo htmlspecialchars($employee['firstname'] . ' ' . $employee['lastname']); ?>', '<?php echo htmlspecialchars($employee['position']); ?>')"
-                                        <?php echo in_array($employee['e_id'], $evaluatedEmployees) ? 'disabled' : ''; ?>>
+                                        <?php echo !$isFirstWeek || in_array($employee['e_id'], $evaluatedEmployees) ? 'disabled' : ''; ?>>
                                         <?php echo in_array($employee['e_id'], $evaluatedEmployees) ? 'Evaluated' : 'Evaluate'; ?>
                                     </button>
                                 </td>

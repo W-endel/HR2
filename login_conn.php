@@ -61,7 +61,7 @@ if ($result->num_rows > 0) {
 }
 
 // Employee login check
-$sql = "SELECT e_id, password, position FROM employee_register WHERE email = ?";
+$sql = "SELECT e_id, password, position, department FROM employee_register WHERE email = ?"; // Fetch department
 $stmt = $conn->prepare($sql);
 
 if ($stmt === false) {
@@ -79,6 +79,7 @@ if ($result->num_rows > 0) {
     if (password_verify($inputPassword, $employeeData['password'])) {
         $_SESSION['e_id'] = $employeeData['e_id']; 
         $_SESSION['position'] = $employeeData['position']; // Store the user's position in the session
+        $_SESSION['department'] = $employeeData['department']; // Store the user's department in the session
 
         date_default_timezone_set('Asia/Manila');
 
@@ -105,12 +106,12 @@ if ($result->num_rows > 0) {
         } elseif ($employeeData['position'] === 'Field Worker') {
             $stmt->close();
             $conn->close();
-            header("Location: ../HR2/employee/fieldWorker/dashboard.php"); // Redirect to supervisor dashboard
+            header("Location: ../HR2/employee/fieldworker/dashboard.php"); // Redirect to field worker dashboard
             exit();
         } elseif ($employeeData['position'] === 'Contractual') {
             $stmt->close();
             $conn->close();
-            header("Location: ../HR2/employee/contractual/dashboard.php"); // Redirect to supervisor dashboard
+            header("Location: ../HR2/employee/contractual/dashboard.php"); // Redirect to contractual dashboard
             exit();
         } else {
             // Handle other positions or unknown positions
@@ -203,5 +204,3 @@ function sendAlertEmail($email) {
     }
 }
 ?>
-
-

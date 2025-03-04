@@ -190,18 +190,40 @@ if ($action_result->num_rows > 0) {
             }
         }
     } elseif ($status === 'deny') {
-        $deny_sql = "UPDATE leave_requests SET status = 'Denied', admin_approval = 'Admin Denied', admin_id = ? WHERE leave_id = ?";
-        $deny_stmt = $conn->prepare($deny_sql);
-        $deny_stmt->bind_param("ii", $adminId, $leave_id);
-
+        // Check if admin_comments is provided and not empty
+        if (isset($_GET['admin_comments']) && !empty($_GET['admin_comments'])) {
+            $admin_comments = $_GET['admin_comments'];
+    
+            // Deny the leave request and add the admin's comment
+            $deny_sql = "UPDATE leave_requests 
+                         SET status = 'Denied', 
+                             admin_approval = 'Admin Denied', 
+                             admin_id = ?, 
+                             admin_comments = ? 
+                         WHERE leave_id = ?";
+            $deny_stmt = $conn->prepare($deny_sql);
+            $deny_stmt->bind_param("isi", $adminId, $admin_comments, $leave_id);
+        } else {
+            // Deny the leave request without comments
+            $deny_sql = "UPDATE leave_requests 
+                         SET status = 'Denied', 
+                             admin_approval = 'Admin Denied', 
+                             admin_id = ? 
+                         WHERE leave_id = ?";
+            $deny_stmt = $conn->prepare($deny_sql);
+            $deny_stmt->bind_param("ii", $adminId, $leave_id);
+        }
+    
+        // Execute the prepared statement
         if ($deny_stmt->execute()) {
-            // Log the activity for denial
+            // Log the activity for admin denial
             $action_type = "Leave Request Denied";
             $affected_feature = "Leave Information";
-            $details = "Leave request from {$row['firstname']} {$row['lastname']} ({$row['e_id']}) has been denied.";
+            $details = "Leave request from {$row['firstname']} {$row['lastname']} ({$row['e_id']}) has been denied by the admin.";
             log_activity($adminId, $action_type, $affected_feature, $details);
-
-            header("Location: ../admin/leave_requests.php?status=denied");
+    
+            // Redirect to admin's leave request page
+            header("Location: ../admin/leave_requests.php?status=success");
         } else {
             header("Location: ../admin/leave_requests.php?status=error");
         }
@@ -256,173 +278,25 @@ function log_activity($adminId, $action_type, $affected_feature, $details) {
     <link href="../css/styles.css" rel="stylesheet" />
     <link href="../css/calendar.css" rel="stylesheet"/>
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
-<style>
-    .btn {
-        transition: transform 0.3s, background-color 0.3s; /* Smooth transition */
-        border-radius: 25px; 
-    }
-
-    .btn:hover {
-        transform: translateY(-2px); /* Raise the button up */
-    }
-</style>
 </head>
 
 <body class="sb-nav-fixed bg-black">
-    <nav class="sb-topnav navbar navbar-expand navbar-dark border-bottom border-1 border-warning bg-dark">
-        <a class="navbar-brand ps-3 text-muted" href="../admin/dashboard.php">Admin Portal</a>
-        <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars text-light"></i></button>
-    
-    <!-- Flex container to hold both time/date and search form -->
-        <div class="d-flex ms-auto me-0 me-md-3 my-2 my-md-0 align-items-center">
-            <div class="text-light me-3 p-2 rounded shadow-sm bg-gradient" id="currentTimeContainer" 
-            style="background: linear-gradient(45deg, #333333, #444444); border-radius: 5px;">
-                <span class="d-flex align-items-center">
-                    <span class="pe-2">
-                        <i class="fas fa-clock"></i> 
-                        <span id="currentTime">00:00:00</span>
-                    </span>
-                    <button class="btn btn-outline-warning btn-sm ms-2" type="button" onclick="toggleCalendar()">
-                        <i class="fas fa-calendar-alt"></i>
-                        <span id="currentDate">00/00/0000</span>
-                    </button>
-                </span>
-            </div>
-            <form class="d-none d-md-inline-block form-inline">
-            <div class="input-group">
-                <input class="form-control" type="text" placeholder="Search for..." aria-label="Search for..." aria-describedby="btnNavbarSearch" />
-                <button class="btn btn-warning" id="btnNavbarSearch" type="button"><i class="fas fa-search"></i></button>
-            </div>
-            </form>
-        </div>
-    </nav>
+    <?php include 'navbar.php'; ?>
     <div id="layoutSidenav">
-        <div id="layoutSidenav_nav">
-            <nav class="sb-sidenav accordion bg-dark" id="sidenavAccordion">
-                <div class="sb-sidenav-menu ">
-                    <div class="nav">
-                        <div class="sb-sidenav-menu-heading text-center text-muted">Your Profile</div>
-                        <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
-                            <li class="nav-item dropdown text">
-                                <a class="nav-link dropdown-toggle text-light d-flex justify-content-center ms-4" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <img src="<?php echo (!empty($adminInfo['pfp']) && $adminInfo['pfp'] !== 'defaultpfp.png') 
-                                        ? htmlspecialchars($adminInfo['pfp']) 
-                                        : '../img/defaultpfp.jpg'; ?>" 
-                                        class="rounded-circle border border-light" width="120" height="120" alt="Profile Picture" />
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                    <li><a class="dropdown-item" href="../admin/profile.php">Profile</a></li>
-                                    <li><a class="dropdown-item" href="#!">Settings</a></li>
-                                    <li><a class="dropdown-item" href="#!">Activity Log</a></li>
-                                    <li><hr class="dropdown-divider" /></li>
-                                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">Logout</a></li>
-                                </ul>
-                            </li>
-                            <li class="nav-item text-light d-flex ms-3 flex-column align-items-center text-center">
-                                <span class="big text-light mb-1">
-                                    <?php
-                                        if ($adminInfo) {
-                                        echo htmlspecialchars($adminInfo['firstname'] . ' ' . $adminInfo['middlename'] . ' ' . $adminInfo['lastname']);
-                                        } else {
-                                        echo "Admin information not available.";
-                                        }
-                                    ?>
-                                </span>      
-                                <span class="big text-light">
-                                    <?php
-                                        if ($adminInfo) {
-                                        echo htmlspecialchars($adminInfo['role']);
-                                        } else {
-                                        echo "User information not available.";
-                                        }
-                                    ?>
-                                </span>
-                            </li>
-                        </ul>
-                        <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-warning mt-3">Admin Dashboard</div>
-                        <a class="nav-link text-light" href="../admin/dashboard.php">
-                            <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
-                            Dashboard
-                        </a>
-                        <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseTAD" aria-expanded="false" aria-controls="collapseTAD">
-                            <div class="sb-nav-link-icon"><i class="fa fa-address-card"></i></div>
-                            Time and Attendance
-                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                        </a>
-                        <div class="collapse" id="collapseTAD" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
-                            <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link text-light" href="../admin/attendance.php">Attendance</a>
-                                <a class="nav-link text-light" href="../admin/timesheet.php">Timesheet</a>
-                            </nav>
-                        </div>
-                        <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLM" aria-expanded="false" aria-controls="collapseLM">
-                            <div class="sb-nav-link-icon"><i class="fas fa-calendar-times"></i></div>
-                            Leave Management
-                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                        </a>
-                        <div class="collapse" id="collapseLM" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
-                            <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link text-light" href="../admin/leave_requests.php">Leave Requests</a>
-                                <a class="nav-link text-light" href="../admin/leave_history.php">Leave History</a>
-                                <a class="nav-link text-light"  href="../admin/leave_allocation.php">Set Leave</a>
-                            </nav>
-                        </div>
-                        <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePM" aria-expanded="false" aria-controls="collapsePM">
-                            <div class="sb-nav-link-icon"><i class="fas fa-line-chart"></i></div>
-                            Performance Management
-                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                        </a>
-                        <div class="collapse" id="collapsePM" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
-                            <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link text-light" href="../admin/evaluation.php">Evaluation</a>
-                            </nav>
-                        </div>
-                        <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseSR" aria-expanded="false" aria-controls="collapseSR">
-                            <div class="sb-nav-link-icon"><i class="fa fa-address-card"></i></div>
-                            Social Recognition
-                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                        </a>
-                        <div class="collapse" id="collapseSR" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
-                            <nav class="sb-sidenav-menu-nested nav">
-                              <a class="nav-link text-light" href="../admin/awardee.php">Awardee</a>
-                              <a class="nav-link text-light" href="../admin/recognition.php">Generate Certificate</a>
-                            </nav>
-                        </div>
-                        <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-warning mt-3">Account Management</div>
-                        <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
-                            <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
-                            Accounts
-                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                        </a>
-                        <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
-                            <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link text-light" href="../admin/calendar.php">Calendar</a>
-                                <a class="nav-link text-light" href="../admin/admin.php">Admin Accounts</a>
-                                <a class="nav-link text-light" href="../admin/employee.php">Employee Accounts</a>
-                            </nav>
-                        </div>
-                        <div class="collapse" id="collapsePages" aria-labelledby="headingTwo" data-bs-parent="#sidenavAccordion">
-                        </div>
-                    </div>
-                </div>
-                <div class="sb-sidenav-footer bg-black text-light border-top border-1 border-warning">
-                    <div class="small">Logged in as: <?php echo htmlspecialchars($adminInfo['role']); ?></div>
-                </div>
-            </nav>
-        </div>
+        <?php include 'sidebar.php'; ?>
         <div id="layoutSidenav_content">
             <main>
                 <div class="container-fluid position-relative px-4">
                     <h1 class="mb-4 text-light">Leave Requests</h1>
-                    <div class="container" id="calendarContainer" 
-                        style="position: fixed; top: 9%; right: 0; z-index: 1050; 
-                        width: 700px; display: none;">
+                    <div class="container-fluid" id="calendarContainer" 
+                        style="position: fixed; top: 7%; right: 40; z-index: 1050; 
+                        max-width: 100%; display: none;">
                         <div class="row">
-                            <div class="col-md-12">
+                            <div class="col-md-9 mx-auto">
                                 <div id="calendar" class="p-2"></div>
                             </div>
                         </div>
-                    </div>                     
+                    </div>                 
                     <div class="container">
                         <?php if (isset($_GET['status'])): ?>
                             <div id="status-alert" class="alert 
@@ -447,9 +321,8 @@ function log_activity($adminId, $action_type, $affected_feature, $details) {
                             </div>
                         <?php endif; ?>
                     </div>
-
                     <div class="card mb-4 bg-dark text-light">
-                        <div class="card-header border-bottom border-1 border-warning">
+                        <div class="card-header border-bottom border-1 border-secondary">
                             <i class="fas fa-table me-1"></i>
                             Pending Request
                         </div>
@@ -512,7 +385,7 @@ function log_activity($adminId, $action_type, $affected_feature, $details) {
                                             <div class="modal fade" id="proofModal<?php echo $row['proof']; ?>" tabindex="-1" aria-labelledby="proofModalLabel<?php echo $row['proof']; ?>" aria-hidden="true">
                                                 <div class="modal-dialog modal-dialog-centered">
                                                     <div class="modal-content bg-dark text-light" style="width: 600px; height: 500px;">
-                                                        <div class="modal-header border-bottom border-warning">
+                                                        <div class="modal-header border-bottom border-secondary">
                                                             <h5 class="modal-title" id="proofModalLabel<?php echo $row['proof']; ?>">Proof of Leave</h5>
                                                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                         </div>
@@ -570,14 +443,12 @@ function log_activity($adminId, $action_type, $affected_feature, $details) {
                                                                 <span class="visually-hidden">Next</span>
                                                             </button>
                                                         <?php endif; ?>
-
-                                                        <div class="modal-footer border-top border-warning">
+                                                        <div class="modal-footer border-top border-secondary">
                                                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
-
                                             <td class="text-center">
                                                 <div class="d-flex justify-content-center mb-0">
                                                 <button class="btn btn-success btn-sm me-2" onclick="confirmAction('approve', <?php echo $row['leave_id']; ?>)">Approve</button>
@@ -591,62 +462,52 @@ function log_activity($adminId, $action_type, $affected_feature, $details) {
                         </div>
                     </div>
                 </div>
-                    <!-- MODALS -->
-                <div class="container">
-                    <div class="text-center">
-                        <a href="#" class="text-light btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#setLeaveModal">Set Leave Credit</a>
-                    </div>
-                    <div class="modal fade" id="setLeaveModal" tabindex="-1" aria-labelledby="setLeaveModalLabel" aria-hidden="true">
-                        <div class="modal-dialog modal-dialog-centered">
-                            <div class="modal-content bg-dark">
-                                <div class="modal-header border-bottom border-warning">
-                                    <h5 class="modal-title text-light" id="setLeaveModalLabel">Set Leave Allocations</h5>
-                                    <button type="button" class="close text-light bg-dark" data-bs-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
-                                    <form method="POST" action="../db/set_leave.php">
-                                        <div class="form-group">
-                                            <label class="text-light mt-3 mb-1" for="employee_leaves">Leave Days for Employees:</label>
-                                            <input type="number" name="employee_leaves" id="employee_leaves" class="form-control" required>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="text-light mt-3 mb-1" for="employee_id">Select Employee:</label>
-                                            <select name="employee_id" id="employee_id" class="form-control">
-                                                <option value="all">All Employees</option>
-                                                <?php
-                                                // Fetch employees from the database for the dropdown
-                                                    $employees_sql = "SELECT e_id, firstname, lastname FROM employee_register";
-                                                    $employees_result = $conn->query($employees_sql);
-                                                    while ($employee = $employees_result->fetch_assoc()) {
-                                                        echo "<option value='" . $employee['e_id'] . "'>" . $employee['firstname'] . " " . $employee['lastname'] . "</option>";
-                                                    }
-                                                ?>
-                                            </select>
-                                        </div>
-                                        <button type="submit" class="btn btn-primary mt-3">Set Allocations</button>
-                                    </form>
-                                </div>
-                                <div class="modal-footer border-top border-warning">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                </div>
+            </main>
+                <div class="modal fade" id="denyReasonModal" tabindex="-1" aria-labelledby="denyReasonModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content bg-dark text-light">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="denyReasonModalLabel">Reason for Denial</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <textarea id="denyReason" class="form-control" placeholder="Enter reason for denial..." rows="3"></textarea>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-danger" onclick="submitDeny()">Submit</button>
                             </div>
                         </div>
                     </div>
                 </div>
-            </main>
+                <div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content bg-dark text-light">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="confirmationModalLabel">Confirm Denial</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                Are you sure you want to deny this leave request?
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-danger" onclick="proceedWithDenial()">Yes, Deny</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content bg-dark text-light">
-                            <div class="modal-header border-bottom border-warning">
+                            <div class="modal-header border-bottom border-secondary">
                                 <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
                                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
                                 Are you sure you want to log out?
                             </div>
-                            <div class="modal-footer border-top border-warning">
+                            <div class="modal-footer border-top border-secondary">
                                 <button type="button" class="btn border-secondary text-light" data-bs-dismiss="modal">Cancel</button>
                                 <form action="../admin/logout.php" method="POST">
                                     <button type="submit" class="btn btn-danger">Logout</button>
@@ -655,18 +516,7 @@ function log_activity($adminId, $action_type, $affected_feature, $details) {
                         </div>
                     </div>
                 </div>  
-            <footer class="py-4 bg-dark text-light mt-auto border-top border-warning">
-                <div class="container-fluid px-4">
-                    <div class="d-flex align-items-center justify-content-between small">
-                        <div class="text-muted">Copyright &copy; Your Website 2024</div>
-                        <div>
-                            <a href="#">Privacy Policy</a>
-                            &middot;
-                            <a href="#">Terms & Conditions</a>
-                        </div>
-                    </div>
-                </div>
-            </footer>
+            <?php include 'footer.php'; ?>
         </div>
     </div>
 <script>
@@ -745,10 +595,10 @@ function log_activity($adminId, $action_type, $affected_feature, $details) {
         //TIME END
 
         //LEAVE STATUS 
-        function confirmAction(action, requestId) {
+        function confirmAction(action, leaveId) {
             let confirmation = confirm(`Are you sure you want to ${action} this leave request?`);
                 if (confirmation) {
-                window.location.href = `leave_requests.php?leave_id=${requestId}&status=${action}`;
+                window.location.href = `leave_requests.php?leave_id=${leaveId}&status=${action}`;
                 }
         }
         //LEAVE STATUS END
@@ -768,6 +618,63 @@ function log_activity($adminId, $action_type, $affected_feature, $details) {
     }, 5000); // 10 seconds delay
     
 
+    let currentLeaveId = null; // Variable to store the leave ID
+    let denyReason = ''; // Variable to store the denial reason
+
+    function confirmAction(action, leaveId) {
+        if (action === 'deny') {
+            // For denial, show the modal to collect the reason
+            currentLeaveId = leaveId; // Store the leave ID
+            const denyReasonModal = new bootstrap.Modal(document.getElementById('denyReasonModal'));
+            denyReasonModal.show(); // Show the modal
+        } else {
+            // For approval or other actions, use a confirmation dialog
+            let confirmation = confirm(`Are you sure you want to ${action} this leave request?`);
+            if (confirmation) {
+                window.location.href = `leave_requests.php?leave_id=${leaveId}&status=${action}`;
+            }
+        }
+    }
+
+    function submitDeny() {
+        denyReason = document.getElementById('denyReason').value;
+
+        if (!denyReason) {
+            alert('Please enter a reason for denial.');
+            return;
+        }
+
+        // Hide the reason modal
+        const denyReasonModal = bootstrap.Modal.getInstance(document.getElementById('denyReasonModal'));
+        denyReasonModal.hide();
+
+        // Show the custom confirmation modal
+        const confirmationModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+        confirmationModal.show();
+    }
+
+    function proceedWithDenial() {
+        // Send the data to the server
+        fetch(`leave_requests.php?leave_id=${currentLeaveId}&status=deny&admin_comments=${encodeURIComponent(denyReason)}`, {
+            method: 'GET',
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('Leave request denied successfully.');
+                location.reload(); // Reload the page to reflect changes
+            } else {
+                alert('Failed to deny leave request.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while processing your request.');
+        });
+
+        // Close the confirmation modal
+        const confirmationModal = bootstrap.Modal.getInstance(document.getElementById('confirmationModal'));
+        confirmationModal.hide();
+    }
 
 </script>
 <!-- Only keep the latest Bootstrap 5 version -->

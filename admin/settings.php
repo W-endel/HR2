@@ -526,10 +526,8 @@ while ($row = $result->fetch_assoc()) {
                                     </div>
                                     <div class="card-body">
                                         <div class="row d-flex justify-content-around">
-                                            <div class="col-xl-7 rounded">
-                                                <h2 class="text-center text-light mb-4">Manage Evaluation Questions</h2>
-
-                                                <!-- Add New Question Form -->
+                                            <h2 class="text-center text-light mb-4">Manage Evaluation Questions</h2>
+                                            <div class="col-xl-6 rounded">
                                                 <div class="mb-4">
                                                     <h4>Add New Question</h4>
                                                     <form method="POST" action="../admin/manageQuestions.php" class="needs-validation" novalidate>
@@ -554,10 +552,9 @@ while ($row = $result->fetch_assoc()) {
                                                         <button type="submit" name="add_question" class="btn btn-primary mt-1">Add Question</button>
                                                     </form>
                                                 </div>
-
-                                                <!-- Questions Accordion -->
+                                            </div>
+                                            <div class="col-xl-6 rounded">
                                                 <h4>Current Questions</h4>
-                                                <h5>(Click the category to see the questions)</h5>
                                                 <div class="accordion" id="questionAccordion">
                                                     <?php if (!empty($questions)): ?>
                                                         <?php 
@@ -609,9 +606,6 @@ while ($row = $result->fetch_assoc()) {
                                                     <?php endif; ?>
                                                 </div>
                                             </div>
-                                            <div class="col-xl-4 rounded">
-                                               
-                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -621,21 +615,23 @@ while ($row = $result->fetch_assoc()) {
                 </main>
                     <div class="modal fade" id="editQuestionModal" tabindex="-1" role="dialog" aria-labelledby="editQuestionModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-dialog-centered" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header bg-primary text-white">
+                            <div class="modal-content bg-dark text-light">
+                                <div class="modal-header">
                                     <h5 class="modal-title" id="editQuestionModalLabel">Edit Question</h5>
-                                    <button type="button" class="close text-white" data-bs-dismiss="modal" aria-label="Close">
+                                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                                         <span aria-hidden="true">&times;</span>
                                     </button>
                                 </div>
                                 <div class="modal-body">
-                                    <form method="POST" action="manage_questions.php">
+                                    <form method="POST" action="manageQuestions.php">
                                         <input type="hidden" name="id" id="editQId">
                                         <div class="form-group">
                                             <label for="new_question">New Question:</label>
                                             <textarea name="new_question" id="editNewQuestion" class="form-control" rows="3" required></textarea>
                                         </div>
-                                        <button type="submit" name="edit_question" class="btn btn-primary mt-3">Save Changes</button>
+                                        <div class="d-flex justify-content-end">
+                                            <button type="submit" name="edit_question" class="btn btn-primary mt-3">Save Changes</button>
+                                        </div>
                                     </form>
                                 </div>
                             </div>

@@ -3,8 +3,8 @@ session_start();
 include '../../db/db_conn.php';
 include '../../phpqrcode/qrlib.php'; // Include phpqrcode library
 
-if (!isset($_SESSION['e_id'])) {
-    header("Location: ../../employee/login.php");
+if (!isset($_SESSION['e_id']) || !isset($_SESSION['position']) || $_SESSION['position'] !== 'Supervisor') {
+    header("Location: ../../login.php");
     exit();
 }
 
@@ -245,12 +245,15 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                                         <div class="row">
                                             <div class="col-xl-2">
                                                 <div class="d-flex justify-content-center align-items-center">
-                                                    <img src="<?php echo (!empty($employeeInfo['pfp']) && $employeeInfo['pfp'] !== 'defaultpfp.png') 
-                                                        ? htmlspecialchars($employeeInfo['pfp']) 
-                                                        : '../../img/defaultpfp.jpg'; ?>" 
-                                                        class="rounded-circle border border-light img-fluid" 
-                                                        style="max-width: 100%; height: auto; object-fit: cover; cursor: pointer;" 
-                                                        alt="Profile Picture"id="profilePic" data-bs-toggle="modal" data-bs-target="#profilePicModal" />  
+                                                <img src="<?php echo (!empty($employeeInfo['pfp']) && $employeeInfo['pfp'] !== 'defaultpfp.png') 
+                                                    ? htmlspecialchars($employeeInfo['pfp']) 
+                                                    : '../../img/defaultpfp.jpg'; ?>" 
+                                                    class="rounded-circle border border-light img-fluid" 
+                                                    style="width: 220px; height: 220px; cursor: pointer;" 
+                                                    alt="Profile Picture" 
+                                                    id="profilePic" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#profilePicModal" /> 
                                                 </div>
  
                                                 <div class="modal fade" id="profilePicModal" tabindex="-1" aria-labelledby="profilePicModalLabel" aria-hidden="true">
@@ -367,7 +370,7 @@ QRcode::png($qrData, $qrImagePath, QR_ECLEVEL_L, 4);
                                                     </div>
                                                     <div class="row mb-3">
                                                         <div class="col-sm-6 bg-dark form-floating mb-3">
-                                                            <input type="number" class="form-control fw-bold" id="inputEmail" id="inputPhone" name="phone_number" value="<?php echo htmlspecialchars($employeeInfo['phone_number']); ?>" readonly required>
+                                                            <input type="number" class="form-control fw-bold" id="inputPhone" name="phone_number" value="<?php echo htmlspecialchars($employeeInfo['phone_number']); ?>" readonly required>
                                                             <label for="inputPhone" class="fw-bold">Phone Number:</label>
                                                         </div>
                                                         <div class="col-sm-6 bg-dark form-floating">

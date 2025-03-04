@@ -13,6 +13,26 @@ include '../db/db_conn.php';
 $role = 'employee';
 $department = 'Sales Department';
 
+// Check if it is the first week of the month
+$currentDay = date('j'); // Current day of the month (1-31)
+$isFirstWeek = ($currentDay <= 7); // First week is days 1-7
+
+// Set the evaluation period to the previous month if it is the first week
+if ($isFirstWeek) {
+    $evaluationMonth = date('m', strtotime('last month')); // Previous month
+    $evaluationYear = date('Y', strtotime('last month'));  // Year of the previous month
+    $evaluationPeriod = date('F Y', strtotime('last month')); // Format: February 2024
+
+    // Calculate the end date of the evaluation period (7th day of the current month)
+    $evaluationEndDate = date('F j, Y', strtotime(date('Y-m-07'))); // Format: March 7, 2024
+} else {
+    // If it is not the first week, evaluations are closed
+    $evaluationMonth = null;
+    $evaluationYear = null;
+    $evaluationPeriod = null;
+    $evaluationEndDate = null;
+}
+
 // Fetch employee records where role is 'employee' and department is 'Administration Department'
 $sql = "SELECT e_id, firstname, lastname, role, position FROM employee_register WHERE role = ? AND department = ?";
 $stmt = $conn->prepare($sql);
@@ -80,8 +100,18 @@ $conn->close();
 
 <body class="bg-dark text-light">
     <div class="container mt-5">
-        <h2 class="text-center text-primary mb-4">Sales Department Evaluation</h2>
-
+        <h2 class="text-center text-light mb-4">Sales Department</h2>
+        
+        <!-- Display Evaluation Period -->
+        <?php if ($isFirstWeek): ?>
+            <p class="text-center text-warning">
+                Evaluation is open for <?php echo $evaluationPeriod; ?> until <?php echo $evaluationEndDate; ?>.
+            </p>
+        <?php else: ?>
+            <p class="text-center text-danger">
+                Evaluations are closed. They will open in the first week of the next month.
+            </p>
+        <?php endif; ?>
         <!-- Employee Evaluation Table -->
         <div class="table-responsive">
             <table class="table table-striped table-hover text-dark">
@@ -103,7 +133,7 @@ $conn->close();
                                 <td>
                                     <button class="btn btn-success" 
                                         onclick="evaluateEmployee(<?php echo $employee['e_id']; ?>, '<?php echo htmlspecialchars($employee['firstname'] . ' ' . $employee['lastname']); ?>', '<?php echo htmlspecialchars($employee['position']); ?>')"
-                                        <?php echo in_array($employee['e_id'], $evaluatedEmployees) ? 'disabled' : ''; ?>>
+                                        <?php echo !$isFirstWeek || in_array($employee['e_id'], $evaluatedEmployees) ? 'disabled' : ''; ?>>
                                         <?php echo in_array($employee['e_id'], $evaluatedEmployees) ? 'Evaluated' : 'Evaluate'; ?>
                                     </button>
                                 </td>
@@ -120,8 +150,8 @@ $conn->close();
     <!-- Evaluation Modal -->
     <div class="modal fade" id="evaluationModal" tabindex="-1" role="dialog" aria-labelledby="evaluationModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
+            <div class="modal-content bg-dark text-light">
+                <div class="modal-header">
                     <h5 class="modal-title" id="employeeDetails"></h5>
                     <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
@@ -129,7 +159,7 @@ $conn->close();
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="a_id" value="<?php echo $_SESSION['a_id']; ?>">
-                    <div class="text-dark" id="questions"></div>
+                    <div id="questions"></div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>

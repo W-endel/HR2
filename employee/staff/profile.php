@@ -3,8 +3,8 @@ session_start();
 include '../../db/db_conn.php';
 include '../../phpqrcode/qrlib.php'; // Include phpqrcode library
 
-if (!isset($_SESSION['e_id'])) {
-    header("Location: ../../employee/login.php");
+if (!isset($_SESSION['e_id']) || !isset($_SESSION['position']) || $_SESSION['position'] !== 'Staff') {
+    header("Location: ../../login.php");
     exit();
 }
 

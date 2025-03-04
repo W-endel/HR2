@@ -1,52 +1,88 @@
 <?php
-
 date_default_timezone_set('Asia/Manila');
+include 'db/db_conn.php';
 
-include 'db/db_conn.php'; // Ensure correct file path for your database connection
-
-// Check if the employeeId is passed
 if (isset($_POST['employeeId'])) {
     $employeeId = $_POST['employeeId'];
-
-    // Get current date and time
     $currentDate = date('Y-m-d');
     $currentTime = date('Y-m-d H:i:s');
 
-    // Check if there's already an attendance record for today for the employee
-    $query = "SELECT * FROM attendance_logs WHERE e_id = ? AND attendance_date = ?";
+    // Check existing attendance for today
+    $query = "SELECT * FROM attendance_log WHERE e_id = ? AND attendance_date = ?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param("is", $employeeId, $currentDate);
     $stmt->execute();
     $result = $stmt->get_result();
 
     if ($result->num_rows > 0) {
-        // If there's a record, update it with the time-out if it's not already done
+        // Existing record - handle time-out
         $attendance = $result->fetch_assoc();
         if ($attendance['time_out'] === null) {
-            // Update time-out if it hasn't been logged
-            $updateQuery = "UPDATE attendance_logs SET time_out = ?, status = 'Present' WHERE id = ?";
+            $updateQuery = "UPDATE attendance_log SET time_out = ?, status = ? WHERE id = ?";
             $updateStmt = $conn->prepare($updateQuery);
-            $updateStmt->bind_param("si", $currentTime, $attendance['id']);
+
+            $timeIn = $attendance['time_in'] ? new DateTime($attendance['time_in']) : null;
+            $timeOut = new DateTime($currentTime);
+            $status = 'Present';
+
+            // Calculate status
+            if ($timeIn) {
+                $lateThreshold = new DateTime($currentDate . ' 08:00:00');
+                if ($timeIn > $lateThreshold) $status = 'Late';
+
+                $workedHours = $timeOut->diff($timeIn)->h;
+                if ($workedHours < 6) $status = 'Half-Day';
+            }
+
+            $overtimeThreshold = new DateTime($currentDate . ' 17:00:00');
+            if ($timeOut > $overtimeThreshold) $status = 'Overtime';
+
+            $updateStmt->bind_param("ssi", $currentTime, $status, $attendance['id']);
             $updateStmt->execute();
-            echo json_encode(["success" => true, "message" => "Attendance logged successfully. Time-out recorded."]);
+            echo json_encode(["success" => true, "message" => "Time-out recorded.", "status" => $status]);
         } else {
-            echo json_encode(["success" => false, "message" => "Attendance already logged for today."]);
+            echo json_encode(["success" => false, "message" => "Attendance already logged."]);
         }
     } else {
-        // If no attendance record exists, create a new one for time-in
-        $insertQuery = "INSERT INTO attendance_logs (e_id, time_in, attendance_date) VALUES (?, ?, ?)";
-        $insertStmt = $conn->prepare($insertQuery);
-        $insertStmt->bind_param("iss", $employeeId, $currentTime, $currentDate);
-        if ($insertStmt->execute()) {
-            echo json_encode(["success" => true, "message" => "Attendance logged successfully. Time-in recorded."]);
+        // No existing record
+        $absentThreshold = new DateTime($currentDate . ' 13:00:00');
+        $currentDateTime = new DateTime($currentTime);
+
+        if ($currentDateTime > $absentThreshold) {
+            // Mark as Absent (without time_in/time_out)
+            $status = 'Absent';
+            $insertQuery = "INSERT INTO attendance_log (e_id, attendance_date, status) VALUES (?, ?, ?)"; // Removed NULL columns
+            $insertStmt = $conn->prepare($insertQuery);
+            $insertStmt->bind_param("iss", $employeeId, $currentDate, $status);
+
+            if ($insertStmt->execute()) {
+                echo json_encode(["success" => true, "message" => "Marked as Absent.", "status" => $status]);
+            } else {
+                error_log("Absent Insert Error: " . $insertStmt->error); // Error logging
+                echo json_encode(["success" => false, "message" => "Database error. Contact admin."]);
+            }
         } else {
-            echo json_encode(["success" => false, "message" => "Failed to log attendance."]);
+            // Time-in before 1 PM
+            $insertQuery = "INSERT INTO attendance_log (e_id, time_in, attendance_date, status) VALUES (?, ?, ?, ?)";
+            $insertStmt = $conn->prepare($insertQuery);
+
+            $timeIn = new DateTime($currentTime);
+            $lateThreshold = new DateTime($currentDate . ' 08:00:00');
+            $status = ($timeIn > $lateThreshold) ? 'Late' : 'Present';
+
+            $insertStmt->bind_param("isss", $employeeId, $currentTime, $currentDate, $status);
+            
+            if ($insertStmt->execute()) {
+                echo json_encode(["success" => true, "message" => "Time-in recorded.", "status" => $status]);
+            } else {
+                echo json_encode(["success" => false, "message" => "Failed to log time-in."]);
+            }
         }
     }
 
     $stmt->close();
     $conn->close();
 } else {
-    echo json_encode(["success" => false, "message" => "No employee ID provided."]);
+    echo json_encode(["success" => false, "message" => "No employee ID."]);
 }
 ?>

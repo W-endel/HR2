@@ -5,9 +5,9 @@ function setPhilippineRegularHolidays($year, $conn) {
     $holidays = [
         "$year-01-01" => "New Year's Day",
         "$year-04-09" => "Araw ng Kagitingan",
-        "$year-05-17" => "Labor Day",
-        "$year-05-18" => "Maundy Thursday",
-        "$year-05-01" => "Good Friday",
+        "$year-04-17" => "Maundy Thursday",
+        "$year-04-18" => "Good Friday",
+        "$year-05-01" => "Labor Day",
         "$year-06-12" => "Independence Day",
         "$year-08-28" => "National Heroes Day",
         "$year-11-30" => "Bonifacio Day",

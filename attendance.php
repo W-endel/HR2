@@ -17,7 +17,7 @@ $query = "
         a.time_out, 
         a.attendance_date, 
         a.status 
-    FROM attendance_logs AS a
+    FROM attendance_log AS a
     LEFT JOIN employee_register AS er ON a.e_id = er.e_id
     WHERE a.attendance_date = ?
 ";
@@ -133,8 +133,11 @@ $conn->close();
             </div>
         </div>
     </div>
-<script>
+    <script>
 let employeeData = []; // To store employee data with face descriptors
+let lastFacePosition = null; // Track the last face position for liveness detection
+let lastFrameData = null; // Track the last video frame for liveness detection
+let lastHeadPosition = null; // Track the last head position for liveness detection
 
 // Initialize when window is loaded
 window.onload = async function() {
@@ -240,9 +243,32 @@ async function startVideo() {
     }
 }
 
+// Function to check if the user is moving their head
+function isHeadMoving(landmarks) {
+    const noseTip = landmarks.getNose()[3]; // Nose tip landmark
+    const currentPosition = { x: noseTip.x, y: noseTip.y };
+
+    if (lastHeadPosition) {
+        const movement = Math.abs(currentPosition.x - lastHeadPosition.x) + 
+                         Math.abs(currentPosition.y - lastHeadPosition.y);
+        lastHeadPosition = currentPosition;
+        return movement > 5; // Threshold for head movement
+    }
+
+    lastHeadPosition = currentPosition;
+    return false;
+}
+
 // Detect and match the face from the video stream with stored employee data
 async function detectFace() {
     const video = document.getElementById('videoInput');
+
+    // Check if the video feed is live (not a static image)
+    if (!isVideoLive(video)) {
+        alert("Static frame detected. Please ensure you are using a live camera.");
+        return;
+    }
+
     const detections = await faceapi.detectAllFaces(video)
         .withFaceLandmarks()
         .withFaceDescriptors();
@@ -252,22 +278,50 @@ async function detectFace() {
         return;
     }
 
-    let faceMatched = false; // Flag to track if a face is matched
+    // Liveness check: Ensure the face is moving
+    const landmarks = detections[0].landmarks;
+    if (!isHeadMoving(landmarks)) {
+        console.log("No head movement detected. Possible spoofing attempt.");
+        alert("Please move your head slightly to prove liveness.");
+        return;
+    }
 
+    // Proceed with face matching
+    let faceMatched = false;
     for (let detection of detections) {
-        // Check for the best match based on descriptors
         const bestMatch = findBestMatch(detection.descriptor);
         if (bestMatch) {
-            // If we find a match, log attendance via PHP backend
             logAttendance(bestMatch);
-            faceMatched = true; // Mark that a face was matched
+            faceMatched = true;
         }
     }
 
-    // If no match was found, show alert for unknown person
     if (!faceMatched) {
         alert("Unknown person detected!");
     }
+}
+
+// Check if the video feed is live by comparing frames
+function isVideoLive(video) {
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const currentFrameData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+
+    if (lastFrameData) {
+        let difference = 0;
+        for (let i = 0; i < currentFrameData.length; i++) {
+            difference += Math.abs(currentFrameData[i] - lastFrameData[i]);
+        }
+        if (difference < 100000) { // Threshold for frame difference
+            console.log("Static frame detected. Possible spoofing attempt.");
+            return false;
+        }
+    }
+    lastFrameData = currentFrameData;
+    return true;
 }
 
 // Find the best match for the detected face
@@ -311,3 +365,4 @@ async function logAttendance(employee) {
 <script src="js/datatables-simple-demo.js"></script>
 </body>
 </html>
+
