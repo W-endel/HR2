@@ -17,12 +17,23 @@ $stmt->execute();
 $result = $stmt->get_result();
 $adminInfo = $result->fetch_assoc();
 
-// Prepare SQL query without search
+
+$selectedMonth = isset($_GET['month']) ? $_GET['month'] : date('Y-m');
+
+// Prepare SQL query
 $sql = "
     SELECT lr.*, e.firstname, e.lastname 
     FROM leave_requests lr
-    JOIN employee_register e ON lr.e_id = e.e_id
-    ORDER BY lr.created_at ASC";
+    JOIN employee_register e ON lr.e_id = e.e_id";
+
+// Add filtering for the selected month if provided
+if (!empty($selectedMonth)) {
+    $sql .= " WHERE DATE_FORMAT(lr.created_at, '%Y-%m') = '$selectedMonth'";
+}
+
+// Order the results by the creation date in ascending order
+$sql .= " ORDER BY lr.created_at ASC";
+
 
 // Prepare statement
 $stmt = $conn->prepare($sql);
@@ -214,8 +225,15 @@ while ($holiday_row = $holiday_result->fetch_assoc()) {
                     <div class="card-header border-bottom border-1 border-warning">
                         <i class="fas fa-table me-1"></i>
                         Leave History Record
-                    </div>                             
+                    </div>
                     <div class="card-body">
+                        <!-- Month Filter -->
+                        <form method="GET" action="" class="mb-4">
+                            <label for="month" class="form-label">Select Month:</label>
+                            <input type="month" id="month" name="month" class="form-control" value="<?php echo isset($_GET['month']) ? htmlspecialchars($_GET['month']) : date('Y-m'); ?>">
+                            <button type="submit" class="btn btn-warning mt-2">Filter</button>
+                        </form>
+
                         <table id="datatablesSimple" class="table text-light text-center">
                             <thead>
                                 <tr>
@@ -238,44 +256,44 @@ while ($holiday_row = $holiday_result->fetch_assoc()) {
                                             $end_date = strtotime($row['end_date']);
                                             
                                             while ($current_date <= $end_date) {
-                                            $current_date_str = date('Y-m-d', $current_date);
+                                                $current_date_str = date('Y-m-d', $current_date);
                                                 
-                                            if (date('N', $current_date) != 7 && !in_array($current_date_str, $holidays)) {
-                                                $leave_days++;
-                                            }
-                                            $current_date = strtotime("+1 day", $current_date); 
+                                                if (date('N', $current_date) != 7 && !in_array($current_date_str, $holidays)) {
+                                                    $leave_days++;
+                                                }
+                                                $current_date = strtotime("+1 day", $current_date); 
                                             }
                                         ?>
-                                    <tr>
-                                        <td>
-                                            <?php 
-                                                if (isset($row['created_at'])) {
-                                                    echo htmlspecialchars(date("F j, Y", strtotime($row['created_at']))) . ' <span class="text-warning"> | </span> ' . htmlspecialchars(date("g:i A", strtotime($row['created_at'])));
-                                                } else {
-                                                    echo "Not Available";
+                                        <tr>
+                                            <td>
+                                                <?php 
+                                                    if (isset($row['created_at'])) {
+                                                        echo htmlspecialchars(date("F j, Y", strtotime($row['created_at']))) . ' <span class="text-warning"> | </span> ' . htmlspecialchars(date("g:i A", strtotime($row['created_at'])));
+                                                    } else {
+                                                        echo "Not Available";
+                                                    }
+                                                ?>
+                                            </td> 
+                                            <td><?php echo htmlspecialchars($row['e_id']); ?></td>
+                                            <td><?php echo htmlspecialchars($row['firstname'] . ' ' . $row['lastname']); ?></td>
+                                            <td><?php echo htmlspecialchars(date("F j, Y", strtotime($row['start_date']))) . ' <span class="text-warning"> | </span> ' . htmlspecialchars(date("F j, Y", strtotime($row['end_date']))); ?></td>
+                                            <td><?php echo htmlspecialchars($row['leave_type']); ?></td>
+                                            <td><?php echo htmlspecialchars($leave_days); ?> day/s</td>
+                                            <td>
+                                                <?php 
+                                                $status = $row['status'];
+                                                if ($status === 'Approved') {
+                                                    echo '<span class="text-success" style="font-weight: bold;">' . $status . '</span>';
+                                                } elseif ($status === 'Denied') {
+                                                    echo '<span class="text-danger" style="font-weight: bold;">' . $status . '</span>';
+                                                } elseif ($status === 'Pending') {
+                                                    echo '<span class="text-warning" style="font-weight: bold;">' . $status . '</span>';
+                                                } elseif ($status === 'Supervisor Approved') {
+                                                    echo '<span class="text-warning" style="font-weight: bold;">' . $status . '</span>';
                                                 }
-                                            ?>
-                                        </td> 
-                                        <td><?php echo htmlspecialchars($row['e_id']); ?></td>
-                                        <td><?php echo htmlspecialchars($row['firstname'] . ' ' . $row['lastname']); ?></td>
-                                        <td><?php echo htmlspecialchars(date("F j, Y", strtotime($row['start_date']))) . ' <span class="text-warning"> | </span> ' . htmlspecialchars(date("F j, Y", strtotime($row['end_date']))); ?></td>
-                                        <td><?php echo htmlspecialchars($row['leave_type']); ?></td>
-                                        <td><?php echo htmlspecialchars($leave_days); ?> day/s</td>
-                                        <td>
-                                            <?php 
-                                            $status = $row['status'];
-                                            if ($status === 'Approved') {
-                                                echo '<span class="text-success" style="font-weight: bold;">' . $status . '</span>';
-                                            } elseif ($status === 'Denied') {
-                                                echo '<span class="text-danger" style="font-weight: bold;">' . $status . '</span>';
-                                            } elseif ($status === 'Pending') {
-                                                echo '<span class="text-warning" style="font-weight: bold;">' . $status . '</span>';
-                                            } elseif ($status === 'Supervisor Approved') {
-                                                echo '<span class="text-warning" style="font-weight: bold;">' . $status . '</span>';
-                                            }
-                                            ?>
-                                        </td>
-                                   </tr>
+                                                ?>
+                                            </td>
+                                        </tr>
                                     <?php endwhile; ?>
                                 <?php endif; ?>
                             </tbody>

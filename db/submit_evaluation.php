@@ -69,15 +69,19 @@ $checkStmt->store_result();
 if ($checkStmt->num_rows > 0) {
     echo 'You have already evaluated this employee.';
 } else {
+    // Calculate the delayed date (2 weeks ago)
+    $currentDate = date('Y-m-d'); // Current date
+    $delayedDate = date('Y-m-d', strtotime('-2 weeks', strtotime($currentDate))); // Subtract 2 weeks
+
     // Prepare the SQL to insert the evaluation into the database
     $sql = "INSERT INTO admin_evaluations (
-                a_id, admin_name, e_id, employee_name, department, quality, communication_skills, teamwork, punctuality, initiative
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                a_id, admin_name, e_id, employee_name, department, quality, communication_skills, teamwork, punctuality, initiative, evaluated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
 
     // Bind the average ratings to the statement (i for integer, d for decimal)
     $stmt->bind_param(
-        'isissddddd', 
+        'isissddddds', 
         $adminId,
         $adminName, 
         $employeeId,
@@ -87,7 +91,8 @@ if ($checkStmt->num_rows > 0) {
         $categoryAverages['CommunicationSkills'], 
         $categoryAverages['Teamwork'], 
         $categoryAverages['Punctuality'], 
-        $categoryAverages['Initiative']
+        $categoryAverages['Initiative'],
+        $delayedDate // Add the delayed date to the query
     );
 
     // Execute the statement and check if successful
@@ -95,7 +100,7 @@ if ($checkStmt->num_rows > 0) {
         // Log this activity
         $actionType = "Employee Evaluation";
         $affectedFeature = "Evaluation";
-        $details = "Admin ($adminName) evaluated employee Name: $employeeName in $department.";
+        $details = "Admin ($adminName) evaluated employee Name: $employeeName in $department on $delayedDate.";
 
         // Capture IP address
         $ipAddress = $_SERVER['REMOTE_ADDR'];

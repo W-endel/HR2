@@ -52,6 +52,7 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Evaluation Dashboard | HR2</title>
     <link href="../css/styles.css" rel="stylesheet" />
+    <link href="../css/star.css" rel="stylesheet">
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
     <link href="../css/calendar.css" rel="stylesheet"/>
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
@@ -77,10 +78,85 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                 </div>     
                 <div class="container-fluid px-4">
                     <div class="row justify-content-center">
+                        <?php include '../db/db_conn.php'; 
+
+                            $role = 'employee';
+                            $department = 'Finance Department';
+
+                            // Check if it is the first week of the month
+                            $currentDay = date('j'); // Current day of the month (1-31)
+                            $isFirstWeek = ($currentDay <= 7); // First week is days 1-7
+
+                            // Set the evaluation period to the previous month if it is the first week
+                            if ($isFirstWeek) {
+                                $evaluationMonth = date('m', strtotime('last month')); // Previous month
+                                $evaluationYear = date('Y', strtotime('last month'));  // Year of the previous month
+                                $evaluationPeriod = date('F Y', strtotime('last month')); // Format: February 2024
+
+                                // Calculate the end date of the evaluation period (7th day of the current month)
+                                $evaluationEndDate = date('F j, Y', strtotime(date('Y-m-07'))); // Format: March 7, 2024
+                            } else {
+                                // If it is not the first week, evaluations are closed
+                                $evaluationMonth = null;
+                                $evaluationYear = null;
+                                $evaluationPeriod = null;
+                                $evaluationEndDate = null;
+                            }
+
+                            // Fetch employee records where role is 'employee' and department is 'Administration Department'
+                            $sql = "SELECT e_id, firstname, lastname, role, position, department FROM employee_register WHERE role = ? AND department = ?";
+                            $stmt = $conn->prepare($sql);
+                            $stmt->bind_param('ss', $role, $department);
+                            $stmt->execute();
+                            $result = $stmt->get_result();
+
+                            // Fetch evaluations for this admin
+                            $adminId = $_SESSION['a_id'];
+                            $evaluatedEmployees = [];
+                            $evalSql = "SELECT e_id FROM admin_evaluations WHERE a_id = ?";
+                            $evalStmt = $conn->prepare($evalSql);
+                            $evalStmt->bind_param('i', $adminId);
+                            $evalStmt->execute();
+                            $evalResult = $evalStmt->get_result();
+                            if ($evalResult->num_rows > 0) {
+                                while ($row = $evalResult->fetch_assoc()) {
+                                    $evaluatedEmployees[] = $row['e_id'];
+                                }
+                            }
+
+                            // Fetch evaluation questions from the database for each category
+                            $categories = ['Quality of Work', 'Communication Skills', 'Teamwork', 'Punctuality', 'Initiative'];
+                            $questions = [];
+
+                            foreach ($categories as $category) {
+                                $categorySql = "SELECT question FROM evaluation_questions WHERE category = ?";
+                                $categoryStmt = $conn->prepare($categorySql);
+                                $categoryStmt->bind_param('s', $category);
+                                $categoryStmt->execute();
+                                $categoryResult = $categoryStmt->get_result();
+                                $questions[$category] = [];
+
+                                if ($categoryResult->num_rows > 0) {
+                                    while ($row = $categoryResult->fetch_assoc()) {
+                                        $questions[$category][] = $row['question'];
+                                    }
+                                }
+                            }
+
+                            // Check if any records are found
+                            $employees = [];
+                            if ($result->num_rows > 0) {
+                                while ($row = $result->fetch_assoc()) {
+                                    $employees[] = $row;
+                                }
+                            }
+                        ?>
                         <div class="col-xl-4 col-md-6 mt-5">
                             <div class="card mb-4">
                                 <div class="card-body bg-secondary text-center">
-                                    <a href="../admin/finance.php" class="btn card-button text-light font-weight-bold bg-dark border border-dark w-100">Finance Department</a>
+                                    <button class="btn card-button text-light font-weight-bold bg-dark border border-dark w-100" data-bs-toggle="modal" data-bs-target="#financeModal">
+                                        Finance Department
+                                    </button>
                                 </div>
                                 <div class="card-footer d-flex align-items-center justify-content-between bg-dark border-bottom border-light department-toggle">
                                     <div class="small text-warning">Details</div>
@@ -89,25 +165,27 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                                     <div class="card-body">
                                         <h5 class="text-center mb-4 text-light">Finance Evaluation Status</h5>
                                         <div class="text-center mb-3">
-                                            <span class="badge badge-primary mx-1">Total Employees: <?php echo $financeData['total']; ?></span>
-                                            <span class="badge badge-success mx-1">Evaluated: <?php echo $financeData['evaluated']; ?></span>
-                                            <span class="badge badge-warning mx-1">Pending: <?php echo $financeData['pending']; ?></span>
+                                            <?php if ($financeData['pending'] > 0): ?>
+                                                <span class="badge badge-danger mx-1 fs-5 px-2" style="top: -17px;">
+                                                    Pending: <?php echo $financeData['pending']; ?>
+                                                </span>
+                                            <?php endif; ?>
                                         </div>
                                         <div class="progress mb-2">
                                         <?php if ($financeData['total'] > 0): ?>
-                                    <div class="progress-bar bg-success font-weight-bold" role="progressbar" 
+                                    <div class="progress-bar bg-success font-weight-bold fs-5" role="progressbar" 
                                         style="width: <?php echo ($financeData['evaluated'] / $financeData['total']) * 100; ?>%;" 
                                         aria-valuenow="<?php echo $financeData['evaluated']; ?>" 
                                         aria-valuemin="0" 
                                         aria-valuemax="<?php echo $financeData['total']; ?>">
-                                        Evaluated (<?php echo $financeData['evaluated']; ?>)
+                                        Evaluated <?php echo $financeData['evaluated']; ?>
                                     </div>
-                                    <div class="progress-bar bg-warning text-dark font-weight-bold" role="progressbar" 
+                                    <div class="progress-bar bg-danger text-light font-weight-bold fs-5" role="progressbar" 
                                         style="width: <?php echo ($financeData['pending'] / $financeData['total']) * 100; ?>%;" 
                                         aria-valuenow="<?php echo $financeData['pending']; ?>" 
                                         aria-valuemin="0" 
                                         aria-valuemax="<?php echo $financeData['total']; ?>">
-                                        Pending (<?php echo $financeData['pending']; ?>)
+                                        Pending <?php echo $financeData['pending']; ?>
                                     </div>
                                 <?php else: ?>
                                     <div class="progress-bar bg-secondary font-weight-bold w-100" role="progressbar" 
@@ -122,217 +200,189 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                                 </div>
                             </div>
                         </div>
+                        <!-- Modal -->
+                        <div class="modal fade" id="financeModal" tabindex="-1" aria-labelledby="financeModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered modal-lg">
+                                <div class="modal-content bg-dark text-light">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="financeModalLabel">Finance Department</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body ">
+                                        <!-- Display Evaluation Period -->
+                                        <?php if ($isFirstWeek): ?>
+                                            <p class="text-center text-warning">
+                                                Evaluation is open for <?php echo $evaluationPeriod; ?> until <?php echo $evaluationEndDate; ?>.
+                                            </p>
+                                        <?php else: ?>
+                                            <p class="text-center text-danger">
+                                                Evaluations are closed. They will open in the first week of the next month.
+                                            </p>
+                                        <?php endif; ?>
+
+                                        <!-- Employee Evaluation Table -->
+                                        <div class="table-responsive">
+                                            <table class="table table-striped table-hover">
+                                                <thead class="thead-dark">
+                                                    <tr>
+                                                        <th>Name</th>
+                                                        <th>Position</th>
+                                                        <th>Role</th>
+                                                        <th>Evaluation</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <?php if (!empty($employees)): ?>
+                                                        <?php foreach ($employees as $employee): ?>
+                                                            <tr>
+                                                                <td class="text-light"><?php echo htmlspecialchars($employee['firstname'] . ' ' . $employee['lastname']); ?></td>
+                                                                <td class="text-light"><?php echo htmlspecialchars($employee['position']); ?></td>
+                                                                <td class="text-light"><?php echo htmlspecialchars($employee['role']); ?></td>
+                                                                <td>
+                                                                    <button class="btn btn-success" 
+                                                                        onclick="evaluateEmployee(
+                                                                            <?php echo $employee['e_id']; ?>, 
+                                                                            '<?php echo htmlspecialchars($employee['firstname'] . ' ' . $employee['lastname']); ?>', 
+                                                                            '<?php echo htmlspecialchars($employee['position']); ?>', 
+                                                                            '<?php echo htmlspecialchars($employee['department']); ?>' // Add department here
+                                                                        )"
+                                                                        <?php echo !$isFirstWeek || in_array($employee['e_id'], $evaluatedEmployees) ? 'disabled' : ''; ?>>
+                                                                        <?php echo in_array($employee['e_id'], $evaluatedEmployees) ? 'Evaluated' : 'Evaluate'; ?>
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        <?php endforeach; ?>
+                                                    <?php else: ?>
+                                                        <tr><td class="text-light text-center" colspan="4">No employees found for evaluation in Finance Department.</td></tr>
+                                                    <?php endif; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="d-flex justify-content-end">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        
+                        <?php
+                            include '../db/db_conn.php'; 
+
+                            // Define the values for role and department
+                            $role = 'employee';
+                            $department = 'Human Resource Department';
+                            
+                            // Check if it is the first week of the month
+                            $currentDay = date('j'); // Current day of the month (1-31)
+                            $isFirstWeek = ($currentDay <= 7); // First week is days 1-7
+                            
+                            // Set the evaluation period to the previous month if it is the first week
+                            if ($isFirstWeek) {
+                                // Handle January edge case
+                                if (date('m') == '01') {
+                                    $evaluationMonth = '12'; // December
+                                    $evaluationYear = date('Y') - 1; // Previous year
+                                } else {
+                                    $evaluationMonth = date('m', strtotime('last month')); // Previous month
+                                    $evaluationYear = date('Y', strtotime('last month'));  // Year of the previous month
+                                }
+                            
+                                // Format evaluation period and end date
+                                $evaluationPeriod = date('F Y', strtotime('last month')); // Format: February 2024
+                                $evaluationEndDate = date('F j, Y', strtotime(date('Y-m-') . '07')); // Format: March 7, 2024
+                            } else {
+                                // If it is not the first week, evaluations are closed
+                                $evaluationMonth = null;
+                                $evaluationYear = null;
+                                $evaluationPeriod = null;
+                                $evaluationEndDate = null;
+                            }
+                            
+                            // Fetch employee records where role is 'employee' and department is 'Administration Department'
+                            $sql = "SELECT e_id, firstname, lastname, role, position, department FROM employee_register WHERE role = ? AND department = ?";
+                            $stmt = $conn->prepare($sql);
+                            $stmt->bind_param('ss', $role, $department);
+                            $stmt->execute();
+                            $result = $stmt->get_result();
+                            
+                            // Fetch evaluations for this admin
+                            $adminId = $_SESSION['a_id'];
+                            $evaluatedEmployees = [];
+                            $evalSql = "SELECT e_id FROM admin_evaluations WHERE a_id = ?";
+                            $evalStmt = $conn->prepare($evalSql);
+                            $evalStmt->bind_param('i', $adminId);
+                            $evalStmt->execute();
+                            $evalResult = $evalStmt->get_result();
+                            if ($evalResult->num_rows > 0) {
+                                while ($row = $evalResult->fetch_assoc()) {
+                                    $evaluatedEmployees[] = $row['e_id'];
+                                }
+                            }
+                            
+                            // Fetch evaluation questions from the database for each category
+                            $categories = ['Quality of Work', 'Communication Skills', 'Teamwork', 'Punctuality', 'Initiative'];
+                            $questions = [];
+                            
+                            foreach ($categories as $category) {
+                                $categorySql = "SELECT question FROM evaluation_questions WHERE category = ?";
+                                $categoryStmt = $conn->prepare($categorySql);
+                                $categoryStmt->bind_param('s', $category);
+                                $categoryStmt->execute();
+                                $categoryResult = $categoryStmt->get_result();
+                                $questions[$category] = [];
+                            
+                                if ($categoryResult->num_rows > 0) {
+                                    while ($row = $categoryResult->fetch_assoc()) {
+                                        $questions[$category][] = $row['question'];
+                                    }
+                                }
+                            }
+                            
+                            // Check if any records are found
+                            $employees = [];
+                            if ($result->num_rows > 0) {
+                                while ($row = $result->fetch_assoc()) {
+                                    $employees[] = $row;
+                                }
+                            }
+                        ?>
                         <div class="col-xl-4 col-md-6 mt-5">
                             <div class="card mb-4">
                                 <div class="card-body bg-secondary text-center">
-                                    <a href="../admin/hr.php" class="btn card-button text-light font-weight-bold bg-dark border border-dark w-100">Human Resource Department</a>
+                                    <button class="btn card-button text-light font-weight-bold bg-dark border border-dark w-100" data-bs-toggle="modal" data-bs-target="#hrModal">
+                                        Human Resource Department
+                                    </button>
                                 </div>
                                 <div class="card-footer d-flex align-items-center justify-content-between bg-dark border-bottom border-light department-toggle">
                                     <div class="small text-warning">Details</div>
                                 </div>
                                 <div id="hrInfo" class="bg-dark text-dark">
                                     <div class="card-body">
-                                        <h5 class="text-center mb-4 text-light">Human Resource Evaluation Status</h5>
+                                        <h5 class="text-center mb-4 text-light">HR Evaluation Status</h5>
                                         <div class="text-center mb-3">
-                                            <span class="badge badge-primary mx-1">Total Employees: <?php echo $hrData['total']; ?></span>
-                                            <span class="badge badge-success mx-1">Evaluated: <?php echo $hrData['evaluated']; ?></span>
-                                            <span class="badge badge-warning mx-1">Pending: <?php echo $hrData['pending']; ?></span>
+                                            <?php if ($hrData['pending'] > 0): ?>
+                                                <span class="badge badge-danger mx-1 fs-5 px-2" style="top: -17px;">
+                                                    Pending: <?php echo $hrData['pending']; ?>
+                                                </span>
+                                            <?php endif; ?>                                        
                                         </div>
                                         <div class="progress mb-2">
-                                        <?php if ($hrData['total'] > 0): ?>
-                                    <div class="progress-bar bg-success font-weight-bold" role="progressbar" 
-                                        style="width: <?php echo ($hrData['evaluated'] / $hrData['total']) * 100; ?>%;" 
-                                        aria-valuenow="<?php echo $hrData['evaluated']; ?>" 
-                                        aria-valuemin="0" 
-                                        aria-valuemax="<?php echo $hrData['total']; ?>">
-                                        Evaluated (<?php echo $hrData['evaluated']; ?>)
-                                    </div>
-                                    <div class="progress-bar bg-warning text-dark font-weight-bold" role="progressbar" 
-                                        style="width: <?php echo ($hrData['pending'] / $hrData['total']) * 100; ?>%;" 
-                                        aria-valuenow="<?php echo $hrData['pending']; ?>" 
-                                        aria-valuemin="0" 
-                                        aria-valuemax="<?php echo $hrData['total']; ?>">
-                                        Pending (<?php echo $hrData['pending']; ?>)
-                                    </div>
-                                <?php else: ?>
-                                    <div class="progress-bar bg-secondary font-weight-bold w-100" role="progressbar" 
-                                        aria-valuenow="0" 
-                                        aria-valuemin="0" 
-                                        aria-valuemax="100">
-                                        No employees available
-                                    </div>
-                                <?php endif; ?>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-xl-4 col-md-6 mt-5">
-                            <div class="card mb-4">
-                                <div class="card-body bg-secondary text-center">
-                                    <a href="../admin/administration.php" class="btn card-button text-light font-weight-bold bg-dark border border-dark w-100">Administration Department</a>
-                                </div>
-                                <div class="card-footer d-flex align-items-center justify-content-between bg-dark border-bottom border-light department-toggle">
-                                    <div class="small text-warning">Details</div>
-                                </div>
-                                <div id="administrationInfo" class="bg-dark text-dark">
-                                    <div class="card-body">
-                                        <h5 class="text-center mb-4 text-light">Administration Evaluation Status</h5>
-                                        <div class="text-center mb-3">
-                                            <span class="badge badge-primary mx-1">Total Employees: <?php echo $administrationData['total']; ?></span>
-                                            <span class="badge badge-success mx-1">Evaluated: <?php echo $administrationData['evaluated']; ?></span>
-                                            <span class="badge badge-warning mx-1">Pending: <?php echo $administrationData['pending']; ?></span>
-                                        </div>
-                                        <div class="progress mb-2">
-                                        <?php if ($administrationData['total'] > 0): ?>
-                                    <div class="progress-bar bg-success font-weight-bold" role="progressbar" 
-                                        style="width: <?php echo ($administrationData['evaluated'] / $administrationData['total']) * 100; ?>%;" 
-                                        aria-valuenow="<?php echo $administrationData['evaluated']; ?>" 
-                                        aria-valuemin="0" 
-                                        aria-valuemax="<?php echo $administrationData['total']; ?>">
-                                        Evaluated (<?php echo $administrationData['evaluated']; ?>)
-                                    </div>
-                                    <div class="progress-bar bg-warning text-dark font-weight-bold" role="progressbar" 
-                                        style="width: <?php echo ($administrationData['pending'] / $administrationData['total']) * 100; ?>%;" 
-                                        aria-valuenow="<?php echo $administrationData['pending']; ?>" 
-                                        aria-valuemin="0" 
-                                        aria-valuemax="<?php echo $administrationData['total']; ?>">
-                                        Pending (<?php echo $administrationData['pending']; ?>)
-                                    </div>
-                                <?php else: ?>
-                                    <div class="progress-bar bg-secondary font-weight-bold w-100" role="progressbar" 
-                                        aria-valuenow="0" 
-                                        aria-valuemin="0" 
-                                        aria-valuemax="100">
-                                        No employees available
-                                    </div>
-                                <?php endif; ?>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-xl-4 col-md-6 mt-5">
-                            <div class="card mb-4">
-                                <div class="card-body bg-secondary text-center">
-                                    <a href="../admin/sales.php" class="btn card-button text-light font-weight-bold bg-dark border border-dark w-100">Sales Department</a>
-                                </div>
-                                <div class="card-footer d-flex align-items-center justify-content-between bg-dark border-bottom border-light department-toggle">
-                                    <div class="small text-warning">Details</div>
-                                </div>
-                                <div id="salesInfo" class="bg-dark text-dark">
-                                    <div class="card-body">
-                                        <h5 class="text-center mb-4 text-light">Sales Evaluation Status</h5>
-                                        <div class="text-center mb-3">
-                                            <span class="badge badge-primary mx-1">Total Employees: <?php echo $salesData['total']; ?></span>
-                                            <span class="badge badge-success mx-1">Evaluated: <?php echo $salesData['evaluated']; ?></span>
-                                            <span class="badge badge-warning mx-1">Pending: <?php echo $salesData['pending']; ?></span>
-                                        </div>
-                                        <div class="progress mb-2">
-                                        <?php if ($salesData['total'] > 0): ?>
-                                    <div class="progress-bar bg-success font-weight-bold" role="progressbar" 
-                                        style="width: <?php echo ($salesData['evaluated'] / $salesData['total']) * 100; ?>%;" 
-                                        aria-valuenow="<?php echo $salesData['evaluated']; ?>" 
-                                        aria-valuemin="0" 
-                                        aria-valuemax="<?php echo $salesData['total']; ?>">
-                                        Evaluated (<?php echo $salesData['evaluated']; ?>)
-                                    </div>
-                                    <div class="progress-bar bg-warning text-dark font-weight-bold" role="progressbar" 
-                                        style="width: <?php echo ($salesData['pending'] / $salesData['total']) * 100; ?>%;" 
-                                        aria-valuenow="<?php echo $salesData['pending']; ?>" 
-                                        aria-valuemin="0" 
-                                        aria-valuemax="<?php echo $salesData['total']; ?>">
-                                        Pending (<?php echo $salesData['pending']; ?>)
-                                    </div>
-                                <?php else: ?>
-                                    <div class="progress-bar bg-secondary font-weight-bold w-100" role="progressbar" 
-                                        aria-valuenow="0" 
-                                        aria-valuemin="0" 
-                                        aria-valuemax="100">
-                                        No employees available
-                                    </div>
-                                <?php endif; ?>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-xl-4 col-md-6 mt-5">
-                            <div class="card mb-4">
-                                <div class="card-body bg-secondary text-center">
-                                    <a href="../admin/credit.php" class="btn card-button text-light font-weight-bold bg-dark border border-dark w-100">Credit Department</a>
-                                </div>
-                                <div class="card-footer d-flex align-items-center justify-content-between bg-dark border-bottom border-light department-toggle">
-                                    <div class="small text-warning">Details</div>
-                                </div>
-                                <div id="creditInfo" class="bg-dark text-dark">
-                                    <div class="card-body">
-                                        <h5 class="text-center mb-4 text-light">Credit Evaluation Status</h5>
-                                        <div class="text-center mb-3">
-                                            <span class="badge badge-primary mx-1">Total Employees: <?php echo $creditData['total']; ?></span>
-                                            <span class="badge badge-success mx-1">Evaluated: <?php echo $creditData['evaluated']; ?></span>
-                                            <span class="badge badge-warning mx-1">Pending: <?php echo $creditData['pending']; ?></span>
-                                        </div>
-                                        <div class="progress mb-2">
-                                        <?php if ($creditData['total'] > 0): ?>
-                                    <div class="progress-bar bg-success font-weight-bold" role="progressbar" 
-                                        style="width: <?php echo ($creditData['evaluated'] / $creditData['total']) * 100; ?>%;" 
-                                        aria-valuenow="<?php echo $creditData['evaluated']; ?>" 
-                                        aria-valuemin="0" 
-                                        aria-valuemax="<?php echo $creditData['total']; ?>">
-                                        Evaluated (<?php echo $creditData['evaluated']; ?>)
-                                    </div>
-                                    <div class="progress-bar bg-warning text-dark font-weight-bold" role="progressbar" 
-                                        style="width: <?php echo ($creditData['pending'] / $creditData['total']) * 100; ?>%;" 
-                                        aria-valuenow="<?php echo $creditData['pending']; ?>" 
-                                        aria-valuemin="0" 
-                                        aria-valuemax="<?php echo $creditData['total']; ?>">
-                                        Pending (<?php echo $creditData['pending']; ?>)
-                                    </div>
-                                <?php else: ?>
-                                    <div class="progress-bar bg-secondary font-weight-bold w-100" role="progressbar" 
-                                        aria-valuenow="0" 
-                                        aria-valuemin="0" 
-                                        aria-valuemax="100">
-                                        No employees available
-                                    </div>
-                                <?php endif; ?>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-xl-4 col-md-6 mt-5">
-                            <div class="card mb-4">
-                                <div class="card-body bg-secondary text-center">
-                                    <a href="../admin/it.php" class="btn card-button text-light font-weight-bold bg-dark border border-dark w-100">IT Department</a>
-                                </div>
-                                <div class="card-footer d-flex align-items-center justify-content-between bg-dark border-bottom border-light department-toggle">
-                                    <div class="small text-warning">Details</div>
-                                </div>
-                                <div id="itInfo" class="bg-dark text-dark">
-                                    <div class="card-body">
-                                        <h5 class="text-center mb-4 text-light">IT Evaluation Status</h5>
-                                        <div class="text-center mb-3">
-                                            <span class="badge badge-primary mx-1">Total Employees: <?php echo $itData['total']; ?></span>
-                                            <span class="badge badge-success mx-1">Evaluated: <?php echo $itData['evaluated']; ?></span>
-                                            <span class="badge badge-warning mx-1">Pending: <?php echo $itData['pending']; ?></span>
-                                        </div>
-                                        <div class="progress mb-2">
-                                            <?php if ($itData['total'] > 0): ?>
-                                                <div class="progress-bar bg-success font-weight-bold" role="progressbar" 
-                                                    style="width: <?php echo ($itData['evaluated'] / $itData['total']) * 100; ?>%;" 
-                                                    aria-valuenow="<?php echo $itData['evaluated']; ?>" 
+                                            <?php if ($hrData['total'] > 0): ?>
+                                                <div class="progress-bar bg-success font-weight-bold fs-5" role="progressbar" 
+                                                    style="width: <?php echo ($hrData['evaluated'] / $hrData['total']) * 100; ?>%;" 
+                                                    aria-valuenow="<?php echo $hrData['evaluated']; ?>" 
                                                     aria-valuemin="0" 
-                                                    aria-valuemax="<?php echo $itData['total']; ?>">
-                                                    Evaluated (<?php echo $itData['evaluated']; ?>)
+                                                    aria-valuemax="<?php echo $hrData['total']; ?>">
+                                                    Evaluated <?php echo $hrData['evaluated']; ?>
                                                 </div>
-                                                <div class="progress-bar bg-warning text-dark font-weight-bold" role="progressbar" 
-                                                    style="width: <?php echo ($itData['pending'] / $itData['total']) * 100; ?>%;" 
-                                                    aria-valuenow="<?php echo $itData['pending']; ?>" 
+                                                <div class="progress-bar bg-danger text-light font-weight-bold fs-5" role="progressbar" 
+                                                    style="width: <?php echo ($hrData['pending'] / $hrData['total']) * 100; ?>%;" 
+                                                    aria-valuenow="<?php echo $hrData['pending']; ?>" 
                                                     aria-valuemin="0" 
-                                                    aria-valuemax="<?php echo $itData['total']; ?>">
-                                                    Pending (<?php echo $itData['pending']; ?>)
+                                                    aria-valuemax="<?php echo $hrData['total']; ?>">
+                                                    Pending <?php echo $hrData['pending']; ?>
                                                 </div>
                                             <?php else: ?>
                                                 <div class="progress-bar bg-secondary font-weight-bold w-100" role="progressbar" 
@@ -344,6 +394,841 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                                             <?php endif; ?>
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal fade" id="hrModal" tabindex="-1" aria-labelledby="hrModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered modal-lg">
+                                <div class="modal-content bg-dark text-light">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="hrModalLabel">HR Department</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body ">
+                                        <!-- Display Evaluation Period -->
+                                        <?php if ($isFirstWeek): ?>
+                                            <p class="text-center text-warning">
+                                                Evaluation is open for <?php echo $evaluationPeriod; ?> until <?php echo $evaluationEndDate; ?>.
+                                            </p>
+                                        <?php else: ?>
+                                            <p class="text-center text-danger">
+                                                Evaluations are closed. They will open in the first week of the next month.
+                                            </p>
+                                        <?php endif; ?>
+
+                                        <!-- Employee Evaluation Table -->
+                                        <div class="table-responsive">
+                                            <table class="table table-hover">
+                                                <thead class="thead-dark">
+                                                    <tr>
+                                                        <th>Name</th>
+                                                        <th>Position</th>
+                                                        <th>Role</th>
+                                                        <th>Evaluation</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <?php if (!empty($employees)): ?>
+                                                        <?php foreach ($employees as $employee): ?>
+                                                            <tr>
+                                                                <td class="text-light"><?php echo htmlspecialchars($employee['firstname'] . ' ' . $employee['lastname']); ?></td>
+                                                                <td class="text-light"><?php echo htmlspecialchars($employee['position']); ?></td>
+                                                                <td class="text-light"><?php echo htmlspecialchars($employee['role']); ?></td>
+                                                                <td>
+                                                                    <button class="btn btn-success" 
+                                                                        onclick="evaluateEmployee(
+                                                                            <?php echo $employee['e_id']; ?>, 
+                                                                            '<?php echo htmlspecialchars($employee['firstname'] . ' ' . $employee['lastname']); ?>', 
+                                                                            '<?php echo htmlspecialchars($employee['position']); ?>', 
+                                                                            '<?php echo htmlspecialchars($employee['department']); ?>' // Add department here
+                                                                        )"
+                                                                        <?php echo !$isFirstWeek || in_array($employee['e_id'], $evaluatedEmployees) ? 'disabled' : ''; ?>>
+                                                                        <?php echo in_array($employee['e_id'], $evaluatedEmployees) ? 'Evaluated' : 'Evaluate'; ?>
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        <?php endforeach; ?>
+                                                    <?php else: ?>
+                                                        <tr><td class="text-light text-center" colspan="4">No employees found for evaluation in HR Department.</td></tr>
+                                                    <?php endif; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="d-flex justify-content-end">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    
+
+                        <?php
+                            include '../db/db_conn.php'; 
+
+                            // Define the values for role and department
+                            $role = 'employee';
+                            $department = 'Administration Department';
+                            
+                            // Check if it is the first week of the month
+                            $currentDay = date('j'); // Current day of the month (1-31)
+                            $isFirstWeek = ($currentDay <= 7); // First week is days 1-7
+                            
+                            // Set the evaluation period to the previous month if it is the first week
+                            if ($isFirstWeek) {
+                                // Handle January edge case
+                                if (date('m') == '01') {
+                                    $evaluationMonth = '12'; // December
+                                    $evaluationYear = date('Y') - 1; // Previous year
+                                } else {
+                                    $evaluationMonth = date('m', strtotime('last month')); // Previous month
+                                    $evaluationYear = date('Y', strtotime('last month'));  // Year of the previous month
+                                }
+                            
+                                // Format evaluation period and end date
+                                $evaluationPeriod = date('F Y', strtotime('last month')); // Format: February 2024
+                                $evaluationEndDate = date('F j, Y', strtotime(date('Y-m-') . '07')); // Format: March 7, 2024
+                            } else {
+                                // If it is not the first week, evaluations are closed
+                                $evaluationMonth = null;
+                                $evaluationYear = null;
+                                $evaluationPeriod = null;
+                                $evaluationEndDate = null;
+                            }
+                            
+                            // Fetch employee records where role is 'employee' and department is 'Administration Department'
+                            $sql = "SELECT e_id, firstname, lastname, role, position, department FROM employee_register WHERE role = ? AND department = ?";
+                            $stmt = $conn->prepare($sql);
+                            $stmt->bind_param('ss', $role, $department);
+                            $stmt->execute();
+                            $result = $stmt->get_result();
+                            
+                            // Fetch evaluations for this admin
+                            $adminId = $_SESSION['a_id'];
+                            $evaluatedEmployees = [];
+                            $evalSql = "SELECT e_id FROM admin_evaluations WHERE a_id = ?";
+                            $evalStmt = $conn->prepare($evalSql);
+                            $evalStmt->bind_param('i', $adminId);
+                            $evalStmt->execute();
+                            $evalResult = $evalStmt->get_result();
+                            if ($evalResult->num_rows > 0) {
+                                while ($row = $evalResult->fetch_assoc()) {
+                                    $evaluatedEmployees[] = $row['e_id'];
+                                }
+                            }
+                            
+                            // Fetch evaluation questions from the database for each category
+                            $categories = ['Quality of Work', 'Communication Skills', 'Teamwork', 'Punctuality', 'Initiative'];
+                            $questions = [];
+                            
+                            foreach ($categories as $category) {
+                                $categorySql = "SELECT question FROM evaluation_questions WHERE category = ?";
+                                $categoryStmt = $conn->prepare($categorySql);
+                                $categoryStmt->bind_param('s', $category);
+                                $categoryStmt->execute();
+                                $categoryResult = $categoryStmt->get_result();
+                                $questions[$category] = [];
+                            
+                                if ($categoryResult->num_rows > 0) {
+                                    while ($row = $categoryResult->fetch_assoc()) {
+                                        $questions[$category][] = $row['question'];
+                                    }
+                                }
+                            }
+                            
+                            // Check if any records are found
+                            $employees = [];
+                            if ($result->num_rows > 0) {
+                                while ($row = $result->fetch_assoc()) {
+                                    $employees[] = $row;
+                                }
+                            }
+                        ?>
+                        <div class="col-xl-4 col-md-6 mt-5">
+                            <div class="card mb-4">
+                                <div class="card-body bg-secondary text-center">
+                                    <button class="btn card-button text-light font-weight-bold bg-dark border border-dark w-100" data-bs-toggle="modal" data-bs-target="#adminModal">
+                                        Admin Department
+                                    </button>
+                                </div>
+                                <div class="card-footer d-flex align-items-center justify-content-between bg-dark border-bottom border-light department-toggle">
+                                    <div class="small text-warning">Details</div>
+                                </div>
+                                <div id="administrationInfo" class="bg-dark text-dark">
+                                    <div class="card-body">
+                                        <h5 class="text-center mb-4 text-light">Administration Evaluation Status</h5>
+                                        <div class="text-center mb-3">
+                                            <?php if ($administrationData['pending'] > 0): ?>
+                                                <span class="badge badge-danger mx-1 fs-5 px-2" style="top: -17px;">
+                                                    Pending: <?php echo $administrationData['pending']; ?>
+                                                </span>
+                                            <?php endif; ?>                                        
+                                        </div>
+                                        <div class="progress mb-2">
+                                            <?php if ($administrationData['total'] > 0): ?>
+                                                <div class="progress-bar bg-success font-weight-bold fs-5" role="progressbar" 
+                                                    style="width: <?php echo ($administrationData['evaluated'] / $administrationData['total']) * 100; ?>%;" 
+                                                    aria-valuenow="<?php echo $administrationData['evaluated']; ?>" 
+                                                    aria-valuemin="0" 
+                                                    aria-valuemax="<?php echo $administrationData['total']; ?>">
+                                                    Evaluated <?php echo $administrationData['evaluated']; ?>
+                                                </div>
+                                                <div class="progress-bar bg-danger text-light font-weight-bold fs-5" role="progressbar" 
+                                                    style="width: <?php echo ($administrationData['pending'] / $administrationData['total']) * 100; ?>%;" 
+                                                    aria-valuenow="<?php echo $salesData['pending']; ?>" 
+                                                    aria-valuemin="0" 
+                                                    aria-valuemax="<?php echo $administrationData['total']; ?>">
+                                                    Pending <?php echo $administrationData['pending']; ?>
+                                                </div>
+                                            <?php else: ?>
+                                                <div class="progress-bar bg-secondary font-weight-bold w-100" role="progressbar" 
+                                                    aria-valuenow="0" 
+                                                    aria-valuemin="0" 
+                                                    aria-valuemax="100">
+                                                    No employees available
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal fade" id="adminModal" tabindex="-1" aria-labelledby="adminModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered modal-lg">
+                                <div class="modal-content bg-dark text-light">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="adminModalLabel">Admin Department</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body ">
+                                        <!-- Display Evaluation Period -->
+                                        <?php if ($isFirstWeek): ?>
+                                            <p class="text-center text-warning">
+                                                Evaluation is open for <?php echo $evaluationPeriod; ?> until <?php echo $evaluationEndDate; ?>.
+                                            </p>
+                                        <?php else: ?>
+                                            <p class="text-center text-danger">
+                                                Evaluations are closed. They will open in the first week of the next month.
+                                            </p>
+                                        <?php endif; ?>
+
+                                        <!-- Employee Evaluation Table -->
+                                        <div class="table-responsive">
+                                            <table class="table table-striped table-hover">
+                                                <thead class="thead-dark">
+                                                    <tr>
+                                                        <th>Name</th>
+                                                        <th>Position</th>
+                                                        <th>Role</th>
+                                                        <th>Evaluation</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <?php if (!empty($employees)): ?>
+                                                        <?php foreach ($employees as $employee): ?>
+                                                            <tr>
+                                                                <td class="text-light"><?php echo htmlspecialchars($employee['firstname'] . ' ' . $employee['lastname']); ?></td>
+                                                                <td class="text-light"><?php echo htmlspecialchars($employee['position']); ?></td>
+                                                                <td class="text-light"><?php echo htmlspecialchars($employee['role']); ?></td>
+                                                                <td>
+                                                                    <button class="btn btn-success" 
+                                                                        onclick="evaluateEmployee(
+                                                                            <?php echo $employee['e_id']; ?>, 
+                                                                            '<?php echo htmlspecialchars($employee['firstname'] . ' ' . $employee['lastname']); ?>', 
+                                                                            '<?php echo htmlspecialchars($employee['position']); ?>', 
+                                                                            '<?php echo htmlspecialchars($employee['department']); ?>' // Add department here
+                                                                        )"
+                                                                        <?php echo !$isFirstWeek || in_array($employee['e_id'], $evaluatedEmployees) ? 'disabled' : ''; ?>>
+                                                                        <?php echo in_array($employee['e_id'], $evaluatedEmployees) ? 'Evaluated' : 'Evaluate'; ?>
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        <?php endforeach; ?>
+                                                    <?php else: ?>
+                                                        <tr><td class="text-light text-center" colspan="4">No employees found for evaluation in Admin Department.</td></tr>
+                                                    <?php endif; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="d-flex justify-content-end">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+
+                        <?php
+                            include '../db/db_conn.php'; 
+
+                            // Define the values for role and department
+                            $role = 'employee';
+                            $department = 'Sales Department';
+
+                            // Check if it is the first week of the month
+                            $currentDay = date('j'); // Current day of the month (1-31)
+                            $isFirstWeek = ($currentDay <= 7); // First week is days 1-7
+
+                            // Set the evaluation period to the previous month if it is the first week
+                            if ($isFirstWeek) {
+                                $evaluationMonth = date('m', strtotime('last month')); // Previous month
+                                $evaluationYear = date('Y', strtotime('last month'));  // Year of the previous month
+                                $evaluationPeriod = date('F Y', strtotime('last month')); // Format: February 2024
+
+                                // Calculate the end date of the evaluation period (7th day of the current month)
+                                $evaluationEndDate = date('F j, Y', strtotime(date('Y-m-07'))); // Format: March 7, 2024
+                            } else {
+                                // If it is not the first week, evaluations are closed
+                                $evaluationMonth = null;
+                                $evaluationYear = null;
+                                $evaluationPeriod = null;
+                                $evaluationEndDate = null;
+                            }
+
+                            // Fetch employee records where role is 'employee' and department is 'Administration Department'
+                            $sql = "SELECT e_id, firstname, lastname, role, position, department FROM employee_register WHERE role = ? AND department = ?";
+                            $stmt = $conn->prepare($sql);
+                            $stmt->bind_param('ss', $role, $department);
+                            $stmt->execute();
+                            $result = $stmt->get_result();
+
+                            // Fetch evaluations for this admin
+                            $adminId = $_SESSION['a_id'];
+                            $evaluatedEmployees = [];
+                            $evalSql = "SELECT e_id FROM admin_evaluations WHERE a_id = ?";
+                            $evalStmt = $conn->prepare($evalSql);
+                            $evalStmt->bind_param('i', $adminId);
+                            $evalStmt->execute();
+                            $evalResult = $evalStmt->get_result();
+                            if ($evalResult->num_rows > 0) {
+                                while ($row = $evalResult->fetch_assoc()) {
+                                    $evaluatedEmployees[] = $row['e_id'];
+                                }
+                            }
+
+                            // Fetch evaluation questions from the database for each category
+                            $categories = ['Quality of Work', 'Communication Skills', 'Teamwork', 'Punctuality', 'Initiative'];
+                            $questions = [];
+
+                            foreach ($categories as $category) {
+                                $categorySql = "SELECT question FROM evaluation_questions WHERE category = ?";
+                                $categoryStmt = $conn->prepare($categorySql);
+                                $categoryStmt->bind_param('s', $category);
+                                $categoryStmt->execute();
+                                $categoryResult = $categoryStmt->get_result();
+                                $questions[$category] = [];
+
+                                if ($categoryResult->num_rows > 0) {
+                                    while ($row = $categoryResult->fetch_assoc()) {
+                                        $questions[$category][] = $row['question'];
+                                    }
+                                }
+                            }
+
+                            // Check if any records are found
+                            $employees = [];
+                            if ($result->num_rows > 0) {
+                                while ($row = $result->fetch_assoc()) {
+                                    $employees[] = $row;
+                                }
+                            }
+
+                        ?>
+                        <div class="col-xl-4 col-md-6 mt-5">
+                            <div class="card mb-4">
+                                <div class="card-body bg-secondary text-center">
+                                    <button class="btn card-button text-light font-weight-bold bg-dark border border-dark w-100" data-bs-toggle="modal" data-bs-target="#salesModal">
+                                        Sales Department
+                                    </button>                                
+                                </div>
+                                <div class="card-footer d-flex align-items-center justify-content-between bg-dark border-bottom border-light department-toggle">
+                                    <div class="small text-warning">Details</div>
+                                </div>
+                                <div id="salesInfo" class="bg-dark text-dark">
+                                    <div class="card-body">
+                                        <h5 class="text-center mb-4 text-light">Sales Evaluation Status</h5>
+                                        <div class="text-center mb-3">
+                                            <?php if ($salesData['pending'] > 0): ?>
+                                                <span class="badge badge-danger mx-1 fs-5 px-2" style="top: -17px;">
+                                                    Pending: <?php echo $salesData['pending']; ?>
+                                                </span>
+                                            <?php endif; ?>                                        
+                                        </div>
+                                        <div class="progress mb-2">
+                                        <?php if ($salesData['total'] > 0): ?>
+                                    <div class="progress-bar bg-success font-weight-bold fs-5" role="progressbar" 
+                                        style="width: <?php echo ($salesData['evaluated'] / $salesData['total']) * 100; ?>%;" 
+                                        aria-valuenow="<?php echo $salesData['evaluated']; ?>" 
+                                        aria-valuemin="0" 
+                                        aria-valuemax="<?php echo $salesData['total']; ?>">
+                                        Evaluated <?php echo $salesData['evaluated']; ?>
+                                    </div>
+                                    <div class="progress-bar bg-danger text-light font-weight-bold fs-5" role="progressbar" 
+                                        style="width: <?php echo ($salesData['pending'] / $salesData['total']) * 100; ?>%;" 
+                                        aria-valuenow="<?php echo $salesData['pending']; ?>" 
+                                        aria-valuemin="0" 
+                                        aria-valuemax="<?php echo $salesData['total']; ?>">
+                                        Pending <?php echo $salesData['pending']; ?>
+                                    </div>
+                                <?php else: ?>
+                                    <div class="progress-bar bg-secondary font-weight-bold w-100" role="progressbar" 
+                                        aria-valuenow="0" 
+                                        aria-valuemin="0" 
+                                        aria-valuemax="100">
+                                        No employees available
+                                    </div>
+                                <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal fade" id="salesModal" tabindex="-1" aria-labelledby="salesModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered modal-lg">
+                                <div class="modal-content bg-dark text-light">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="salesModalLabel">Sales Department</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body ">
+                                        <!-- Display Evaluation Period -->
+                                        <?php if ($isFirstWeek): ?>
+                                            <p class="text-center text-warning">
+                                                Evaluation is open for <?php echo $evaluationPeriod; ?> until <?php echo $evaluationEndDate; ?>.
+                                            </p>
+                                        <?php else: ?>
+                                            <p class="text-center text-danger">
+                                                Evaluations are closed. They will open in the first week of the next month.
+                                            </p>
+                                        <?php endif; ?>
+
+                                        <!-- Employee Evaluation Table -->
+                                        <div class="table-responsive">
+                                            <table class="table table-striped table-hover">
+                                                <thead class="thead-dark">
+                                                    <tr>
+                                                        <th>Name</th>
+                                                        <th>Position</th>
+                                                        <th>Role</th>
+                                                        <th>Evaluation</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <?php if (!empty($employees)): ?>
+                                                        <?php foreach ($employees as $employee): ?>
+                                                            <tr>
+                                                                <td class="text-light"><?php echo htmlspecialchars($employee['firstname'] . ' ' . $employee['lastname']); ?></td>
+                                                                <td class="text-light"><?php echo htmlspecialchars($employee['position']); ?></td>
+                                                                <td class="text-light"><?php echo htmlspecialchars($employee['role']); ?></td>
+                                                                <td>
+                                                                    <button class="btn btn-success" 
+                                                                        onclick="evaluateEmployee(
+                                                                            <?php echo $employee['e_id']; ?>, 
+                                                                            '<?php echo htmlspecialchars($employee['firstname'] . ' ' . $employee['lastname']); ?>', 
+                                                                            '<?php echo htmlspecialchars($employee['position']); ?>', 
+                                                                            '<?php echo htmlspecialchars($employee['department']); ?>' // Add department here
+                                                                        )"
+                                                                        <?php echo !$isFirstWeek || in_array($employee['e_id'], $evaluatedEmployees) ? 'disabled' : ''; ?>>
+                                                                        <?php echo in_array($employee['e_id'], $evaluatedEmployees) ? 'Evaluated' : 'Evaluate'; ?>
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        <?php endforeach; ?>
+                                                    <?php else: ?>
+                                                        <tr><td class="text-light text-center" colspan="4">No employees found for evaluation in Sales Department.</td></tr>
+                                                    <?php endif; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="d-flex justify-content-end">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <?php
+                            include '../db/db_conn.php'; 
+
+                            // Define the values for role and department
+                            $role = 'employee';
+                            $department = 'Credit Department';
+
+                            // Check if it is the first week of the month
+                            $currentDay = date('j'); // Current day of the month (1-31)
+                            $isFirstWeek = ($currentDay <= 7); // First week is days 1-7
+
+                            // Set the evaluation period to the previous month if it is the first week
+                            if ($isFirstWeek) {
+                                $evaluationMonth = date('m', strtotime('last month')); // Previous month
+                                $evaluationYear = date('Y', strtotime('last month'));  // Year of the previous month
+                                $evaluationPeriod = date('F Y', strtotime('last month')); // Format: February 2024
+
+                                // Calculate the end date of the evaluation period (7th day of the current month)
+                                $evaluationEndDate = date('F j, Y', strtotime(date('Y-m-07'))); // Format: March 7, 2024
+                            } else {
+                                // If it is not the first week, evaluations are closed
+                                $evaluationMonth = null;
+                                $evaluationYear = null;
+                                $evaluationPeriod = null;
+                                $evaluationEndDate = null;
+                            }
+
+                            // Fetch employee records where role is 'employee' and department is 'Administration Department'
+                            $sql = "SELECT e_id, firstname, lastname, role, position, department FROM employee_register WHERE role = ? AND department = ?";
+                            $stmt = $conn->prepare($sql);
+                            $stmt->bind_param('ss', $role, $department);
+                            $stmt->execute();
+                            $result = $stmt->get_result();
+
+                            // Fetch evaluations for this admin
+                            $adminId = $_SESSION['a_id'];
+                            $evaluatedEmployees = [];
+                            $evalSql = "SELECT e_id FROM admin_evaluations WHERE a_id = ?";
+                            $evalStmt = $conn->prepare($evalSql);
+                            $evalStmt->bind_param('i', $adminId);
+                            $evalStmt->execute();
+                            $evalResult = $evalStmt->get_result();
+                            if ($evalResult->num_rows > 0) {
+                                while ($row = $evalResult->fetch_assoc()) {
+                                    $evaluatedEmployees[] = $row['e_id'];
+                                }
+                            }
+
+                            // Fetch evaluation questions from the database for each category
+                            $categories = ['Quality of Work', 'Communication Skills', 'Teamwork', 'Punctuality', 'Initiative'];
+                            $questions = [];
+
+                            foreach ($categories as $category) {
+                                $categorySql = "SELECT question FROM evaluation_questions WHERE category = ?";
+                                $categoryStmt = $conn->prepare($categorySql);
+                                $categoryStmt->bind_param('s', $category);
+                                $categoryStmt->execute();
+                                $categoryResult = $categoryStmt->get_result();
+                                $questions[$category] = [];
+
+                                if ($categoryResult->num_rows > 0) {
+                                    while ($row = $categoryResult->fetch_assoc()) {
+                                        $questions[$category][] = $row['question'];
+                                    }
+                                }
+                            }
+
+                            // Check if any records are found
+                            $employees = [];
+                            if ($result->num_rows > 0) {
+                                while ($row = $result->fetch_assoc()) {
+                                    $employees[] = $row;
+                                }
+                            }
+
+                            // Close the database connection
+                            $conn->close();
+                        ?>
+                        <div class="col-xl-4 col-md-6 mt-5">
+                            <div class="card mb-4">
+                                <div class="card-body bg-secondary text-center">
+                                    <button class="btn card-button text-light font-weight-bold bg-dark border border-dark w-100" data-bs-toggle="modal" data-bs-target="#creditModal">
+                                        Credit Department
+                                    </button>                                </div>
+                                <div class="card-footer d-flex align-items-center justify-content-between bg-dark border-bottom border-light department-toggle">
+                                    <div class="small text-warning">Details</div>
+                                </div>
+                                <div id="creditInfo" class="bg-dark text-dark">
+                                    <div class="card-body">
+                                        <h5 class="text-center mb-4 text-light">Credit Evaluation Status</h5>
+                                        <div class="text-center mb-3">
+                                            <?php if ($creditData['pending'] > 0): ?>
+                                                <span class="badge badge-danger mx-1 fs-5 px-2" style="top: -17px;">
+                                                    Pending: <?php echo $creditData['pending']; ?>
+                                                </span>
+                                            <?php endif; ?>                                            
+                                        </div>
+                                        <div class="progress mb-2">
+                                        <?php if ($creditData['total'] > 0): ?>
+                                    <div class="progress-bar bg-success font-weight-bold fs-5" role="progressbar" 
+                                        style="width: <?php echo ($creditData['evaluated'] / $creditData['total']) * 100; ?>%;" 
+                                        aria-valuenow="<?php echo $creditData['evaluated']; ?>" 
+                                        aria-valuemin="0" 
+                                        aria-valuemax="<?php echo $creditData['total']; ?>">
+                                        Evaluated <?php echo $creditData['evaluated']; ?>
+                                    </div>
+                                    <div class="progress-bar bg-danger text-light font-weight-bold fs-5" role="progressbar" 
+                                        style="width: <?php echo ($creditData['pending'] / $creditData['total']) * 100; ?>%;" 
+                                        aria-valuenow="<?php echo $creditData['pending']; ?>" 
+                                        aria-valuemin="0" 
+                                        aria-valuemax="<?php echo $creditData['total']; ?>">
+                                        Pending <?php echo $creditData['pending']; ?>
+                                    </div>
+                                <?php else: ?>
+                                    <div class="progress-bar bg-secondary font-weight-bold w-100" role="progressbar" 
+                                        aria-valuenow="0" 
+                                        aria-valuemin="0" 
+                                        aria-valuemax="100">
+                                        No employees available
+                                    </div>
+                                <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal fade" id="creditModal" tabindex="-1" aria-labelledby="creditModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered modal-lg">
+                                <div class="modal-content bg-dark text-light">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="creditModalLabel">Credit Department</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body ">
+                                        <!-- Display Evaluation Period -->
+                                        <?php if ($isFirstWeek): ?>
+                                            <p class="text-center text-warning">
+                                                Evaluation is open for <?php echo $evaluationPeriod; ?> until <?php echo $evaluationEndDate; ?>.
+                                            </p>
+                                        <?php else: ?>
+                                            <p class="text-center text-danger">
+                                                Evaluations are closed. They will open in the first week of the next month.
+                                            </p>
+                                        <?php endif; ?>
+
+                                        <!-- Employee Evaluation Table -->
+                                        <div class="table-responsive">
+                                            <table class="table table-striped table-hover">
+                                                <thead class="thead-dark">
+                                                    <tr>
+                                                        <th>Name</th>
+                                                        <th>Position</th>
+                                                        <th>Role</th>
+                                                        <th>Evaluation</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <?php if (!empty($employees)): ?>
+                                                        <?php foreach ($employees as $employee): ?>
+                                                            <tr>
+                                                                <td class="text-light"><?php echo htmlspecialchars($employee['firstname'] . ' ' . $employee['lastname']); ?></td>
+                                                                <td class="text-light"><?php echo htmlspecialchars($employee['position']); ?></td>
+                                                                <td class="text-light"><?php echo htmlspecialchars($employee['role']); ?></td>
+                                                                <td>
+                                                                    <button class="btn btn-success" 
+                                                                        onclick="evaluateEmployee(
+                                                                            <?php echo $employee['e_id']; ?>, 
+                                                                            '<?php echo htmlspecialchars($employee['firstname'] . ' ' . $employee['lastname']); ?>', 
+                                                                            '<?php echo htmlspecialchars($employee['position']); ?>', 
+                                                                            '<?php echo htmlspecialchars($employee['department']); ?>' // Add department here
+                                                                        )"
+                                                                        <?php echo !$isFirstWeek || in_array($employee['e_id'], $evaluatedEmployees) ? 'disabled' : ''; ?>>
+                                                                        <?php echo in_array($employee['e_id'], $evaluatedEmployees) ? 'Evaluated' : 'Evaluate'; ?>
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        <?php endforeach; ?>
+                                                    <?php else: ?>
+                                                        <tr><td class="text-light text-center" colspan="4">No employees found for evaluation in Credit Department.</td></tr>
+                                                    <?php endif; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="d-flex justify-content-end">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <?php
+                            include '../db/db_conn.php'; 
+
+                            // Define the values for role and department
+                            $role = 'employee';
+                            $department = 'IT Department';
+
+                            // Check if it is the first week of the month
+                            $currentDay = date('j'); // Current day of the month (1-31)
+                            $isFirstWeek = ($currentDay <= 7); // First week is days 1-7
+
+                            // Set the evaluation period to the previous month if it is the first week
+                            if ($isFirstWeek) {
+                                $evaluationMonth = date('m', strtotime('last month')); // Previous month
+                                $evaluationYear = date('Y', strtotime('last month'));  // Year of the previous month
+                                $evaluationPeriod = date('F Y', strtotime('last month')); // Format: February 2024
+
+                                // Calculate the end date of the evaluation period (7th day of the current month)
+                                $evaluationEndDate = date('F j, Y', strtotime(date('Y-m-07'))); // Format: March 7, 2024
+                            } else {
+                                // If it is not the first week, evaluations are closed
+                                $evaluationMonth = null;
+                                $evaluationYear = null;
+                                $evaluationPeriod = null;
+                                $evaluationEndDate = null;
+                            }
+
+                            // Fetch employee records where role is 'employee' and department is 'Administration Department'
+                            $sql = "SELECT e_id, firstname, lastname, role, position, department FROM employee_register WHERE role = ? AND department = ?";
+                            $stmt = $conn->prepare($sql);
+                            $stmt->bind_param('ss', $role, $department);
+                            $stmt->execute();
+                            $result = $stmt->get_result();
+
+                            // Fetch evaluations for this admin
+                            $adminId = $_SESSION['a_id'];
+                            $evaluatedEmployees = [];
+                            $evalSql = "SELECT e_id FROM admin_evaluations WHERE a_id = ?";
+                            $evalStmt = $conn->prepare($evalSql);
+                            $evalStmt->bind_param('i', $adminId);
+                            $evalStmt->execute();
+                            $evalResult = $evalStmt->get_result();
+                            if ($evalResult->num_rows > 0) {
+                                while ($row = $evalResult->fetch_assoc()) {
+                                    $evaluatedEmployees[] = $row['e_id'];
+                                }
+                            }
+
+                            // Fetch evaluation questions from the database for each category
+                            $categories = ['Quality of Work', 'Communication Skills', 'Teamwork', 'Punctuality', 'Initiative'];
+                            $questions = [];
+
+                            foreach ($categories as $category) {
+                                $categorySql = "SELECT question FROM evaluation_questions WHERE category = ?";
+                                $categoryStmt = $conn->prepare($categorySql);
+                                $categoryStmt->bind_param('s', $category);
+                                $categoryStmt->execute();
+                                $categoryResult = $categoryStmt->get_result();
+                                $questions[$category] = [];
+
+                                if ($categoryResult->num_rows > 0) {
+                                    while ($row = $categoryResult->fetch_assoc()) {
+                                        $questions[$category][] = $row['question'];
+                                    }
+                                }
+                            }
+
+                            // Check if any records are found
+                            $employees = [];
+                            if ($result->num_rows > 0) {
+                                while ($row = $result->fetch_assoc()) {
+                                    $employees[] = $row;
+                                }
+                            }
+
+                            // Close the database connection
+                            $conn->close();
+                        ?>
+                        <div class="col-xl-4 col-md-6 mt-5">
+                            <div class="card mb-4">
+                                <div class="card-body bg-secondary text-center">
+                                    <button class="btn card-button text-light font-weight-bold bg-dark border border-dark w-100" data-bs-toggle="modal" data-bs-target="#itModal">
+                                        IT Department
+                                    </button>                                  </div>
+                                <div class="card-footer d-flex align-items-center justify-content-between bg-dark border-bottom border-light department-toggle">
+                                    <div class="small text-warning">Details</div>
+                                </div>
+                                <div id="itInfo" class="bg-dark text-dark">
+                                    <div class="card-body">
+                                        <h5 class="text-center mb-4 text-light">IT Evaluation Status</h5>
+                                        <div class="text-center mb-3">
+                                            <?php if ($itData['pending'] > 0): ?>
+                                                <span class="badge badge-danger mx-1 fs-5 px-2" style="top: -17px;">
+                                                    Pending: <?php echo $itData['pending']; ?>
+                                                </span>
+                                            <?php endif; ?>                                            
+                                        </div>
+                                        <div class="progress mb-2">
+                                            <?php if ($itData['total'] > 0): ?>
+                                                <div class="progress-bar bg-success font-weight-bold fs-5" role="progressbar" 
+                                                    style="width: <?php echo ($itData['evaluated'] / $itData['total']) * 100; ?>%;" 
+                                                    aria-valuenow="<?php echo $itData['evaluated']; ?>" 
+                                                    aria-valuemin="0" 
+                                                    aria-valuemax="<?php echo $itData['total']; ?>">
+                                                    Evaluated <?php echo $itData['evaluated']; ?>
+                                                </div>
+                                                <div class="progress-bar bg-danger text-light font-weight-bold fs-5" role="progressbar" 
+                                                    style="width: <?php echo ($itData['pending'] / $itData['total']) * 100; ?>%;" 
+                                                    aria-valuenow="<?php echo $itData['pending']; ?>" 
+                                                    aria-valuemin="0" 
+                                                    aria-valuemax="<?php echo $itData['total']; ?>">
+                                                    Pending <?php echo $itData['pending']; ?>
+                                                </div>
+                                            <?php else: ?>
+                                                <div class="progress-bar bg-secondary font-weight-bold w-100" role="progressbar" 
+                                                    aria-valuenow="0" 
+                                                    aria-valuemin="0" 
+                                                    aria-valuemax="100">
+                                                    No employees available
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal fade" id="itModal" tabindex="-1" aria-labelledby="itModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content bg-dark text-light">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="itModalLabel">IT Department</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body ">
+                                <!-- Display Evaluation Period -->
+                                <?php if ($isFirstWeek): ?>
+                                    <p class="text-center text-warning">
+                                        Evaluation is open for <?php echo $evaluationPeriod; ?> until <?php echo $evaluationEndDate; ?>.
+                                    </p>
+                                <?php else: ?>
+                                    <p class="text-center text-danger">
+                                        Evaluations are closed. They will open in the first week of the next month.
+                                    </p>
+                                <?php endif; ?>
+
+                                <!-- Employee Evaluation Table -->
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
+                                        <thead class="thead-dark">
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Position</th>
+                                                <th>Role</th>
+                                                <th>Evaluation</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php if (!empty($employees)): ?>
+                                                <?php foreach ($employees as $employee): ?>
+                                                    <tr>
+                                                        <td class="text-light"><?php echo htmlspecialchars($employee['firstname'] . ' ' . $employee['lastname']); ?></td>
+                                                        <td class="text-light"><?php echo htmlspecialchars($employee['position']); ?></td>
+                                                        <td class="text-light"><?php echo htmlspecialchars($employee['role']); ?></td>
+                                                        <td>
+                                                            <button class="btn btn-success" 
+                                                                onclick="evaluateEmployee(
+                                                                    <?php echo $employee['e_id']; ?>, 
+                                                                    '<?php echo htmlspecialchars($employee['firstname'] . ' ' . $employee['lastname']); ?>', 
+                                                                    '<?php echo htmlspecialchars($employee['position']); ?>', 
+                                                                    '<?php echo htmlspecialchars($employee['department']); ?>' // Add department here
+                                                                )"
+                                                                <?php echo !$isFirstWeek || in_array($employee['e_id'], $evaluatedEmployees) ? 'disabled' : ''; ?>>
+                                                                <?php echo in_array($employee['e_id'], $evaluatedEmployees) ? 'Evaluated' : 'Evaluate'; ?>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                            <?php else: ?>
+                                                <tr><td class="text-light text-center" colspan="4">No employees found for evaluation in IT Department.</td></tr>
+                                            <?php endif; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                                 </div>
                             </div>
                         </div>
@@ -368,84 +1253,31 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                             </div>
                         </div>
                     </div>
-                </div>  
+                </div>                
+                <div class="modal fade" id="evaluationModal" tabindex="-1" role="dialog" aria-labelledby="evaluationModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg" role="document">
+                        <div class="modal-content bg-dark text-light">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="employeeDetails"></h5>
+                                <!-- Corrected close button structure -->
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <input type="hidden" id="a_id" value="<?php echo $_SESSION['a_id']; ?>">
+                                <div id="questions"></div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-primary" onclick="submitEvaluation()">Submit</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>                
             <?php include 'footer.php'; ?>                                 
         </div>
     </div>
-<script>
-        //CALENDAR 
-        let calendar;
-            function toggleCalendar() {
-                const calendarContainer = document.getElementById('calendarContainer');
-                    if (calendarContainer.style.display === 'none' || calendarContainer.style.display === '') {
-                        calendarContainer.style.display = 'block';
-                        if (!calendar) {
-                            initializeCalendar();
-                         }
-                        } else {
-                            calendarContainer.style.display = 'none';
-                        }
-            }
-
-            function initializeCalendar() {
-                const calendarEl = document.getElementById('calendar');
-                    calendar = new FullCalendar.Calendar(calendarEl, {
-                        initialView: 'dayGridMonth',
-                        headerToolbar: {
-                        left: 'prev,next today',
-                        center: 'title',
-                        right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                        },
-                        height: 440,  
-                        events: {
-                        url: '../db/holiday.php',  
-                        method: 'GET',
-                        failure: function() {
-                        alert('There was an error fetching events!');
-                        }
-                        }
-                    });
-
-                    calendar.render();
-            }
-
-            document.addEventListener('DOMContentLoaded', function () {
-                const currentDateElement = document.getElementById('currentDate');
-                const currentDate = new Date().toLocaleDateString(); 
-                currentDateElement.textContent = currentDate; 
-            });
-
-            document.addEventListener('click', function(event) {
-                const calendarContainer = document.getElementById('calendarContainer');
-                const calendarButton = document.querySelector('button[onclick="toggleCalendar()"]');
-
-                    if (!calendarContainer.contains(event.target) && !calendarButton.contains(event.target)) {
-                        calendarContainer.style.display = 'none';
-                        }
-            });
-        //CALENDAR END
-
-        //TIME 
-        function setCurrentTime() {
-            const currentTimeElement = document.getElementById('currentTime');
-            const currentDateElement = document.getElementById('currentDate');
-
-            const currentDate = new Date();
     
-            currentDate.setHours(currentDate.getHours() + 0);
-                const hours = currentDate.getHours();
-                const minutes = currentDate.getMinutes();
-                const seconds = currentDate.getSeconds();
-                const formattedHours = hours < 10 ? '0' + hours : hours;
-                const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
-                const formattedSeconds = seconds < 10 ? '0' + seconds : seconds;
-
-            currentTimeElement.textContent = `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
-            currentDateElement.textContent = currentDate.toLocaleDateString();
-        }
-        setCurrentTime();
-        setInterval(setCurrentTime, 1000);
-        //TIME END
+<script>
 
         //EVALUATION TOGGLE
             // Add event listener to all elements with class "department-toggle"
@@ -463,10 +1295,142 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
             });
         });
         //EVALUATION TOGGLE END
+
+                            let currentEmployeeId;
+                            let currentEmployeeName;  
+                            let currentEmployeePosition; 
+                            let currentDepartment; // Add this line at the top of your script
+
+                            // The categories and questions fetched from the PHP script
+                            const questions = <?php echo json_encode($questions); ?>;
+
+                            function evaluateEmployee(e_id, employeeName, employeePosition, department) {
+                                currentEmployeeId = e_id; 
+                                currentEmployeeName = employeeName; 
+                                currentEmployeePosition = employeePosition; 
+                                currentDepartment = department; // Store the department
+
+                                const employeeDetails = `<strong>Name: ${employeeName} <br> Position: ${employeePosition} <br> Department: ${department}</strong>`;
+                                document.getElementById('employeeDetails').innerHTML = employeeDetails;
+
+                                const questionsDiv = document.getElementById('questions');
+                                questionsDiv.innerHTML = ''; 
+
+                                // Start the table structure
+                                let tableHtml = `
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Category</th>
+                                            <th>Question</th>
+                                            <th>Rating</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>`;
+
+                                // Loop through categories and questions to add them into the table
+                                for (const [category, categoryQuestions] of Object.entries(questions)) {
+                                    categoryQuestions.forEach((question, index) => {
+                                        const questionName = `${category.replace(/\s/g, '')}q${index}`; // Unique name per question
+                                        tableHtml += `
+                                        <tr>
+                                            <td>${index === 0 ? category : ''}</td>
+                                            <td>${question}</td>
+                                            <td>
+                                                <div class="star-rating">
+                                                    ${[6, 5, 4, 3, 2, 1].map(value => `
+                                                        <input type="radio" name="${questionName}" value="${value}" id="${questionName}star${value}">
+                                                        <label for="${questionName}star${value}">&#9733;</label>
+                                                    `).join('')}
+                                                </div>
+                                            </td>
+                                        </tr>`;
+                                    });
+                                }
+
+                                // Close the table structure
+                                tableHtml += `
+                                    </tbody>
+                                </table>`;
+
+                                questionsDiv.innerHTML = tableHtml;
+
+                                $('#evaluationModal').modal('show'); 
+                            }
+
+                            function submitEvaluation() {
+                                const evaluations = [];
+                                const questionsDiv = document.getElementById('questions');
+
+                                questionsDiv.querySelectorAll('input[type="radio"]:checked').forEach(input => {
+                                    evaluations.push({
+                                        question: input.name,  
+                                        rating: input.value    
+                                    });
+                                });
+
+                                const totalQuestions = questionsDiv.querySelectorAll('.star-rating').length;
+
+                                if (evaluations.length !== totalQuestions) {
+                                    alert('Please complete the evaluation before submitting.');
+                                    return;
+                                }
+
+                                const categoryAverages = {
+                                    QualityOfWork: calculateAverage('Quality of Work', evaluations),
+                                    CommunicationSkills: calculateAverage('Communication Skills', evaluations),
+                                    Teamwork: calculateAverage('Teamwork', evaluations),
+                                    Punctuality: calculateAverage('Punctuality', evaluations),
+                                    Initiative: calculateAverage('Initiative', evaluations)
+                                };
+
+                                console.log('Category Averages:', categoryAverages);
+
+                                const adminId = document.getElementById('a_id').value;
+
+                                $.ajax({
+                                    type: 'POST',
+                                    url: '../db/submit_evaluation.php',
+                                    data: {
+                                        e_id: currentEmployeeId,
+                                        employeeName: currentEmployeeName,
+                                        employeePosition: currentEmployeePosition,
+                                        categoryAverages: categoryAverages,
+                                        adminId: adminId,
+                                        department: currentDepartment // Use the dynamic department
+                                    },
+                                    success: function (response) {
+                                        console.log(response); 
+                                        if (response === 'You have already evaluated this employee.') {
+                                            alert(response); 
+                                        } else {
+                                            $('#evaluationModal').modal('hide');
+                                            alert('Evaluation submitted successfully!');
+                                        }
+                                    },
+                                    error: function (err) {
+                                        console.error(err);
+                                        alert('An error occurred while submitting the evaluation.');
+                                    }
+                                });
+                            }
+
+                            function calculateAverage(category, evaluations) {
+                                const categoryEvaluations = evaluations.filter(evaluation => evaluation.question.startsWith(category.replace(/\s/g, '')));
+
+                                if (categoryEvaluations.length === 0) {
+                                    return 0; 
+                                }
+
+                                const total = categoryEvaluations.reduce((sum, evaluation) => sum + parseInt(evaluation.rating), 0);
+                                return total / categoryEvaluations.length;
+                            }
+
+
 </script>
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'> </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="../js/admin.js"></script>

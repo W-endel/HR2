@@ -14,15 +14,6 @@
             background-color: #dc3545; /* Red color for the badge */
         }
 
-        /* Dropdown Menu */
-        .dropdown-menu {
-            max-height: 300px;
-            overflow-y: auto;
-            width: 300px;
-            border: 1px solid #ddd; /* Light border */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-        }
-
         /* Notification Item */
         .dropdown-item {
             white-space: normal;
@@ -132,7 +123,7 @@
     </nav>
 
     <script>
-                let calendar;
+        let calendar;
         function toggleCalendar() {
             const calendarContainer = document.getElementById('calendarContainer');
             if (calendarContainer.style.display === 'none' || calendarContainer.style.display === '') {

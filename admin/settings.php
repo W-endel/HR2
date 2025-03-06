@@ -100,147 +100,23 @@ while ($row = $result->fetch_assoc()) {
     <link href="../css/calendar.css" rel="stylesheet"/>
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+    .accordion-button::after {
+        filter: brightness(0) invert(1); /* Makes the arrow light (white) */
+    }
+
+    /* If you want a secondary color (gray) instead of light, use this: */
+    /*
+    .accordion-button::after {
+        filter: brightness(0) invert(0.5);
+    }
+    */
+</style>
 </head>
 <body class="sb-nav-fixed bg-black">
-    <nav class="sb-topnav navbar navbar-expand navbar-dark border-bottom border-1 border-warning bg-dark">
-        <a class="navbar-brand ps-3 text-muted" href="../admin/dashboard.php">Microfinance</a>
-        <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars text-light"></i></button>
-        <div class="d-flex ms-auto me-0 me-md-3 my-2 my-md-0 align-items-center">
-            <div class="text-light me-3 p-2 rounded shadow-sm bg-gradient" id="currentTimeContainer" 
-                style="background: linear-gradient(45deg, #333333, #444444); border-radius: 5px;">
-                <span class="d-flex align-items-center">
-                    <span class="pe-2">
-                        <i class="fas fa-clock"></i> 
-                        <span id="currentTime">00:00:00</span>
-                    </span>
-                    <button class="btn btn-outline-warning btn-sm ms-2" type="button" onclick="toggleCalendar()">
-                        <i class="fas fa-calendar-alt"></i>
-                        <span id="currentDate">00/00/0000</span>
-                    </button>
-                </span>
-            </div>
-            <form class="d-none d-md-inline-block form-inline">
-                <div class="input-group">
-                    <input class="form-control" type="text" placeholder="Search for..." aria-label="Search for..." aria-describedby="btnNavbarSearch" />
-                    <button class="btn btn-warning" id="btnNavbarSearch" type="button"><i class="fas fa-search"></i></button>
-                </div>
-            </form>
-        </div>
-    </nav>
+    <?php include 'navbar.php'; ?>
     <div id="layoutSidenav">
-        <div id="layoutSidenav_nav">
-            <nav class="sb-sidenav accordion bg-dark" id="sidenavAccordion">
-                <div class="sb-sidenav-menu ">
-                    <div class="nav">
-                        <div class="sb-sidenav-menu-heading text-center text-muted">Your Profile</div>
-                        <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
-                            <li class="nav-item dropdown text">
-                                <a class="nav-link dropdown-toggle text-light d-flex justify-content-center ms-4" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <img src="<?php echo (!empty($adminInfo['pfp']) && $adminInfo['pfp'] !== 'defaultpfp.png') 
-                                        ? htmlspecialchars($adminInfo['pfp']) 
-                                        : '../img/defaultpfp.jpg'; ?>" 
-                                        class="rounded-circle border border-light" width="120" height="120" alt="Profile Picture" />
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                    <li><a class="dropdown-item" href="../admin/profile.php">Profile</a></li>
-                                    <li><a class="dropdown-item" href="#!">Settings</a></li>
-                                    <li><a class="dropdown-item" href="#!">Activity Log</a></li>
-                                    <li><hr class="dropdown-divider"/></li>
-                                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">Logout</a></li>
-                                </ul>
-                            </li>
-                            <li class="nav-item text-light d-flex ms-3 flex-column align-items-center text-center">
-                                <span class="big text-light mb-1">
-                                    <?php
-                                        if ($adminInfo) {
-                                        echo htmlspecialchars($adminInfo['firstname'] . ' ' . $adminInfo['middlename'] . ' ' . $adminInfo['lastname']);
-                                        } else {
-                                        echo "Admin information not available.";
-                                        }
-                                    ?>
-                                </span>      
-                                <span class="big text-light">
-                                    <?php
-                                        if ($adminInfo) {
-                                        echo htmlspecialchars($adminInfo['role']);
-                                        } else {
-                                        echo "User information not available.";
-                                        }
-                                    ?>
-                                </span>
-                            </li>
-                        </ul>
-                        <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-warning mt-3">Admin Dashboard</div>
-                        <a class="nav-link text-light" href="../admin/dashboard.php">
-                            <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
-                            Dashboard
-                        </a>
-                        <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseTAD" aria-expanded="false" aria-controls="collapseTAD">
-                            <div class="sb-nav-link-icon"><i class="fa fa-address-card"></i></div>
-                            Time and Attendance
-                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                        </a>
-                        <div class="collapse" id="collapseTAD" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
-                            <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link text-light" href="../admin/attendance.php">Attendance</a>
-                                <a class="nav-link text-light" href="../admin/timesheet.php">Timesheet</a>
-                            </nav>
-                        </div>
-                        <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLM" aria-expanded="false" aria-controls="collapseLM">
-                            <div class="sb-nav-link-icon"><i class="fas fa-calendar-times"></i></div>
-                            Leave Management
-                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                        </a>
-                        <div class="collapse" id="collapseLM" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
-                            <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link text-light" href="../admin/leave_requests.php">Leave Requests</a>
-                                <a class="nav-link text-light" href="../admin/leave_history.php">Leave History</a>
-                                <a class="nav-link text-light"  href="../admin/leave_allocation.php">Set Leave</a>
-                            </nav>
-                        </div>
-                        <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePM" aria-expanded="false" aria-controls="collapsePM">
-                            <div class="sb-nav-link-icon"><i class="fas fa-line-chart"></i></div>
-                            Performance Management
-                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                        </a>
-                        <div class="collapse" id="collapsePM" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
-                            <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link text-light" href="../admin/evaluation.php">Evaluation</a>
-                            </nav>
-                        </div>
-                        <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseSR" aria-expanded="false" aria-controls="collapseSR">
-                            <div class="sb-nav-link-icon"><i class="fa fa-address-card"></i></div>
-                            Social Recognition
-                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                        </a>
-                        <div class="collapse" id="collapseSR" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
-                            <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link text-light" href="../admin/awardee.php">Awardee</a>
-                                <a class="nav-link text-light" href="../admin/recognition.php">Generate Certificate</a>
-                            </nav>
-                        </div>
-                        <div class="sb-sidenav-menu-heading text-center text-muted border-top border-1 border-warning mt-3">Account Management</div>
-                        <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
-                            <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
-                            Accounts
-                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                        </a>
-                        <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
-                            <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link text-light" href="../admin/calendar.php">Calendar</a>
-                                <a class="nav-link text-light" href="../admin/admin.php">Admin Accounts</a>
-                                <a class="nav-link text-light" href="../admin/admin.php">admin Accounts</a>
-                            </nav>
-                        </div>
-                        <div class="collapse" id="collapsePages" aria-labelledby="headingTwo" data-bs-parent="#sidenavAccordion">
-                        </div>
-                    </div>
-                </div>
-                <div class="sb-sidenav-footer bg-black text-light border-top border-1 border-warning">
-                    <div class="small">Logged in as: <?php echo htmlspecialchars($adminInfo['role']); ?></div>
-                </div>
-            </nav>
-        </div>
+        <?php include 'sidebar.php'; ?> 
             <div id="layoutSidenav_content">
                 <main class="bg-black">
                     <div class="container-fluid position-relative px-4 py-4">
@@ -504,7 +380,7 @@ while ($row = $result->fetch_assoc()) {
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div class="text-start">
+                                                    <div class="text-start d-flex justify-content-end">
                                                         <button type="submit" class="btn btn-primary mt-3">Set Allocations</button>
                                                     </div>
                                                 </form>
@@ -521,89 +397,205 @@ while ($row = $result->fetch_assoc()) {
                             <div class="col-md-12">
                                 <div class="card bg-dark text-light">
                                     <div class="card-header">
-                                        <h3 class="mb-0">Performance Management</h3>
+                                        <h3 class="mb-0">Manage Evaluation Question</h3>
                                         <hr>
                                     </div>
                                     <div class="card-body">
                                         <div class="row d-flex justify-content-around">
-                                            <h2 class="text-center text-light mb-4">Manage Evaluation Questions</h2>
                                             <div class="col-xl-6 rounded">
                                                 <div class="mb-4">
                                                     <h4>Add New Question</h4>
                                                     <form method="POST" action="../admin/manageQuestions.php" class="needs-validation" novalidate>
-                                                        <div class="form-group mt-3 mb-3 position-relative">
-                                                        <label for="category" class="fw-bold position-absolute text-light" 
-                                                            style="top: -10px; left: 15px; background-color: #212529; padding: 0 5px;">Category:</label>
-                                                            <select name="category" class="form-control bg-dark form-select border border-2 border-secondary text-light" 
-                                                                style="height: 55px; padding-top: 15px; padding-bottom: 15px;" required>
-                                                                <option value="Quality of Work">Quality of Work</option>
-                                                                <option value="Communication Skills">Communication Skills</option>
-                                                                <option value="Teamwork">Teamwork</option>
-                                                                <option value="Punctuality">Punctuality</option>
-                                                                <option value="Initiative">Initiative</option>
+                                                        <div class="form-group mb-3 position-relative mt-3">
+                                                            <label for="position" class="fw-bold position-absolute text-light" 
+                                                                style="top: -10px; left: 15px; background-color: #212529; padding: 0 5px;">Position</label>
+                                                            <select name="position" class="form-control bg-dark form-select border border-2 border-secondary text-light" 
+                                                                    style="height: 55px; padding-top: 15px; padding-bottom: 15px;" required>
+                                                                <option value="" disabled selected>Select Position</option>
+                                                                <option value="Admin">Admin</option>
+                                                                <option value="Supervisor">Supervisor</option>
+                                                                <option value="Staff">Staff</option>
+                                                                <option value="Field Worker">Field Worker</option>
+                                                                <option value="Contractual">Contractual</option>
                                                             </select>
                                                         </div>
-                                                        <div class="form-group mt-4 mb-3 position-relative">
+                                                        <div class="form-group mb-3 position-relative mt-3">
                                                         <label for="category" class="fw-bold position-absolute text-light" 
-                                                        style="top: -10px; left: 15px; background-color: #212529; padding: 0 5px;">Question:</label>
+                                                            style="top: -10px; left: 15px; background-color: #212529; padding: 0 5px;">Category</label>
+                                                            <select name="category" class="form-control bg-dark form-select border border-2 border-secondary text-light" 
+                                                                style="height: 55px; padding-top: 15px; padding-bottom: 15px;" required>
+                                                                <option value="" disabled selected>Select Category</option>
+                                                                <option value="Communication Skills">Communication Skills</option>
+                                                                <option value="Initiative">Initiative</option>
+                                                                <option value="Punctuality">Punctuality</option>
+                                                                <option value="Quality of Work">Quality of Work</option>
+                                                                <option value="Teamwork">Teamwork</option>
+                                                            </select>
+                                                        </div>
+                                                        <div class="form-group mt-4 mb-3 position-relative mt-3">
+                                                        <label for="category" class="fw-bold position-absolute text-light" 
+                                                        style="top: -10px; left: 15px; background-color: #212529; padding: 0 5px;">Question</label>
                                                             <textarea name="question" class="form-control bg-dark border border-2 border-secondary text-light" 
                                                             style="height: 100px; padding-top: 15px; padding-bottom: 15px;" rows="3" required></textarea>
                                                         </div>
-                                                        <button type="submit" name="add_question" class="btn btn-primary mt-1">Add Question</button>
+                                                        <div class="d-flex justify-content-end">
+                                                            <button type="submit" name="add_question" class="btn btn-primary mt-1">Add Question</button>
+                                                        </div>
                                                     </form>
                                                 </div>
                                             </div>
                                             <div class="col-xl-6 rounded">
-                                                <h4>Current Questions</h4>
-                                                <div class="accordion" id="questionAccordion">
-                                                    <?php if (!empty($questions)): ?>
-                                                        <?php 
-                                                        // Group questions by category
-                                                        $categories = [];
-                                                        foreach ($questions as $question) {
-                                                            $categories[$question['category']][] = $question;
-                                                        }
-                                                        ?>
+                                                <h4 class="text-light">Current Questions</h4>
+                                                <div id="questions">
+                                                    <div class="accordion mt-3" id="questionAccordion">
+                                                        <?php if (!empty($questions)): ?>
+                                                            <?php 
+                                                            // Group questions by category and then by position
+                                                            $categories = [];
+                                                            foreach ($questions as $question) {
+                                                                $categories[$question['category']][$question['position']][] = $question;
+                                                            }
 
-                                                        <?php foreach ($categories as $category => $questionsList): ?>
-                                                        <?php 
-                                                            // Sanitize category names for use in id and data-target
-                                                            $categoryId = str_replace(' ', '_', $category); 
-                                                        ?>
-                                                        <div class="accordion-item ">
-                                                            <h2 class="accordion-header" id="heading-<?php echo htmlspecialchars($categoryId); ?>">
-                                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-<?php echo htmlspecialchars($categoryId); ?>" aria-expanded="false" aria-controls="collapse-<?php echo htmlspecialchars($categoryId); ?>">
-                                                                    <?php echo htmlspecialchars($category); ?>
-                                                                </button>
-                                                            </h2>
-                                                            <div id="collapse-<?php echo htmlspecialchars($categoryId); ?>" class="accordion-collapse collapse" aria-labelledby="heading-<?php echo htmlspecialchars($categoryId); ?>" data-bs-parent="#questionAccordion">
-                                                                <div class="accordion-body">
-                                                                    <ul class="list-group">
-                                                                        <?php foreach ($questionsList as $question): ?>
-                                                                        <li class="list-group-item bg-dark text-light">
-                                                                            <span><?php echo htmlspecialchars($question['question']); ?></span>
-                                                                            <div class="mt-2">
-                                                                                <!-- Edit Button -->
-                                                                                <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editQuestionModal" 
-                                                                                    data-qid="<?php echo $question['id']; ?>"
-                                                                                    data-question="<?php echo htmlspecialchars($question['question']); ?>">Edit</button>
-                                                                                
-                                                                                <!-- Delete Form -->
-                                                                                <form method="POST" action="../admin/manageQuestions.php" class="d-inline">
-                                                                                    <input type="hidden" name="id" value="<?php echo $question['id']; ?>">
-                                                                                    <button type="submit" name="delete_question" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this question?')">Delete</button>
-                                                                                </form>
+                                                            // Define the desired order of positions
+                                                            $positionOrder = ['Admin', 'Supervisor', 'Staff', 'Field Worker', 'Contractual'];
+                                                            ?>
+
+                                                            <?php foreach ($categories as $category => $positions): ?>
+                                                                <?php 
+                                                                // Sanitize category names for use in id and data-target
+                                                                $categoryId = str_replace(' ', '_', $category); 
+                                                                ?>
+                                                                <div class="accordion-item bg-dark" id="questions">
+                                                                    <h2 class="accordion-header" id="heading-<?php echo htmlspecialchars($categoryId); ?>">
+                                                                        <button class="accordion-button collapsed bg-dark text-light" type="button" data-bs-toggle="collapse" 
+                                                                                data-bs-target="#collapse-<?php echo htmlspecialchars($categoryId); ?>" 
+                                                                                aria-expanded="false" aria-controls="collapse-<?php echo htmlspecialchars($categoryId); ?>">
+                                                                            <?php echo htmlspecialchars($category); ?>
+                                                                        </button>
+                                                                    </h2>
+                                                                    <div id="collapse-<?php echo htmlspecialchars($categoryId); ?>" 
+                                                                        class="accordion-collapse collapse bg-dark"
+                                                                        aria-labelledby="heading-<?php echo htmlspecialchars($categoryId); ?>" 
+                                                                        data-bs-parent="#questionAccordion">
+                                                                        <div class="accordion-body bg-black">
+                                                                            <div class="accordion bg-dark" id="positionAccordion-<?php echo htmlspecialchars($categoryId); ?>">
+                                                                                <?php 
+                                                                                // Sort positions based on the defined order
+                                                                                uksort($positions, function($a, $b) use ($positionOrder) {
+                                                                                    return array_search($a, $positionOrder) <=> array_search($b, $positionOrder);
+                                                                                });
+                                                                                ?>
+
+                                                                                <?php foreach ($positions as $position => $questionsList): ?>
+                                                                                    <?php 
+                                                                                    // Sanitize position names for use in id and data-target
+                                                                                    $positionId = str_replace(' ', '_', $position); 
+                                                                                    ?>
+                                                                                    <div class="accordion-item bg-dark">
+                                                                                        <h2 class="accordion-header" id="heading-<?php echo htmlspecialchars($categoryId . '_' . $positionId); ?>">
+                                                                                            <button class="accordion-button collapsed bg-dark text-light" type="button" data-bs-toggle="collapse" 
+                                                                                                    data-bs-target="#collapse-<?php echo htmlspecialchars($categoryId . '_' . $positionId); ?>" 
+                                                                                                    aria-expanded="false" aria-controls="collapse-<?php echo htmlspecialchars($categoryId . '_' . $positionId); ?>">
+                                                                                                <?php echo htmlspecialchars($position); ?>
+                                                                                            </button>
+                                                                                        </h2>
+                                                                                        <div id="collapse-<?php echo htmlspecialchars($categoryId . '_' . $positionId); ?>" 
+                                                                                            class="accordion-collapse collapse bg-dark"
+                                                                                            aria-labelledby="heading-<?php echo htmlspecialchars($categoryId . '_' . $positionId); ?>" 
+                                                                                            data-bs-parent="#positionAccordion-<?php echo htmlspecialchars($categoryId); ?>">
+                                                                                            <div class="accordion-body bg-black">
+                                                                                                <ul class="list-group">
+                                                                                                    <?php foreach ($questionsList as $question): ?>
+                                                                                                        <li class="list-group-item bg-dark border-light text-light">
+                                                                                                            <span><?php echo htmlspecialchars($question['question']); ?></span>
+                                                                                                            <div class="mt-2 d-flex justify-content-end gap-2">
+                                                                                                                <div class="d-inline">
+                                                                                                                    <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editQuestionModal" 
+                                                                                                                            data-qid="<?php echo $question['id']; ?>"
+                                                                                                                            data-question="<?php echo htmlspecialchars($question['question']); ?>"
+                                                                                                                            data-position="<?php echo htmlspecialchars($question['position']); ?>">
+                                                                                                                        Edit
+                                                                                                                    </button>
+                                                                                                                </div>
+                                                                                                                <form method="POST" action="../admin/manageQuestions.php" class="d-inline">
+                                                                                                                    <input type="hidden" name="id" value="<?php echo $question['id']; ?>">
+                                                                                                                    <button type="submit" name="delete_question" class="btn btn-danger btn-sm" 
+                                                                                                                            onclick="return confirm('Are you sure you want to delete this question?')">
+                                                                                                                        Delete
+                                                                                                                    </button>
+                                                                                                                </form>
+                                                                                                            </div>
+                                                                                                        </li>
+                                                                                                    <?php endforeach; ?>
+                                                                                                </ul>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                <?php endforeach; ?>
                                                                             </div>
-                                                                        </li>
-                                                                        <?php endforeach; ?>
-                                                                    </ul>
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
+                                                            <?php endforeach; ?>
+                                                        <?php else: ?>
+                                                            <div class="d-flex justify-content-center align-items-center vh-60">
+                                                                <div class="text-center text-light fs-1">No questions found.</div>
                                                             </div>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <hr class="border border-secondary">
+                        <h1 class="card-title text-center text-light">Calendar</h1>
+                        <hr class="border border-secondary">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="card bg-dark text-light">
+                                    <div class="card-header">
+                                        <h3>Set Non-Working Days</h3>
+                                        <hr>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-around">
+                                            <div class="col-xl-12 rounded">
+                                                <div class="mb-4">
+                                                    <form id="nonWorkingDayForm">
+                                                        <div class="form-group  mb-3 position-relative">
+                                                            <label for="date" class="fw-bold position-absolute text-light" 
+                                                                style="top: -10px; left: 15px; background-color: #212529; padding: 0 5px;">Date</label>
+                                                            <input type="date" id="date" class="form-control bg-dark border border-2 border-secondary text-light" 
+                                                                style="height: 55px; padding-top: 15px; padding-bottom: 15px;" placeholder="Select date" required>
                                                         </div>
-                                                        <?php endforeach; ?>
-                                                    <?php else: ?>
-                                                        <div class="text-center text-light">No questions found.</div>
-                                                    <?php endif; ?>
+                                                        <div class="form-group mt-4 mb-3 position-relative">
+                                                            <label for="description" class="fw-bold position-absolute text-light" 
+                                                                style="top: -10px; left: 15px; background-color: #212529; padding: 0 5px;">Description:</label>
+                                                            <input type="text" id="description" class="form-control bg-dark border border-2 border-secondary text-light" 
+                                                                style="height: 55px; padding-top: 15px; padding-bottom: 15px;" placeholder="Add description" required>
+                                                        </div>
+                                                        <div class="d-flex justify-content-end">
+                                                            <button type="submit" class="btn btn-primary">Add Non-Working Day</button>
+                                                        </div>                                                    
+                                                    </form>
+                                                    <hr>
+                                                    <h3>Existing Non-Working Days</h3>
+                                                    <table class="table text-light" id="nonWorkingDaysTable">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Date</th>
+                                                                <th>Description</th>
+                                                                <th>Type</th>
+                                                                <th>Action</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                                <!-- Existing non-working days will be populated here -->
+                                                        </tbody>
+                                                    </table>
                                                 </div>
                                             </div>
                                         </div>
@@ -625,9 +617,11 @@ while ($row = $result->fetch_assoc()) {
                                 <div class="modal-body">
                                     <form method="POST" action="manageQuestions.php">
                                         <input type="hidden" name="id" id="editQId">
-                                        <div class="form-group">
-                                            <label for="new_question">New Question:</label>
-                                            <textarea name="new_question" id="editNewQuestion" class="form-control" rows="3" required></textarea>
+                                        <div class="form-group mt-4 mb-3 position-relative">
+                                            <label for="new_question" class="fw-bold position-absolute text-light" 
+                                                style="top: -10px; left: 15px; background-color: #212529; padding: 0 5px;">New Question</label>
+                                            <textarea name="new_question" id="editNewQuestion" class="form-control bg-dark border border-2 border-secondary text-light" 
+                                                style="padding-top: 15px; padding-bottom: 15px;" rows="3" required></textarea>
                                         </div>
                                         <div class="d-flex justify-content-end">
                                             <button type="submit" name="edit_question" class="btn btn-primary mt-3">Save Changes</button>
@@ -640,14 +634,14 @@ while ($row = $result->fetch_assoc()) {
                     <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-dialog-centered">
                             <div class="modal-content bg-dark text-light">
-                                <div class="modal-header border-bottom border-warning">
+                                <div class="modal-header border-bottom border-secondary">
                                     <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
                                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body">
                                     Are you sure you want to log out?
                                 </div>
-                                <div class="modal-footer border-top border-warning">
+                                <div class="modal-footer border-top border-secondary">
                                     <button type="button" class="btn border-secondary text-light" data-bs-dismiss="modal">Cancel</button>
                                     <form action="../admin/logout.php" method="POST">
                                         <button type="submit" class="btn btn-danger">Logout</button>
@@ -656,7 +650,7 @@ while ($row = $result->fetch_assoc()) {
                             </div>
                         </div>
                     </div>  
-                <footer class="py-4 bg-dark text-light mt-auto border-top border-warning">
+                <footer class="py-4 bg-dark text-light mt-auto border-top border-secondary">
                     <div class="container-fluid px-4">
                         <div class="d-flex align-items-center justify-content-between small">
                             <div class="text-muted">Copyright &copy; Your Website 2024</div>
@@ -698,88 +692,6 @@ while ($row = $result->fetch_assoc()) {
                 document.getElementById('female-leave').style.display = gender === 'Female' ? 'flex' : 'none';
             });
 
-            //CALENDAR 
-            let calendar;
-                function toggleCalendar() {
-                    const calendarContainer = document.getElementById('calendarContainer');
-                        if (calendarContainer.style.display === 'none' || calendarContainer.style.display === '') {
-                            calendarContainer.style.display = 'block';
-                            if (!calendar) {
-                                initializeCalendar();
-                            }
-                        } else {
-                            calendarContainer.style.display = 'none';
-                        }
-                }
-
-                function initializeCalendar() {
-                    const calendarEl = document.getElementById('calendar');
-                        calendar = new FullCalendar.Calendar(calendarEl, {
-                            initialView: 'dayGridMonth',
-                            headerToolbar: {
-                            left: 'prev,next today',
-                            center: 'title',
-                            right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                            },
-                            height: 440,  
-                            events: {
-                            url: '../db/holiday.php',  
-                            method: 'GET',
-                            failure: function() {
-                            alert('There was an error fetching events!');
-                            }
-                            }
-                        });
-
-                        calendar.render();
-                }
-
-                document.addEventListener('DOMContentLoaded', function () {
-                    const currentDateElement = document.getElementById('currentDate');
-                    const currentDate = new Date().toLocaleDateString(); 
-                    currentDateElement.textContent = currentDate; 
-                });
-
-                document.addEventListener('click', function(event) {
-                    const calendarContainer = document.getElementById('calendarContainer');
-                    const calendarButton = document.querySelector('button[onclick="toggleCalendar()"]');
-
-                        if (!calendarContainer.contains(event.target) && !calendarButton.contains(event.target)) {
-                            calendarContainer.style.display = 'none';
-                            }
-                });
-                //CALENDAR END
-
-                //TIME 
-                function setCurrentTime() {
-                const currentTimeElement = document.getElementById('currentTime');
-                const currentDateElement = document.getElementById('currentDate');
-
-                const currentDate = new Date();
-
-                // Convert to 12-hour format with AM/PM
-                let hours = currentDate.getHours();
-                const minutes = currentDate.getMinutes();
-                const seconds = currentDate.getSeconds();
-                const ampm = hours >= 12 ? 'PM' : 'AM';
-
-                hours = hours % 12;
-                hours = hours ? hours : 12; // If hour is 0, set to 12
-
-                const formattedHours = hours < 10 ? '0' + hours : hours;
-                const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
-                const formattedSeconds = seconds < 10 ? '0' + seconds : seconds;
-
-                currentTimeElement.textContent = `${formattedHours}:${formattedMinutes}:${formattedSeconds} ${ampm}`;
-
-                // Format the date in text form (e.g., "January 12, 2025")
-                const options = { year: 'numeric', month: 'long', day: 'numeric' };
-                currentDateElement.textContent = currentDate.toLocaleDateString('en-US', options);
-                }
-
-                setCurrentTime();
-                setInterval(setCurrentTime, 1000);
-                //TIME END
 
                 //EVALUATION QUESTIONS
                 // Populate the edit modal with question data
@@ -787,17 +699,18 @@ while ($row = $result->fetch_assoc()) {
                     var button = $(event.relatedTarget); // Button that triggered the modal
                     var qid = button.data('qid'); // Extract info from data-* attributes
                     var question = button.data('question'); // Extract the question
+                    var position = button.data('position'); // Extract the position
+
 
                     var modal = $(this);
                     modal.find('#editQId').val(qid); // Insert question ID into the modal's input
                     modal.find('#editNewQuestion').val(question); // Insert question into the modal's textarea
+                    modal.find('#editPosition').val(position);
                 });
                 //EVALUATION QUESTIONS END
 
 
                 //FETCH EMPLOYEE
-                console.log("Employees data:", employees); // Debugging line
-
                 function updateEmployeeList() {
                     console.log("updateEmployeeList function called"); // Debugging line
                     const gender = document.getElementById('gender').value;
@@ -816,6 +729,12 @@ while ($row = $result->fetch_assoc()) {
 
                         // Check if there are any employees to populate
                         if (filteredEmployees.length > 0) {
+                            // Add "All Employees" option
+                            const allEmployeesOption = document.createElement('option');
+                            allEmployeesOption.value = 'all';
+                            allEmployeesOption.textContent = 'All Employees';
+                            employeeSelect.appendChild(allEmployeesOption);
+
                             // Populate the employee dropdown
                             filteredEmployees.forEach(emp => {
                                 const option = document.createElement('option');
@@ -850,7 +769,105 @@ while ($row = $result->fetch_assoc()) {
                 document.getElementById('gender').addEventListener('change', function() {
                     updateEmployeeList();
                 });
+
             //FETCH EMPLOYEE END
+
+                
+            document.addEventListener('DOMContentLoaded', function() {
+                fetchNonWorkingDays();
+
+                document.getElementById('nonWorkingDayForm').addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    const date = document.getElementById('date').value;
+                    const description = document.getElementById('description').value;
+
+                    fetch('../db/nowork_days.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ date, description }),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            alert('Non-working day added successfully!');
+                            document.getElementById('nonWorkingDayForm').reset();
+                            fetchNonWorkingDays();  // Refresh the table
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An unexpected error occurred.');
+                    });
+                });
+            });
+
+            function fetchNonWorkingDays() {
+                fetch('../db/nowork_days.php')
+                    .then(response => response.json())
+                    .then(data => {
+                        const tbody = document.getElementById('nonWorkingDaysTable').querySelector('tbody');
+                        tbody.innerHTML = ''; // Clear existing rows
+
+                        if (data.length === 0) {
+                            // If no data, display "No non-working days found"
+                            tbody.innerHTML = '<tr><td colspan="4" class="text-center">No non-working days found</td></tr>';
+                        } else {
+                            // Populate the table with data
+                            data.forEach(day => {
+                                const row = document.createElement('tr');
+                                row.innerHTML = `
+                                    <td>${day.date}</td>
+                                    <td>${day.description}</td>
+                                    <td>${day.type}</td>
+                                    <td>
+                                        <button class="btn btn-danger btn-sm" onclick="deleteNonWorkingDay('${day.date}')">Delete</button>
+                                    </td>
+                                `;
+                                tbody.appendChild(row);
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching non-working days:', error);
+                        const tbody = document.getElementById('nonWorkingDaysTable').querySelector('tbody');
+                        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error loading data</td></tr>';
+                    });
+            }
+
+            // Call the function to fetch and display non-working days
+            fetchNonWorkingDays();
+
+            function deleteNonWorkingDay(date) {
+                fetch('../db/del_nowork.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ date }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        alert('Non-working day deleted successfully!');
+                        fetchNonWorkingDays();  // Refresh the table
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An unexpected error occurred.');
+                });
+            }
+
+
+            document.getElementById('date').addEventListener('focus', function() {
+                this.showPicker(); // Opens the native date picker
+            });
         </script>
     </body>
 </html>

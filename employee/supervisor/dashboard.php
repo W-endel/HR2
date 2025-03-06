@@ -10,12 +10,6 @@ include '../../db/db_conn.php';
 $employeeId = $_SESSION['e_id'];
 $employeePosition = $_SESSION['position'];
 
-// Fetch notifications for the employee
-$notificationQuery = "SELECT * FROM notifications WHERE employee_id = ? ORDER BY created_at DESC";
-$notificationStmt = $conn->prepare($notificationQuery);
-$notificationStmt->bind_param("i", $employeeId);
-$notificationStmt->execute();
-$notifications = $notificationStmt->get_result();
 // Fetch the average of the employee's evaluations
 $sql = "SELECT 
             AVG(quality) AS avg_quality, 
@@ -85,7 +79,7 @@ $profilePicture = !empty($employeeInfo['pfp']) ? $employeeInfo['pfp'] : '../../i
     <div id="layoutSidenav">
         <?php include 'sidebar.php'; ?>
         <div id="layoutSidenav_content">
-            <main id="main-content">
+            <main>
                 <div class="container-fluid position-relative px-4">
                     <div class="">
                         <div class="row align-items-center">
@@ -164,55 +158,56 @@ $profilePicture = !empty($employeeInfo['pfp']) ? $employeeInfo['pfp'] : '../../i
                                 </div>
                             </div>
                         </div>
-                    <div class="row mb-4">
-                        <div class="col-md-12 mt-2 mb-2">
-                            <div class="card bg-dark text-light border-0">
-                                <div class="card-header border-bottom border-1 border-secondary">
-                                    <i class="fas fa-line-chart me-1"></i> 
-                                    <a class="text-light" href="">Top Perfomers</a>
-                                </div>
-                                <div class="card-body">
-                                    <ul class="list-group list-group-flush">
-                                        <!-- Performer 1 -->
-                                        <li class="list-group-item bg-dark text-light d-flex align-items-center justify-content-between border-0">
-                                            <div class="d-flex align-items-center">
-                                                <img src="../../uploads/profile_pictures/try.jpg" alt="Performer 1" class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;">
-                                                <div>
-                                                    <h5 class="mb-0">John Doe</h5>
-                                                    <small class="text-warning">Sales Manager</small>
+                        <div class="row mb-4">
+                            <div class="col-md-12 mt-2 mb-2">
+                                <div class="card bg-dark text-light border-0">
+                                    <div class="card-header border-bottom border-1 border-secondary">
+                                        <i class="fas fa-line-chart me-1"></i> 
+                                        <a class="text-light" href="">Top Perfomers</a>
+                                    </div>
+                                    <div class="card-body">
+                                        <ul class="list-group list-group-flush">
+                                            <!-- Performer 1 -->
+                                            <li class="list-group-item bg-dark text-light d-flex align-items-center justify-content-between border-0">
+                                                <div class="d-flex align-items-center">
+                                                    <img src="../../uploads/profile_pictures/try.jpg" alt="Performer 1" class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                                    <div>
+                                                        <h5 class="mb-0">John Doe</h5>
+                                                        <small class="text-warning">Sales Manager</small>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div class="progress" style="width: 30%; height: 8px;">
-                                                <div class="progress-bar bg-success" role="progressbar" style="width: 90%;" aria-valuenow="90" aria-valuemin="0" aria-valuemax="100"></div>
-                                            </div>
-                                        </li>
-                                        <!-- Performer 2 -->
-                                        <li class="list-group-item bg-dark text-light d-flex align-items-center justify-content-between border-0">
-                                            <div class="d-flex align-items-center">
-                                                <img src="../../uploads/profile_pictures/pfp3.jpg" alt="Performer 2" class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;">
-                                                <div>
-                                                    <h5 class="mb-0">Jane Smith</h5>
-                                                    <small class="text-warning">Marketing Specialist</small>
+                                                <div class="progress" style="width: 30%; height: 8px;">
+                                                    <div class="progress-bar bg-success" role="progressbar" style="width: 90%;" aria-valuenow="90" aria-valuemin="0" aria-valuemax="100"></div>
                                                 </div>
-                                            </div>
-                                            <div class="progress" style="width: 30%; height: 8px;">
-                                                <div class="progress-bar bg-success" role="progressbar" style="width: 85%;" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100"></div>
-                                            </div>
-                                        </li>
-                                        <!-- Performer 3 -->
-                                        <li class="list-group-item bg-dark text-light d-flex align-items-center justify-content-between border-0">
-                                            <div class="d-flex align-items-center">
-                                                <img src="../../uploads/profile_pictures/logo.jpg" alt="Performer 3" class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;">
-                                                <div>
-                                                    <h5 class="mb-0">Michael Johnson</h5>
-                                                    <small class="text-warning">HR Manager</small>
+                                            </li>
+                                            <!-- Performer 2 -->
+                                            <li class="list-group-item bg-dark text-light d-flex align-items-center justify-content-between border-0">
+                                                <div class="d-flex align-items-center">
+                                                    <img src="../../uploads/profile_pictures/pfp3.jpg" alt="Performer 2" class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                                    <div>
+                                                        <h5 class="mb-0">Jane Smith</h5>
+                                                        <small class="text-warning">Marketing Specialist</small>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div class="progress" style="width: 30%; height: 8px;">
-                                                <div class="progress-bar bg-success" role="progressbar" style="width: 80%;" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
-                                            </div>
-                                        </li>
-                                    </ul>
+                                                <div class="progress" style="width: 30%; height: 8px;">
+                                                    <div class="progress-bar bg-success" role="progressbar" style="width: 85%;" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100"></div>
+                                                </div>
+                                            </li>
+                                            <!-- Performer 3 -->
+                                            <li class="list-group-item bg-dark text-light d-flex align-items-center justify-content-between border-0">
+                                                <div class="d-flex align-items-center">
+                                                    <img src="../../uploads/profile_pictures/logo.jpg" alt="Performer 3" class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                                    <div>
+                                                        <h5 class="mb-0">Michael Johnson</h5>
+                                                        <small class="text-warning">HR Manager</small>
+                                                    </div>
+                                                </div>
+                                                <div class="progress" style="width: 30%; height: 8px;">
+                                                    <div class="progress-bar bg-success" role="progressbar" style="width: 80%;" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </div>
                                 </div>
                             </div>
                         </div>

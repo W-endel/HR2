@@ -64,8 +64,15 @@
                         </a>
                         <div class="collapse" id="collapseLM" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link text-light loading" href="../admin/leave_requests.php">Leave Requests</a>
-                                <a class="nav-link text-light loading" href="../admin/leave_history.php">Leave History</a>
+                                <a class="nav-link text-light loading" href="../admin/leave_requests.php">
+                                    <i class="fas fa-envelope me-2"></i> Requests <!-- Icon for Requests -->
+                                </a>
+                                <a class="nav-link text-light loading" href="../admin/leaveTracker.php">
+                                    <i class="fas fa-calendar-alt me-2"></i> Tracker <!-- Icon for Tracker -->
+                                </a>
+                                <a class="nav-link text-light loading" href="../admin/leave_history.php">
+                                    <i class="fas fa-history me-2"></i> History <!-- Icon for History -->
+                                </a>
                             </nav>
                         </div>
                         <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePM" aria-expanded="false" aria-controls="collapsePM">
@@ -75,7 +82,9 @@
                         </a>
                         <div class="collapse" id="collapsePM" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link text-light loading" href="../admin/evaluation.php">Evaluation</a>
+                                <a class="nav-link text-light loading" href="../admin/evaluation.php">
+                                    <i class="fas fa-bar-chart me-2"></i> Evaluation <!-- Icon for Requests -->
+                                </a>
                             </nav>
                         </div>
                         <a class="nav-link collapsed text-light" href="#" data-bs-toggle="collapse" data-bs-target="#collapseSR" aria-expanded="false" aria-controls="collapseSR">

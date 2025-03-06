@@ -1,5 +1,15 @@
+<?php
+include '../../db/db_conn.php';
+// Fetch notifications for the employee
+$notificationQuery = "SELECT * FROM notifications WHERE employee_id = ? ORDER BY created_at DESC";
+$notificationStmt = $conn->prepare($notificationQuery);
+$notificationStmt->bind_param("i", $employeeId);
+$notificationStmt->execute();
+$notifications = $notificationStmt->get_result();
+?>
+
     <style>
-                .nav-link .fa-bell {
+        .nav-link .fa-bell {
             font-size: 1.25rem;
             color: #fff; /* White color for the bell icon */
         }
@@ -12,15 +22,6 @@
             font-size: 0.75rem;
             padding: 0.25rem 0.5rem;
             background-color: #dc3545; /* Red color for the badge */
-        }
-
-        /* Dropdown Menu */
-        .dropdown-menu {
-            max-height: 300px;
-            overflow-y: auto;
-            width: 300px;
-            border: 1px solid #ddd; /* Light border */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
         }
 
         /* Notification Item */
@@ -291,7 +292,7 @@
                     const notificationId = notificationItem.querySelector('.delete-notification').dataset.id;
 
                     // Mark the notification as read
-                    fetch('../../employee_db/db/markNotif.php', {
+                    fetch('../../employee_db/supervisor/markNotif.php', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -324,7 +325,7 @@
                     const notificationId = event.target.closest('.delete-notification').dataset.id;
 
                     // Delete the notification
-                    fetch('../../employee_db/deleteNotif.php', {
+                    fetch('../../employee_db/supervisor/deleteNotif.php', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
