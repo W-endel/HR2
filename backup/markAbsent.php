@@ -11,11 +11,11 @@ if ($conn->connect_error) {
 }
 
 // SQL query to insert 'Absent' status for employees who don't have an attendance record for today
-$query = "INSERT INTO attendance_log (id, e_id, attendance_date, status)
-          SELECT e.e_id, ?, 'Absent'
+$query = "INSERT INTO attendance_log (id, employee_id, attendance_date, status)
+          SELECT e.employee_id, ?, 'Absent'
           FROM employees e
-          WHERE e.e_id NOT IN (
-              SELECT a.e_id FROM attendance_log a WHERE a.attendance_date = ?
+          WHERE e.employee_id NOT IN (
+              SELECT a.employee_id FROM attendance_log a WHERE a.attendance_date = ?
           )";
 
 // Prepare and execute the statement

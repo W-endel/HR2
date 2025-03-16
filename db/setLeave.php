@@ -1,10 +1,7 @@
 <?php
 session_start();
+include '../db/db_conn.php';
 
-// Include your database connection
-include_once('../db/db_conn.php');
-
-// Check if the form is submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Get the form data and explicitly cast it to integers
     $employee_id = $_POST['employee_id'];
@@ -33,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Handle "All Employees" case
     if ($employee_id === 'all') {
         // Fetch all employees of the selected gender
-        $employees_query = "SELECT e_id, firstname, lastname, gender FROM employee_register WHERE gender = ?";
+        $employees_query = "SELECT employee_id, first_name, last_name, gender FROM employee_register WHERE gender = ?";
         if ($employees_stmt = $conn->prepare($employees_query)) {
             $employees_stmt->bind_param("s", $gender);
             $employees_stmt->execute();
@@ -41,8 +38,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($employees_result->num_rows > 0) {
                 while ($employee = $employees_result->fetch_assoc()) {
-                    $employee_id = $employee['e_id'];
-                    $employee_name = $employee['firstname'] . ' ' . $employee['lastname'];
+                    $employee_id = $employee['employee_id'];
+                    $employee_name = $employee['first_name'] . ' ' . $employee['last_name'];
                     $employee_gender = $employee['gender'];
 
                     // Allocate leave for each employee of the selected gender
@@ -59,15 +56,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     } else {
         // Fetch employee's personal info (firstname, lastname, gender)
-        $employee_info_query = "SELECT firstname, lastname, gender FROM employee_register WHERE e_id = ?";
+        $employee_info_query = "SELECT first_name, last_name, gender FROM employee_register WHERE employee_id = ?";
         if ($info_stmt = $conn->prepare($employee_info_query)) {
-            $info_stmt->bind_param("i", $employee_id);
+            $info_stmt->bind_param("s", $employee_id);
             $info_stmt->execute();
             $info_result = $info_stmt->get_result();
 
             if ($info_result->num_rows > 0) {
                 $employee_info = $info_result->fetch_assoc();
-                $employee_name = $employee_info['firstname'] . ' ' . $employee_info['lastname'];
+                $employee_name = $employee_info['first_name'] . ' ' . $employee_info['last_name'];
                 $employee_gender = $employee_info['gender'];
 
                 // Allocate leave for the selected employee
@@ -97,28 +94,54 @@ function allocateLeave($conn, $employee_id, $employee_name, $gender, $bereavemen
     // Check if the employee already exists in the employee_leaves table
     $check_query = "SELECT * FROM employee_leaves WHERE employee_id = ?";
     if ($stmt = $conn->prepare($check_query)) {
-        $stmt->bind_param("i", $employee_id);
+        $stmt->bind_param("s", $employee_id);
         $stmt->execute();
         $result = $stmt->get_result();
 
         // If the employee exists, update the leave balances by adding the new values
         if ($result->num_rows > 0) {
             $update_query = "UPDATE employee_leaves 
-                             SET bereavement_leave = bereavement_leave + ?, emergency_leave = emergency_leave + ?,  maternity_leave = maternity_leave + ?, 
-                                 mcw_special_leave = mcw_special_leave + ?, parental_leave = parental_leave + ?, service_incentive_leave = service_incentive_leave + ?, 
-                                 sick_leave = sick_leave + ?, vacation_leave = vacation_leave + ?, vawc_leave = vawc_leave + ?, bereavement_leave_male = bereavement_leave_male + ?, 
-                                 emergency_leave_male = emergency_leave_male + ?, parental_leave_male = parental_leave_male + ?, paternity_leave_male = paternity_leave_male + ?, 
-                                 service_incentive_leave_male = service_incentive_leave_male + ?, sick_leave_male = sick_leave_male + ?, vacation_leave_male = vacation_leave_male + ?, 
-                                 employee_name = ?, gender = ?
+                             SET bereavement_leave = bereavement_leave + ?, 
+                                 emergency_leave = emergency_leave + ?,  
+                                 maternity_leave = maternity_leave + ?, 
+                                 mcw_special_leave = mcw_special_leave + ?, 
+                                 parental_leave = parental_leave + ?, 
+                                 service_incentive_leave = service_incentive_leave + ?, 
+                                 sick_leave = sick_leave + ?, 
+                                 vacation_leave = vacation_leave + ?, 
+                                 vawc_leave = vawc_leave + ?, 
+                                 bereavement_leave_male = bereavement_leave_male + ?, 
+                                 emergency_leave_male = emergency_leave_male + ?, 
+                                 parental_leave_male = parental_leave_male + ?, 
+                                 paternity_leave_male = paternity_leave_male + ?, 
+                                 service_incentive_leave_male = service_incentive_leave_male + ?, 
+                                 sick_leave_male = sick_leave_male + ?, 
+                                 vacation_leave_male = vacation_leave_male + ?, 
+                                 employee_name = ?, 
+                                 gender = ?
                              WHERE employee_id = ?";
             if ($update_stmt = $conn->prepare($update_query)) {
-                $update_stmt->bind_param("iiiiiiiiiiiiiiiissi",
-                    $bereavement_leave, $emergency_leave, $maternity_leave, $mcw_special_leave, 
-                    $parental_leave, $service_incentive_leave, $sick_leave, $vacation_leave, 
-                    $vawc_leave, $bereavement_leave_male, $emergency_leave_male, 
-                    $parental_leave_male, $paternity_leave_male, 
-                    $service_incentive_leave_male, $sick_leave_male, $vacation_leave_male, 
-                    $employee_name, $gender, $employee_id
+                // Bind parameters for UPDATE query
+                $update_stmt->bind_param("iiiiiiiiiiiiiiiisss",
+                    $bereavement_leave,        // i (integer)
+                    $emergency_leave,          // i (integer)
+                    $maternity_leave,          // i (integer)
+                    $mcw_special_leave,        // i (integer)
+                    $parental_leave,           // i (integer)
+                    $service_incentive_leave,  // i (integer)
+                    $sick_leave,               // i (integer)
+                    $vacation_leave,           // i (integer)
+                    $vawc_leave,               // i (integer)
+                    $bereavement_leave_male,   // i (integer)
+                    $emergency_leave_male,     // i (integer)
+                    $parental_leave_male,      // i (integer)
+                    $paternity_leave_male,     // i (integer)
+                    $service_incentive_leave_male, // i (integer)
+                    $sick_leave_male,          // i (integer)
+                    $vacation_leave_male,      // i (integer)
+                    $employee_name,            // s (string)
+                    $gender,                   // s (string)
+                    $employee_id               // s (string)
                 );
 
                 if ($update_stmt->execute()) {
@@ -140,13 +163,27 @@ function allocateLeave($conn, $employee_id, $employee_name, $gender, $bereavemen
                               parental_leave_male, service_incentive_leave_male, sick_leave_male, vacation_leave_male) 
                              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             if ($insert_stmt = $conn->prepare($insert_query)) {
-                $insert_stmt->bind_param("issiiiiiiiiiiiiiiii", 
-                    $employee_id, $employee_name, $gender, 
-                    $bereavement_leave, $emergency_leave, $maternity_leave, 
-                    $mcw_special_leave, $parental_leave, $service_incentive_leave, $sick_leave, 
-                    $vacation_leave, $vawc_leave, $bereavement_leave_male, $emergency_leave_male, 
-                    $parental_leave_male, $paternity_leave_male, $service_incentive_leave_male, 
-                    $sick_leave_male, $vacation_leave_male
+                // Bind parameters for INSERT query
+                $insert_stmt->bind_param("sssiiiiiiiiiiiiiiii", 
+                    $employee_id,              // s (string)
+                    $employee_name,            // s (string)
+                    $gender,                   // s (string)
+                    $bereavement_leave,        // i (integer)
+                    $emergency_leave,          // i (integer)
+                    $maternity_leave,          // i (integer)
+                    $mcw_special_leave,        // i (integer)
+                    $parental_leave,           // i (integer)
+                    $service_incentive_leave,  // i (integer)
+                    $sick_leave,               // i (integer)
+                    $vacation_leave,           // i (integer)
+                    $vawc_leave,               // i (integer)
+                    $bereavement_leave_male,   // i (integer)
+                    $emergency_leave_male,     // i (integer)
+                    $parental_leave_male,      // i (integer)
+                    $paternity_leave_male,     // i (integer)
+                    $service_incentive_leave_male, // i (integer)
+                    $sick_leave_male,          // i (integer)
+                    $vacation_leave_male       // i (integer)
                 );
 
                 if ($insert_stmt->execute()) {

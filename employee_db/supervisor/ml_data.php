@@ -4,31 +4,31 @@ include '../../db/db_conn.php';
 // Fetch aggregated data for all months
 $sql = "
     SELECT 
-        a.e_id, 
+        a.employee_id, 
         IFNULL(l.total_leave_days, 0) AS total_leave_days, 
         IFNULL(at.attendance_rate, 0) AS attendance_rate, 
         IFNULL(e.performance_score, 0) AS performance_score
     FROM 
-        (SELECT DISTINCT e_id FROM attendance_log) a
+        (SELECT DISTINCT employee_id FROM attendance_log) a
     LEFT JOIN 
-        (SELECT e_id, SUM(DATEDIFF(end_date, start_date) + 1) AS total_leave_days 
+        (SELECT employee_id, SUM(DATEDIFF(end_date, start_date) + 1) AS total_leave_days 
          FROM leave_requests 
          WHERE status = 'approved' 
-         GROUP BY e_id) l 
-        ON a.e_id = l.e_id
+         GROUP BY employee_id) l 
+        ON a.employee_id = l.employee_id
     LEFT JOIN 
-        (SELECT e_id, COUNT(CASE WHEN status = 'Present' THEN 1 END) * 1.0 / COUNT(*) AS attendance_rate 
+        (SELECT employee_id, COUNT(CASE WHEN status = 'Present' THEN 1 END) * 1.0 / COUNT(*) AS attendance_rate 
          FROM attendance_log 
-         GROUP BY e_id) at 
-        ON a.e_id = at.e_id
+         GROUP BY employee_id) at 
+        ON a.employee_id = at.employee_id
     LEFT JOIN 
-        (SELECT e_id, (quality + communication_skills + punctuality + initiative + teamwork) / 5.0 AS performance_score 
+        (SELECT employee_id, (quality + communication_skills + punctuality + initiative + teamwork) / 5.0 AS performance_score 
          FROM admin_evaluations 
-         WHERE (e_id, evaluated_at) IN 
-            (SELECT e_id, MAX(evaluated_at) FROM admin_evaluations 
-             GROUP BY e_id)
+         WHERE (employee_id, evaluated_at) IN 
+            (SELECT employee_id, MAX(evaluated_at) FROM admin_evaluations 
+             GROUP BY employee_id)
         ) e 
-        ON a.e_id = e.e_id;
+        ON a.employee_id = e.employee_id;
 ";
 
 // Execute the query
@@ -46,7 +46,7 @@ $data = [];
 if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
         $data[] = [
-            'e_id' => $row['e_id'],
+            'employee_id' => $row['employee_id'],
             'total_leave_days' => (int)$row['total_leave_days'],  // Ensure numbers are properly cast
             'performance_score' => (float)$row['performance_score'],
             'attendance_rate' => (float)$row['attendance_rate']

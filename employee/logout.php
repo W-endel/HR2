@@ -6,7 +6,7 @@ include '../db/db_conn.php'; // Include your database connection file
 date_default_timezone_set('Asia/Manila');
 
 // Get employee ID from session before destroying the session
-$user_id = $_SESSION['e_id']; // Assuming 'e_id' stores the employee ID
+$user_id = $_SESSION['employee_id']; // Assuming 'employee_id' stores the employee ID
 
 // Check if the user is logged in
 if (isset($user_id)) {
@@ -22,7 +22,7 @@ if (isset($user_id)) {
 }
 
 // Unset session variables
-unset($_SESSION['e_id']);
+unset($_SESSION['employee_id']);
 unset($_SESSION['role']);
 
 // Redirect to the login page

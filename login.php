@@ -1,3 +1,9 @@
+<?php
+session_start();
+$faceRegistrationRequired = isset($_SESSION['face_registration_required']) && $_SESSION['face_registration_required'];
+unset($_SESSION['face_registration_required']); // Clear the flag after use
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -67,7 +73,7 @@
                                                 <label class="form-check-label text-light ms-2" for="inputRememberPassword">Remember Password</label>
                                             </div>
                                             <div>
-                                                <a class="small text-info" href="../employee/forgot_pass.php">Forgot Password?</a>
+                                                <a class="small text-info" href="/HR2/employee/forgot_pass.php">Forgot Password?</a>
                                             </div>
                                         </div>
                                         <div class="d-flex align-items-center justify-content-between mt-2 mb-2">
@@ -84,15 +90,31 @@
                 </div>
             </main>
         </div>
+            <!-- Modal for face registration -->
+            <div class="modal fade" id="faceRegistrationModal" tabindex="-1" aria-labelledby="faceRegistrationModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content bg-dark text-light">
+                        <div class="modal-header border-bottom border-secondary">
+                            <h5 class="modal-title" id="faceRegistrationModalLabel">Face Registration Required</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>You need to register your face to proceed. Please click the button below to start the registration process.</p>
+                        </div>
+                        <div class="modal-footer border-top border-secondary">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <a href="face_registration.php" class="btn btn-primary">Register Face</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         <div id="layoutAuthentication_footer">
             <footer class="py-4 bg-dark border-top border-secondary mt-auto">
                 <div class="container-fluid px-4">
                     <div class="d-flex align-items-center justify-content-between small">
-                        <div class="text-muted">Copyright &copy; Your Website 2023</div>
+                        <div class="text-muted">HUMAN RESOURCES II</div>
                         <div>
                             <a href="#">Privacy Policy</a>
-                            &middot;
-                            <a href="#">Terms &amp; Conditions</a>
                         </div>
                     </div>
                 </div>
@@ -102,8 +124,8 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.js"></script>
 <script>
-     // Bootstrap form validation script
-     (function () {
+    // Bootstrap form validation script
+    (function () {
         'use strict'
 
         // Fetch all the forms we want to apply custom Bootstrap validation styles to
@@ -114,15 +136,15 @@
             .forEach(function (form) {
                 form.addEventListener('submit', function (event) {
                     if (!form.checkValidity()) {
-                            event.preventDefault()
-                            event.stopPropagation()
-                        }
-                        form.classList.add('was-validated')
-                    }, false)
-                })
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
     })()
 
-
+    // Toggle password visibility
     const togglePassword = document.querySelector("#togglePassword");
     const passwordField = document.querySelector("#inputPassword");
     const icon = togglePassword.querySelector("i");
@@ -132,16 +154,15 @@
         const type = passwordField.getAttribute("type") === "password" ? "text" : "password";
         passwordField.setAttribute("type", type);
 
-            // Toggle the eye/eye-slash icon
+        // Toggle the eye/eye-slash icon
         icon.classList.toggle("fa-eye");
         icon.classList.toggle("fa-eye-slash");
     });
 
-
-    // Get the banned until time from the URL (converted to timestamp)
+    // Countdown for banned accounts
     const urlParams = new URLSearchParams(window.location.search);
     const banEndTime = parseInt(urlParams.get('banEndTime')) * 1000; // Convert to milliseconds
-    
+
     if (banEndTime) {
         // Function to update the countdown
         function updateCountdown() {
@@ -168,6 +189,14 @@
         // Update the countdown every second
         setInterval(updateCountdown, 1000);
     }
+
+    // Show face registration modal if required
+    <?php if ($faceRegistrationRequired): ?>
+        document.addEventListener('DOMContentLoaded', function () {
+            const modal = new bootstrap.Modal(document.getElementById('faceRegistrationModal'));
+            modal.show();
+        });
+    <?php endif; ?>
 </script>
 </body>
 </html>

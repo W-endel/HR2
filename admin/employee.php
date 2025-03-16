@@ -18,7 +18,7 @@ $result = $stmt->get_result();
 $adminInfo = $result->fetch_assoc();
 
 // Fetch employee data
-$sql = "SELECT e_id, firstname, lastname, face_image, gender, email, department, position, phone_number, address FROM employee_register WHERE role='Employee'";
+$sql = "SELECT employee_id, first_name, last_name, face_image, gender, email, department, role, phone_number, address FROM employee_register WHERE position='Employee'";
 $result = $conn->query($sql);
 ?>
 
@@ -79,19 +79,19 @@ $result = $conn->query($sql);
                                     <?php if ($result->num_rows > 0): ?>
                                         <?php while ($row = $result->fetch_assoc()): ?>
                                             <tr class="text-center text-light align-items-center">
-                                                <td><?php echo htmlspecialchars(trim($row['e_id'] ?? 'N/A')); ?></td>
-                                                <td><?php echo htmlspecialchars(trim($row['firstname'] . ' ' . $row['lastname'] ?? 'N/A')); ?></td>
+                                                <td><?php echo htmlspecialchars(trim($row['employee_id'] ?? 'N/A')); ?></td>
+                                                <td><?php echo htmlspecialchars(trim($row['first_name'] . ' ' . $row['last_name'] ?? 'N/A')); ?></td>
                                                 <td><?php echo htmlspecialchars(trim($row['gender'] ?? 'N/A')); ?></td>
                                                 <td><?php echo htmlspecialchars(trim($row['email'] ?? 'N/A')); ?></td>
                                                 <td><?php echo htmlspecialchars(trim($row['department'] ?? 'N/A')); ?></td>
-                                                <td><?php echo htmlspecialchars(trim($row['position'] ?? 'N/A')); ?></td>
+                                                <td><?php echo htmlspecialchars(trim($row['role'] ?? 'N/A')); ?></td>
                                                 <td><?php echo htmlspecialchars(trim($row['phone_number'] ?? 'N/A')) ?: 'N/A'; ?></td>
                                                 <td><?php echo htmlspecialchars(trim($row['address'] ?? 'N/A')) ?: 'N/A'; ?></td>
                                                 <td class='d-flex justify-content-around align-items-center'>
-                                                    <button class="btn btn-danger btn-sm me-2 gap-2 mb-2" onclick="deleteEmployee(<?php echo $row['e_id']; ?>)">Delete</button>
+                                                    <button class="btn btn-danger btn-sm me-2 gap-2 mb-2" onclick="deleteEmployee(<?php echo $row['employee_id']; ?>)">Delete</button>
                                                     <button class="btn btn-success btn-sm mb-2" 
-                                                        onclick="fillUpdateForm(<?php echo $row['e_id']; ?>, '<?php echo htmlspecialchars($row['firstname']); ?>', '<?php echo htmlspecialchars($row['lastname']); ?>', '<?php echo htmlspecialchars($row['email']); ?>',
-                                                        '<?php echo htmlspecialchars($row['department']); ?>', '<?php echo htmlspecialchars($row['position']); ?>', '<?php echo htmlspecialchars($row['phone_number']); ?>', '<?php echo htmlspecialchars($row['address']); ?>')">Update
+                                                        onclick="fillUpdateForm(<?php echo $row['employee_id']; ?>, '<?php echo htmlspecialchars($row['first_name']); ?>', '<?php echo htmlspecialchars($row['last_name']); ?>', '<?php echo htmlspecialchars($row['email']); ?>',
+                                                        '<?php echo htmlspecialchars($row['department']); ?>', '<?php echo htmlspecialchars($row['role']); ?>', '<?php echo htmlspecialchars($row['phone_number']); ?>', '<?php echo htmlspecialchars($row['address']); ?>')">Update
                                                     </button>
                                                 </td>
                                             </tr>
@@ -114,15 +114,15 @@ $result = $conn->query($sql);
                             </div>
                             <div class="modal-body">
                                 <form id="updateForm">
-                                    <input type="hidden" name="e_id" id="updateId">      
+                                    <input type="hidden" name="employee_id" id="updateId">      
                                     <div class="">                     
                                         <div class="form-group mb-3 row">
                                             <div class="col-sm-6 bg-dark form-floating mb-3">
-                                                <input type="text" class="form-control fw-bold" name="firstname" required>
+                                                <input type="text" class="form-control fw-bold" name="first_name" required>
                                                 <label class="text-dark fw-bold" for="firstname">First Name</label>
                                             </div>
                                             <div class="col-sm-6 bg-dark form-floating mb-3">                                 
-                                                <input type="text" class="form-control fw-bold" name="lastname" required>
+                                                <input type="text" class="form-control fw-bold" name="last_name" required>
                                                 <label class="text-dark fw-bold" for="lastname">Last Name</label>
                                             </div>
                                         </div>
@@ -134,9 +134,9 @@ $result = $conn->query($sql);
                                                 <label class="text-dark fw-bold" for="email">Email</label>
                                             </div> 
                                             <div class="col-sm-6 bg-dark form-floating mb-3">
-                                            <input type="text" class="form-control fw-bold" name="phone_number" pattern="^\d{11}$" maxlength="11" required>
-                                            <label class="text-dark fw-bold" for="phone_number">Phone Number</label>
-                                        </div>
+                                                <input type="text" class="form-control fw-bold" name="phone_number" pattern="^\d{11}$" maxlength="11" required>
+                                                <label class="text-dark fw-bold" for="phone_number">Phone Number</label>
+                                            </div>
                                         </div>
                                     </div>  
                                     <div class="">                          
@@ -210,8 +210,8 @@ let modalInstance;
 
 function fillUpdateForm(id, firstname, lastname, email, department, position, phone_number, address) {
     document.getElementById('updateId').value = id;
-    document.querySelector('input[name="firstname"]').value = firstname.trim() === '' ? 'N/A' : firstname;
-    document.querySelector('input[name="lastname"]').value = lastname.trim() === '' ? 'N/A' : lastname;
+    document.querySelector('input[name="first_name"]').value = firstname.trim() === '' ? 'N/A' : firstname;
+    document.querySelector('input[name="last_name"]').value = lastname.trim() === '' ? 'N/A' : lastname;
     document.querySelector('input[name="email"]').value = email.trim() === '' ? 'N/A' : email;
     document.querySelector('select[name="department"]').value = department.trim() === '' ? 'N/A' : department;
     document.querySelector('select[name="position"]').value = position.trim() === '' ? 'N/A' : position;
@@ -231,7 +231,7 @@ function closeModal() {
 function deleteEmployee(id) {
     if (confirm('Are you sure you want to delete this employee?')) {
         const formData = new FormData();
-        formData.append('e_id', id);
+        formData.append('employee_id', id);
 
         fetch('../db/delete_employee.php', {
             method: 'POST',

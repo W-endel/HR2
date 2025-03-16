@@ -1,5 +1,11 @@
 <?php
+session_start();
 include '../../db/db_conn.php'; // Include database connection
+
+if (!isset($_SESSION['employee_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'Supervisor') {
+    header("Location: ../../login.php");
+    exit();
+}
 
 // Fetch all employees
 $query = "SELECT * FROM employee_register";
@@ -57,21 +63,21 @@ $result = $conn->query($query);
                     // Fetch the employee's schedule
                     $scheduleQuery = "SELECT * FROM employee_schedule WHERE employee_id = ? ORDER BY schedule_date DESC LIMIT 1";
                     $stmt = $conn->prepare($scheduleQuery);
-                    $stmt->bind_param('i', $employee['e_id']);
+                    $stmt->bind_param('i', $employee['employee_id']);
                     $stmt->execute();
                     $scheduleResult = $stmt->get_result();
                     $schedule = $scheduleResult->fetch_assoc();
                     $stmt->close();
                     ?>
                     <tr>
-                        <td><?php echo htmlspecialchars($employee['e_id']); ?></td>
-                        <td><?php echo htmlspecialchars($employee['firstname'] . ' ' . $employee['lastname']); ?></td>
+                        <td><?php echo htmlspecialchars($employee['employee_id']); ?></td>
+                        <td><?php echo htmlspecialchars($employee['first_name'] . ' ' . $employee['last_name']); ?></td>
                         <td><?php echo htmlspecialchars($schedule['shift_type'] ?? 'N/A'); ?></td>
                         <td><?php echo htmlspecialchars($schedule['schedule_date'] ?? 'N/A'); ?></td>
                         <td><?php echo htmlspecialchars($schedule['start_time'] ?? 'N/A'); ?></td>
                         <td><?php echo htmlspecialchars($schedule['end_time'] ?? 'N/A'); ?></td>
                         <td>
-                            <button class="edit-btn" onclick="openEditModal(<?php echo $employee['e_id']; ?>)">Edit Schedule</button>
+                            <button class="edit-btn" onclick="openEditModal(<?php echo $employee['employee_id']; ?>)">Edit Schedule</button>
                         </td>
                     </tr>
                 <?php endwhile; ?>

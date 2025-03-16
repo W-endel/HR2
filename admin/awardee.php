@@ -24,15 +24,15 @@ function calculateProgressCircle($averageScore) {
 
 function getTopEmployeesByCriterion($conn) {
     // SQL query to fetch the highest average score for each employee across all criteria
-    $sql = "SELECT e.e_id, e.firstname, e.lastname, e.department, e.pfp, e.email, 
+    $sql = "SELECT e.employee_id, e.firstname, e.lastname, e.department, e.pfp, e.email, 
                    AVG(ae.quality) AS avg_quality,
                    AVG(ae.communication_skills) AS avg_communication,
                    AVG(ae.teamwork) AS avg_teamwork,
                    AVG(ae.punctuality) AS avg_punctuality,
                    AVG(ae.initiative) AS avg_initiative
             FROM employee_register e
-            JOIN admin_evaluations ae ON e.e_id = ae.e_id
-            GROUP BY e.e_id
+            JOIN evaluations ae ON e.employee_id = ae.employee_id
+            GROUP BY e.employee_id
             ORDER BY (AVG(ae.quality) + AVG(ae.communication_skills) + AVG(ae.teamwork) + AVG(ae.punctuality) + AVG(ae.initiative)) DESC
             LIMIT 5"; // Fetch top 5 employees
 

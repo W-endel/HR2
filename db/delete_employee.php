@@ -12,7 +12,7 @@ if (!isset($_SESSION['a_id'])) {
 $admin_id = $_SESSION['a_id'];
 
 // Get employee ID from request
-$employeeId = isset($_POST['e_id']) ? trim($_POST['e_id']) : '';
+$employeeId = isset($_POST['employee_id']) ? trim($_POST['employee_id']) : '';
 
 // Basic validation
 if (empty($employeeId)) {
@@ -21,7 +21,7 @@ if (empty($employeeId)) {
 }
 
 // Fetch employee details for logging purposes
-$query = "SELECT * FROM employee_register WHERE e_id = ?";
+$query = "SELECT * FROM employee_register WHERE employee_id = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $employeeId);
 $stmt->execute();
@@ -50,7 +50,7 @@ if (!$stmt->execute()) {
 }
 
 // Prepare and execute SQL statement for deleting the employee record
-$sql = "DELETE FROM employee_register WHERE e_id=?";
+$sql = "DELETE FROM employee_register WHERE employee_id=?";
 $stmt = $conn->prepare($sql);
 
 if ($stmt === false) {

@@ -325,45 +325,68 @@ $conn->close();
                 });
             });
         // Doughnut chart data
-        const data = {
-            labels: ['Approved', 'Pending', 'Denied'],
-            datasets: [{
-                data: [
-                    <?php echo $status_counts['Approved']; ?>,
-                    <?php echo $status_counts['Supervisor Approved']; ?>,
-                    <?php echo $status_counts['Denied']; ?>
-                ],
-                backgroundColor: ['#28a745', '#ffc107', '#dc3545']
-            }]
-        };
+const data = {
+    labels: ['Approved', 'Pending', 'Denied'],
+    datasets: [{
+        data: [
+            <?php echo $status_counts['Approved']; ?>,
+            <?php echo $status_counts['Supervisor Approved']; ?>,
+            <?php echo $status_counts['Denied']; ?>
+        ],
+        backgroundColor: ['#28a745', '#ffc107', '#dc3545']
+    }]
+};
 
-        // Doughnut chart configuration
-        const leaveStatusCtx = document.getElementById('leaveStatusChart').getContext('2d');
-        const leaveStatusChart = new Chart(leaveStatusCtx, {
-            type: 'doughnut',
-            data: data,
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'left', // Change legend position to bottom
-                        labels: {
-                            color: 'white', // Change legend text color
-                            font: {
-                                size: 14, // Change legend font size
-                                weight: 'bold' // Make legend text bold
-                            },
-                            padding: 20 // Add padding between legend items
-                        }
-                    },
-                    title: {
-                        display: false,
-                        text: 'Leave Request Statuses'
+// Check if all data values are zero (no data)
+const totalRequests = data.datasets[0].data.reduce((sum, value) => sum + value, 0);
+
+// Get the canvas element and its context
+const leaveStatusCtx = document.getElementById('leaveStatusChart').getContext('2d');
+
+if (totalRequests === 0) {
+    // Display a message and icon if there is no data
+    const canvas = leaveStatusCtx.canvas;
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+
+    // Draw an icon (e.g., a sad face or info icon)
+    leaveStatusCtx.font = '48px FontAwesome'; // Use FontAwesome for icons
+    leaveStatusCtx.fillStyle = 'white';
+    leaveStatusCtx.textAlign = 'center';
+    leaveStatusCtx.textBaseline = 'middle';
+    leaveStatusCtx.fillText('😐', centerX, centerY - 30); // Use an emoji or FontAwesome icon
+
+    // Display the message
+    leaveStatusCtx.font = '16px Arial';
+    leaveStatusCtx.fillText('No pending request at this time...', centerX, centerY + 20);
+} else {
+    // Create the chart if there is data
+    const leaveStatusChart = new Chart(leaveStatusCtx, {
+        type: 'doughnut',
+        data: data,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'left', // Change legend position to bottom
+                    labels: {
+                        color: 'white', // Change legend text color
+                        font: {
+                            size: 14, // Change legend font size
+                            weight: 'bold' // Make legend text bold
+                        },
+                        padding: 20 // Add padding between legend items
                     }
+                },
+                title: {
+                    display: false,
+                    text: 'Leave Request Statuses'
                 }
             }
-        });
+        }
+    });
+}
         //for leaveStatusChart end
 
 
@@ -371,21 +394,32 @@ $conn->close();
     // Employee performance data with daily disbursements for a month
     const employees = [
         {
-            name: "John Doe",
-            dailyDisbursements: [6, 6, 6, 4, 5, 3, 5, 6, 2, 5, 6, 4, 2, 2, 5, 6, 3, 5, 6, 4, 6, 6, 6, 3, 2, 6, 6, 2, 5, 5], // Day 1 to Day 30
+            name: "Thirdy Murillo",
+            dailyDisbursements: [6, 6, 6, 4, 5, 3, 5, 6, 2, 5, 6, 4, 2, 2, 5, 6, 3, 5, 6, 4, 0, 6, 6, 3, 2, 6, 6, 2, 5, 5], // Day 1 to Day 30
         },
         {
-            name: "Jane Smith",
-            dailyDisbursements: [3, 6, 4, 6, 6, 4, 3, 4, 4, 4, 6, 5, 4, 5, 4, 2, 5, 6, 5, 3, 6, 5, 4, 4, 3, 6, 5, 2, 3, 4], // Day 1 to Day 30
+            name: "Steffano Dizo",
+            dailyDisbursements: [3, 6, 4, 6, 6, 4, 3, 0, 4, 4, 6, 5, 4, 5, 4, 2, 5, 6, 5, 3, 6, 5, 4, 4, 3, 6, 5, 2, 3, 4], // Day 1 to Day 30
         },
         {
-            name: "Alice Johnson",
-            dailyDisbursements: [4, 5, 6, 3, 6, 4, 1, 4, 6, 4, 6, 2, 3, 6, 3, 1, 4, 4, 5, 5, 6, 3, 6, 6, 5, 4, 3, 1, 4, 6], // Day 1 to Day 30
+            name: "Wendel Ureta",
+            dailyDisbursements: [4, 5, 6, 3, 6, 4, 1, 4, 6, 4, 6, 2, 3, 6, 3, 1, 4, 4, 5, 0, 6, 3, 6, 6, 5, 4, 3, 1, 4, 6], // Day 1 to Day 30
         },
     ];
 
 // Generate labels for days of the month (Day 1 to Day 30)
 const daysOfMonth = Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`);
+
+// Define the colors for the sequence
+const colors = ['#FF6666', '#66FF66', '#6666FF']; // Light Red, Light Green, Light Blue
+let colorIndex = 0;
+
+// Function to get the next color in the sequence
+function getNextColor() {
+  const color = colors[colorIndex];
+  colorIndex = (colorIndex + 1) % colors.length; // Cycle through the colors
+  return color;
+}
 
 // Employee Performance Line Chart
 const employeePerformanceCtx = document.getElementById("employeePerformanceChart").getContext("2d");
@@ -396,7 +430,7 @@ new Chart(employeePerformanceCtx, {
         datasets: employees.map(emp => ({
             label: emp.name, // Employee name as dataset label
             data: emp.dailyDisbursements, // Daily disbursements as data
-            borderColor: `#${Math.floor(Math.random() * 16777215).toString(16)}`, // Random color for each employee
+            borderColor: getNextColor(), // Cycle through red, green, and blue
             borderWidth: 2,
             fill: false, // Do not fill under the line
         })),
@@ -750,7 +784,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../js/admin.js"></script>
     <script>
 </script>

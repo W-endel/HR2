@@ -12,25 +12,25 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 // Check if the user is logged in
-if (!isset($_SESSION['e_id'])) {
+if (!isset($_SESSION['employee_id'])) {
     // Redirect to the login page if the user is not logged in
     header("Location: ../../login.php");
     exit();
 }
 
 // Get the logged-in user's ID from the session
-$loggedInUserId = $_SESSION['e_id'];
+$loggedInUserId = $_SESSION['employee_id'];
 
 // Get the selected month and year from the POST request
 $selectedMonth = isset($_POST['month']) ? $_POST['month'] : date('m');
 $selectedYear = isset($_POST['year']) ? $_POST['year'] : date('Y');
 
 // Fetch employee details (name, ID, department, and position)
-$employeeQuery = "SELECT e_id, CONCAT(firstname, ' ', lastname) AS name, department, position 
-                  FROM employee_register 
-                  WHERE e_id = ?";
+$employeeQuery = "SELECT employee_id, CONCAT(first_name, ' ', last_name) AS name, department, role 
+                  FROM employee_register
+                  WHERE employee_id = ?";
 if ($employeeStmt = $conn->prepare($employeeQuery)) {
-    $employeeStmt->bind_param("i", $loggedInUserId);
+    $employeeStmt->bind_param("s", $loggedInUserId);
     $employeeStmt->execute();
     $employeeResult = $employeeStmt->get_result();
     if ($employeeRow = $employeeResult->fetch_assoc()) {
@@ -41,16 +41,61 @@ if ($employeeStmt = $conn->prepare($employeeQuery)) {
     die("Error preparing employee statement: " . $conn->error);
 }
 
+// Fetch leave requests from leave_requests table
+$leaveRequests = [];
+$leaveQuery = "SELECT start_date, end_date, leave_type 
+               FROM leave_requests 
+               WHERE employee_id = ? 
+               AND status = 'Approved' 
+               AND ((MONTH(start_date) = ? AND YEAR(start_date) = ?) 
+               OR (MONTH(end_date) = ? AND YEAR(end_date) = ?))";
+
+if ($leaveStmt = $conn->prepare($leaveQuery)) {
+    $leaveStmt->bind_param("siiii", $loggedInUserId, $selectedMonth, $selectedYear, $selectedMonth, $selectedYear);
+    $leaveStmt->execute();
+    $leaveResult = $leaveStmt->get_result();
+    
+    while ($leaveRow = $leaveResult->fetch_assoc()) {
+        $startDate = new DateTime($leaveRow['start_date']);
+        $endDate = new DateTime($leaveRow['end_date']);
+        $interval = new DateInterval('P1D');
+        $dateRange = new DatePeriod($startDate, $interval, $endDate->modify('+1 day'));
+
+        foreach ($dateRange as $date) {
+            $leaveRequests[$date->format('Y-m-d')] = $leaveRow['leave_type'];
+        }
+    }
+    $leaveStmt->close();
+} else {
+    die("Error preparing leave statement: " . $conn->error);
+}
+
+// Fetch holidays from non_working_days table
+$holidays = [];
+$holidayQuery = "SELECT date, description FROM non_working_days 
+                 WHERE MONTH(date) = ? AND YEAR(date) = ?";
+if ($holidayStmt = $conn->prepare($holidayQuery)) {
+    $holidayStmt->bind_param("ii", $selectedMonth, $selectedYear);
+    $holidayStmt->execute();
+    $holidayResult = $holidayStmt->get_result();
+    while ($holidayRow = $holidayResult->fetch_assoc()) {
+        $holidays[$holidayRow['date']] = $holidayRow['description'];
+    }
+    $holidayStmt->close();
+} else {
+    die("Error preparing holiday statement: " . $conn->error);
+}
+
 // Fetch data from the attendance_log table for the logged-in user and selected month/year
-$sql = "SELECT e_id, name, attendance_date, time_in, time_out, status 
+$sql = "SELECT employee_id, name, attendance_date, time_in, time_out, status 
         FROM attendance_log 
-        WHERE e_id = ? 
+        WHERE employee_id = ? 
         AND MONTH(attendance_date) = ? 
         AND YEAR(attendance_date) = ?";
 
 // Prepare and execute the query
 if ($stmt = $conn->prepare($sql)) {
-    $stmt->bind_param("iii", $loggedInUserId, $selectedMonth, $selectedYear);
+    $stmt->bind_param("sii", $loggedInUserId, $selectedMonth, $selectedYear);
     $stmt->execute();
     $result = $stmt->get_result();
 
@@ -160,11 +205,11 @@ $sheet->setCellValue('A1', 'Employee Information');
 $sheet->setCellValue('A2', 'Name');
 $sheet->setCellValue('B2', $employeeInfo['name']);
 $sheet->setCellValue('A3', 'Employee ID');
-$sheet->setCellValue('B3', $employeeInfo['e_id']);
+$sheet->setCellValue('B3', $employeeInfo['employee_id']);
 $sheet->setCellValue('A4', 'Department');
 $sheet->setCellValue('B4', $employeeInfo['department']);
 $sheet->setCellValue('A5', 'Position');
-$sheet->setCellValue('B5', $employeeInfo['position']);
+$sheet->setCellValue('B5', $employeeInfo['role']);
 
 // Add a blank row
 $sheet->setCellValue('A7', 'Timesheet Data');
@@ -204,3 +249,4 @@ header('Cache-Control: max-age=0');
 $writer = new Xlsx($spreadsheet);
 $writer->save('php://output');
 exit;
+?>

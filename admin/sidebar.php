@@ -2,14 +2,25 @@
             <nav class="sb-sidenav accordion bg-dark" id="sidenavAccordion">
                 <div class="sb-sidenav-menu ">
                     <div class="nav">
-                        <div class="sb-sidenav-menu-heading text-center text-muted">Your Profile</div>
+                        <div class="sb-sidenav-menu-heading text-center text-muted">Profile</div>
                         <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
                             <li class="nav-item dropdown text">
                                 <a class="nav-link dropdown-toggle text-light d-flex justify-content-center ms-4" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <img src="<?php echo (!empty($adminInfo['pfp']) && $adminInfo['pfp'] !== 'defaultpfp.jpg') 
-                                        ? htmlspecialchars($adminInfo['pfp']) 
-                                        : '../img/defaultpfp.jpg'; ?>" 
-                                        class="rounded-circle border border-light" width="80" height="80" alt="Profile Picture" />
+                                    <?php
+                                    // Check if a custom profile picture exists
+                                    if (!empty($adminInfo['pfp']) && $adminInfo['pfp'] !== 'defaultpfp.jpg') {
+                                        // Display the custom profile picture
+                                        echo '<img src="' . htmlspecialchars($adminInfo['pfp']) . '" class="rounded-circle border border-light" width="80" height="80" alt="Profile Picture" />';
+                                    } else {
+                                        // Generate initials from the first name and last name
+                                        $firstName = $adminInfo['firstname'] ?? '';
+                                        $lastName = $adminInfo['lastname'] ?? '';
+                                        $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1));
+
+                                        // Display the initials in a circular container
+                                        echo '<div class="rounded-circle border border-light d-flex justify-content-center align-items-center" style="width: 80px; height: 80px; background-color: rgba(16, 17, 18); color: white; font-size: 24px; font-weight: bold;">' . $initials . '</div>';
+                                    }
+                                    ?>
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                                     <li><a class="dropdown-item loading" href="../admin/profile.php">Profile</a></li>
@@ -84,6 +95,9 @@
                             <nav class="sb-sidenav-menu-nested nav">
                                 <a class="nav-link text-light loading" href="../admin/evaluation.php">
                                     <i class="fas fa-bar-chart me-2"></i> Evaluation <!-- Icon for Requests -->
+                                </a>
+                                <a class="nav-link text-light loading" href="../admin/anomaly.php">
+                                    <i class="fas fa-bar-chart me-2"></i> Review Perfromance <!-- Icon for Requests -->
                                 </a>
                             </nav>
                         </div>

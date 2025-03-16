@@ -35,7 +35,7 @@ if (empty($employeeId) || empty($firstName) || empty($lastName) || empty($Email)
 }
 
 // Fetch current employee details to compare with the new ones
-$query = "SELECT * FROM employee_register WHERE e_id = ?";
+$query = "SELECT * FROM employee_register WHERE employee_id = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $employeeId);
 $stmt->execute();

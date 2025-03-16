@@ -80,7 +80,7 @@ if (isset($_POST['resend_token'])) {
     // Send the reset email with PHPMailer
     try {
         // Check if the email exists in the admin_register table
-        $sql = "SELECT firstname, lastname FROM employee_register WHERE email = ?";
+        $sql = "SELECT first_name, last_name FROM employee_register WHERE email = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param('s', $email);
         $stmt->execute();
@@ -89,7 +89,7 @@ if (isset($_POST['resend_token'])) {
         if ($result->num_rows > 0) {
             // Fetch the first and last name
             $row = $result->fetch_assoc();
-            $userName = $row['firstname'] . ' ' . $row['lastname'];
+            $userName = $row['first_name'] . ' ' . $row['last_name'];
         $mail = new PHPMailer\PHPMailer\PHPMailer;
         $mail->isSMTP();
         $mail->Host = 'smtp.gmail.com'; // Use Gmail's SMTP server
@@ -150,7 +150,7 @@ if (isset($_POST['resend_token'])) {
         <div class="row justify-content-center mt-5">
             <div class="col-lg-5">
                 <div class="card shadow-lg border-0 rounded-lg mt-5 bg-dark">
-                    <div class="card-header border-bottom border-1 border-warning">
+                    <div class="card-header border-bottom border-1 border-secondary">
                         <h3 class="text-center text-light font-weight-light my-4">Reset Your Password</h3>
                             <?php if (!empty($message)) echo $message; ?>
                             <?php if (!empty($formError)): ?>

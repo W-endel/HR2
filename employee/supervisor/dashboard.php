@@ -1,14 +1,14 @@
 <?php
 session_start();
-if (!isset($_SESSION['e_id']) || !isset($_SESSION['position']) || $_SESSION['position'] !== 'Supervisor') {
+if (!isset($_SESSION['employee_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'Supervisor') {
     header("Location: ../../login.php");
     exit();
 }
 
 include '../../db/db_conn.php';
 
-$employeeId = $_SESSION['e_id'];
-$employeePosition = $_SESSION['position'];
+$employeeId = $_SESSION['employee_id'];
+$employeeRole = $_SESSION['role'];
 
 // Fetch the average of the employee's evaluations
 $sql = "SELECT 
@@ -18,11 +18,11 @@ $sql = "SELECT
             AVG(punctuality) AS avg_punctuality, 
             AVG(initiative) AS avg_initiative,
             COUNT(*) AS total_evaluations 
-        FROM admin_evaluations 
-        WHERE e_id = ?";
+        FROM ptp_evaluations 
+        WHERE employee_id = ?";
 
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $employeeId);
+$stmt->bind_param("s", $employeeId);
 $stmt->execute();
 $result = $stmt->get_result();
 
@@ -44,9 +44,9 @@ if ($result->num_rows > 0) {
 }
 
 // Fetch user info
-$sql = "SELECT firstname, middlename, lastname, email, role, position, pfp FROM employee_register WHERE e_id = ?";
+$sql = "SELECT first_name, middle_name, last_name, email, role, position, pfp FROM employee_register WHERE employee_id = ?";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $employeeId);
+$stmt->bind_param("s", $employeeId);
 $stmt->execute();
 $result = $stmt->get_result();
 $employeeInfo = $result->fetch_assoc();
@@ -66,12 +66,102 @@ $profilePicture = !empty($employeeInfo['pfp']) ? $employeeInfo['pfp'] : '../../i
     <meta name="description" content="" />
     <meta name="author" content="" />
     <title>Employee Dashboard | HR2</title>
+    <link href="../../css/styles.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
-    <link href="../../css/styles.css" rel="stylesheet" />
     <link href="../../css/calendar.css" rel="stylesheet"/>
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet'/>
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+    <style>
+        /* Base styles for the calendar */
+        #ATTENDANCEcalendar .col {
+            padding: 5px; /* Add padding to calendar cells */
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 767.98px) {
+            /* Adjust font size for smaller screens */
+            #ATTENDANCEcalendar .btn span {
+                font-size: 0.9rem; /* Smaller font size for mobile */
+            }
+
+            /* Reduce padding for smaller screens */
+            #ATTENDANCEcalendar .col {
+                padding: 2px;
+            }
+
+            /* Make buttons smaller on mobile */
+            #ATTENDANCEcalendar .btn {
+                height: 30px !important; /* Adjust button height for mobile */
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            /* Further adjustments for very small screens */
+            #ATTENDANCEcalendar .btn span {
+                font-size: 0.8rem; /* Even smaller font size */
+            }
+
+            #ATTENDANCEcalendar .col {
+                padding: 1px;
+            }
+        }
+
+        /* Base styles for the days of the week */
+            .row.text-center.fw-bold .col {
+                padding: 5px; /* Add padding to each day */
+                font-size: 1rem; /* Default font size */
+            }
+
+            /* Responsive adjustments */
+            @media (max-width: 767.98px) {
+                /* Adjust font size for smaller screens */
+                .row.text-center.fw-bold .col {
+                    font-size: 0.9rem; /* Smaller font size for mobile */
+                    padding: 3px; /* Reduce padding for smaller screens */
+                }
+            }
+
+            @media (max-width: 575.98px) {
+                /* Further adjustments for very small screens */
+                .row.text-center.fw-bold .col {
+                    font-size: 0.8rem; /* Even smaller font size */
+                    padding: 2px; /* Further reduce padding */
+                }
+            }
+
+            /* Base styles for the chart container */
+            .chart-container {
+                position: relative;
+                height: 400px; /* Default height for desktop */
+                width: 100%;
+            }
+
+            /* Responsive adjustments */
+            @media (max-width: 767.98px) {
+                /* Adjust height for tablets */
+                .chart-container {
+                    height: 300px;
+                }
+
+                /* Reduce font size for point labels */
+                #performanceRadarChart {
+                    font-size: 12px;
+                }
+            }
+
+            @media (max-width: 575.98px) {
+                /* Adjust height for mobile */
+                .chart-container {
+                    height: 250px;
+                }
+
+                /* Further reduce font size for point labels */
+                #performanceRadarChart {
+                    font-size: 10px;
+                }
+            }
+    </style>
 </head>
 
 <body class="sb-nav-fixed bg-black">
@@ -123,17 +213,17 @@ $profilePicture = !empty($employeeInfo['pfp']) ? $employeeInfo['pfp'] : '../../i
                                     <div class="mb-0">
                                         <h3 class="mb-0" id="monthYearDisplay"></h3>
                                         <div class="row text-center fw-bold">
-                                            <div class="col">Sun</div>
-                                            <div class="col">Mon</div>
-                                            <div class="col">Tue</div>
-                                            <div class="col">Wed</div>
-                                            <div class="col">Thu</div>
-                                            <div class="col">Fri</div>
-                                            <div class="col">Sat</div>
+                                            <div class="col p-1">Sun</div>
+                                            <div class="col p-1">Mon</div>
+                                            <div class="col p-1">Tue</div>
+                                            <div class="col p-1">Wed</div>
+                                            <div class="col p-1">Thu</div>
+                                            <div class="col p-1">Fri</div>
+                                            <div class="col p-1">Sat</div>
                                         </div>
 
                                         <!-- Calendar rows with attendance status -->
-                                        <div id="ATTENDANCEcalendar" class="pt-3 text-light bg-black"></div>
+                                        <div id="ATTENDANCEcalendar" class="pt-3 text-light bg-black rounded"></div>
                                     </div>
                                 </div>
                                 <div class="card-footer text-center d-flex justify-content-around">
@@ -152,9 +242,8 @@ $profilePicture = !empty($employeeInfo['pfp']) ? $employeeInfo['pfp'] : '../../i
                                     <i class="fas fa-bar-chart me-1"></i>
                                     <a class="text-light" href="">Performance Ratings</a>
                                 </div>
-                                <div class="card-body">
-                                    <!-- Canvas for Radar Chart -->
-                                    <canvas id="performanceRadarChart" width="400" height="400"></canvas>
+                                <div class="chart-container" style="position: relative; height: 400px; width: 100%;">
+                                    <canvas id="performanceRadarChart"></canvas>
                                 </div>
                             </div>
                         </div>
@@ -239,7 +328,7 @@ $profilePicture = !empty($employeeInfo['pfp']) ? $employeeInfo['pfp'] : '../../i
                             <!-- Modal Header -->
                             <div class="modal-header border-bottom border-secondary">
                                 <h5 class="modal-title fw-bold" id="timeInfoModalLabel">Attendance Information</h5>
-                                <button type="button" class="btn-close bg-light" data-bs-dismiss="modal" aria-label="Close"></button>
+                                <button type="button" class="btn-close text-light" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
 
                             <!-- Modal Body -->
@@ -277,85 +366,7 @@ $profilePicture = !empty($employeeInfo['pfp']) ? $employeeInfo['pfp'] : '../../i
                         </div>
                     </div>
                 </div>
-                <div class="modal fade" id="todoModal" tabindex="-1" aria-labelledby="todoModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content bg-dark text-light">
-                            <div class="modal-header">
-                                <h5 class="modal-title text-info" id="todoModalLabel">To Do</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div class="d-flex justify-content-end">
-                                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addTaskModal">
-                                        <i class="fas fa-plus me-2"></i>Add To Do List
-                                    </button>
-                                </div>
-                                <ul class="list-group list-group-flush">
-                                    <li class="list-group-item bg-dark text-light fs-4 border-0 d-flex justify-content-between align-items-center">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" value="" id="task1">
-                                            <label class="form-check-label" for="task1">
-                                                <i class="bi bi-check-circle text-warning me-2"></i>Facial Recognition
-                                            </label>
-                                        </div>
-                                    </li>
-                                    <li class="list-group-item bg-dark text-light fs-4 border-0 d-flex justify-content-between align-items-center">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" value="" id="task2">
-                                            <label class="form-check-label" for="task2">
-                                                <i class="bi bi-check-circle text-warning me-2"></i>Attendance Record
-                                            </label>
-                                        </div>
-                                    </li>
-                                    <li class="list-group-item bg-dark text-light fs-4 border-0 d-flex justify-content-between align-items-center">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" value="" id="task3">
-                                            <label class="form-check-label" for="task3">
-                                                <i class="bi bi-check-circle text-warning me-2"></i>Leave Processing
-                                            </label>
-                                        </div>
-                                    </li>
-                                    <li class="list-group-item bg-dark text-light fs-4 border-0 d-flex justify-content-between align-items-center">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" value="" id="task4">
-                                            <label class="form-check-label" for="task4">
-                                                <i class="bi bi-check-circle text-warning me-2"></i>Performance Processing
-                                            </label>
-                                        </div>
-                                    </li>
-                                    <li class="list-group-item bg-dark text-light fs-4 border-0 d-flex justify-content-between align-items-center">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" value="" id="task5">
-                                            <label class="form-check-label" for="task5">
-                                                <i class="bi bi-check-circle text-warning me-2"></i>Payroll Processing
-                                            </label>
-                                        </div>
-                                    </li>
-                                    <li class="list-group-item bg-dark text-light fs-4 border-0 d-flex justify-content-between align-items-center">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" value="" id="task6">
-                                            <label class="form-check-label" for="task6">
-                                                <i class="bi bi-check-circle text-warning me-2"></i>Social Recognition
-                                            </label>
-                                        </div>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            <footer class="py-4 bg-light mt-auto bg-dark border-top border-1 border-secondary">
-                <div class="container-fluid px-4">
-                    <div class="d-flex align-items-center justify-content-between small">
-                        <div class="text-muted">Copyright &copy; Your Website 2023</div>
-                        <div>
-                            <a href="#">Privacy Policy</a>
-                            &middot;
-                            <a href="#">Terms &amp; Conditions</a>
-                        </div>
-                    </div>
-                </div>
-            </footer>
+            <?php include 'footer.php'; ?>
         </div>
     </div>
 
@@ -417,9 +428,14 @@ function calculateAttendanceStatus(timeIn, timeOut) {
 function renderCalendar(month, year, attendanceRecords = {}) {
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const firstDay = new Date(year, month, 1).getDay();
+    const currentDate = new Date(); // Get the current date
+    const currentDay = currentDate.getDate();
+    const currentMonth = currentDate.getMonth();
+    const currentYear = currentDate.getFullYear();
 
     let calendarHTML = '<div class="row text-center pt-3">';
 
+    // Fill empty cells for days before the first day of the month
     for (let i = 0; i < firstDay; i++) {
         calendarHTML += '<div class="col"></div>';
     }
@@ -437,6 +453,10 @@ function renderCalendar(month, year, attendanceRecords = {}) {
         const isFilteredDay = filteredDay && filteredDay.getDate() === dayCounter && filteredDay.getMonth() === month && filteredDay.getFullYear() === year;
         const borderClass = isFilteredDay ? 'border border-2 border-light' : '';
 
+        // Check if the current day is today
+        const isToday = dayCounter === currentDay && month === currentMonth && year === currentYear;
+        const todayClass = isToday ? 'border border-2 border-light rounded-circle text-white d-flex align-items-center justify-content-center mx-auto' : ''; // Bootstrap classes for circle highlight
+
         // Simplified status logic, adding 'text-muted' for holidays, leaves, and day off
         let statusClass = '';
         if (statusCount > 1) {
@@ -445,14 +465,14 @@ function renderCalendar(month, year, attendanceRecords = {}) {
             statusClass = status === 'Present' ? 'text-success' : // Green for Present/Present
                           status === 'Absent' ? 'text-muted' : // Red for Absent
                           status === 'Late' ? 'text-warning' : // Yellow for Late
-                          status === 'Half-Day' ? 'text-light' : // Light for Half-Day
+                          status === 'Half-Day' ? 'text-success' : // Light for Half-Day
                           status === 'Early Out' ? 'text-warning' : // warning for Early Out
                           status === 'Day Off' || status === 'Holiday' || status === 'On Leave' ? 'text-danger' : ''; // Muted for Day Off, Holidays, and On Leave
         }
 
         calendarHTML += `
-            <div class="col">
-                <button class="btn text-light p-0 ${borderClass}" data-bs-toggle="modal" data-bs-target="#attendanceModal" onclick="showAttendanceDetails(${dayCounter})">
+            <div class="col p-1">
+                <button class="btn text-light p-0 ${borderClass} ${todayClass}" data-bs-toggle="modal" data-bs-target="#attendanceModal" onclick="showAttendanceDetails(${dayCounter})" style="width: 100%; height: 40px;">
                     <span class="fw-bold ${statusClass}">
                         ${dayCounter}
                     </span>
@@ -471,14 +491,17 @@ function renderCalendar(month, year, attendanceRecords = {}) {
         for (let i = 0; i < 7 && dayCounter <= daysInMonth; i++) {
             const dayStatus = attendanceRecords[dayCounter]; // Get the status for the current day
             const status = (dayOfWeek === 0) ? 'Day Off' : // Set "Day Off" for Sundays (day 0)
-                           (dayStatus && dayStatus.status === 'Holiday') ? 'Holiday' : // Check for holidays
+                           (dayStatus && dayStatus.status === 'Holiday') ? 'Holiday' :
                            dayStatus || ''; // Fallback to the status or empty string
 
             // Check for multiple statuses
             const statusCount = Array.isArray(attendanceRecords[dayCounter]) ? attendanceRecords[dayCounter].length : 1;
-            
             const isFilteredDay = filteredDay && filteredDay.getDate() === dayCounter && filteredDay.getMonth() === month && filteredDay.getFullYear() === year;
             const borderClass = isFilteredDay ? 'border border-2 border-light' : '';
+
+            // Check if the current day is today
+            const isToday = dayCounter === currentDay && month === currentMonth && year === currentYear;
+            const todayClass = isToday ? 'border border-2 border-light rounded-circle text-white d-flex align-items-center justify-content-center mx-auto' : ''; // Bootstrap classes for circle highlight
 
             // Simplified status logic, adding 'text-muted' for holidays, leaves, and day off
             let statusClass = '';
@@ -488,14 +511,14 @@ function renderCalendar(month, year, attendanceRecords = {}) {
                 statusClass = status === 'Present' ? 'text-success' : // Green for Present/Present
                               status === 'Absent' ? 'text-muted' : // Red for Absent
                               status === 'Late' ? 'text-warning' : // Yellow for Late
-                              status === 'Half-Day' ? 'text-light' : // Light for Half-Day
+                              status === 'Half-Day' ? 'text-success' : // Light for Half-Day
                               status === 'Early Out' ? 'text-warning' : // warning for Early Out
                               status === 'Day Off' || status === 'Holiday' || status === 'On Leave' ? 'text-danger' : ''; // Muted for Day Off, Holidays, and On Leave
             }
 
             calendarHTML += `
-                <div class="col">
-                    <button class="btn text-light p-0 ${borderClass}" data-bs-toggle="modal" data-bs-target="#attendanceModal" onclick="showAttendanceDetails(${dayCounter})">
+                <div class="col p-1">
+                    <button class="btn text-light p-0 ${borderClass} ${todayClass}" data-bs-toggle="modal" data-bs-target="#attendanceModal" onclick="showAttendanceDetails(${dayCounter})" style="width: 100%; height: 40px;">
                         <span class="fw-bold ${statusClass}">
                             ${dayCounter}
                         </span>
@@ -508,7 +531,7 @@ function renderCalendar(month, year, attendanceRecords = {}) {
 
         if (dayOfWeek < 7) {
             for (let j = dayOfWeek; j < 7; j++) {
-                calendarHTML += '<div class="col"></div>';
+                calendarHTML += '<div class="col p-1"></div>';
             }
         }
 
@@ -523,7 +546,7 @@ function renderCalendar(month, year, attendanceRecords = {}) {
 // Fetch attendance for the given month and year
 async function fetchAttendance(month, year) {
     try {
-        const response = await fetch(`/HR2/employee_db/supervisor/fetch_attendance.php?e_id=${employeeId}&month=${month + 1}&year=${year}`);
+        const response = await fetch(`/HR2/employee_db/supervisor/fetch_attendance.php?employee_id=${employeeId}&month=${month + 1}&year=${year}`);
         const data = await response.json();
 
         if (data.error) {
@@ -551,7 +574,7 @@ async function showAttendanceDetails(day) {
     // Check if the selected day is a Sunday
     const isSunday = selectedDateObj.getDay() === 0; // Sunday is 0 in JavaScript's getDay()
 
-    const leaveResponse = await fetch(`/HR2/employee_db/supervisor/fetch_leave.php?e_id=${employeeId}&day=${day}&month=${currentMonth + 1}&year=${currentYear}`);
+    const leaveResponse = await fetch(`/HR2/employee_db/supervisor/fetch_leave.php?employee_id=${employeeId}&day=${day}&month=${currentMonth + 1}&year=${currentYear}`);
     const leaveData = await leaveResponse.json();
 
     if (leaveData.onLeave) {
@@ -563,7 +586,7 @@ async function showAttendanceDetails(day) {
         statusElement.classList.remove('text-success', 'text-warning', 'text-info', 'text-light', 'text-muted', 'text-warning');
         statusElement.classList.add('text-danger');
     } else {
-        const attendanceResponse = await fetch(`/HR2/employee_db/supervisor/fetch_attendance.php?e_id=${employeeId}&day=${day}&month=${currentMonth + 1}&year=${currentYear}`);
+        const attendanceResponse = await fetch(`/HR2/employee_db/supervisor/fetch_attendance.php?employee_id=${employeeId}&day=${day}&month=${currentMonth + 1}&year=${currentYear}`);
         const data = await attendanceResponse.json();
 
         if (data.error) {
@@ -778,8 +801,20 @@ const evaluationData = {
     totalAverage: <?php echo json_encode($totalAverage ?? null); ?>
 };
 
-// Radar Chart initialization
 const ctx = document.getElementById('performanceRadarChart').getContext('2d');
+
+// Function to calculate dynamic font size based on screen width
+function getDynamicFontSize() {
+    const screenWidth = window.innerWidth;
+    if (screenWidth < 576) { // Mobile
+        return 10;
+    } else if (screenWidth < 768) { // Tablet
+        return 12;
+    } else { // Desktop
+        return 14;
+    }
+}
+
 const performanceRadarChart = new Chart(ctx, {
     type: 'radar',
     data: {
@@ -788,11 +823,11 @@ const performanceRadarChart = new Chart(ctx, {
             {
                 label: 'Category Ratings',
                 data: [
-                    evaluationData.avg_quality,
-                    evaluationData.avg_communication_skills,
-                    evaluationData.avg_teamwork,
-                    evaluationData.avg_punctuality,
-                    evaluationData.avg_initiative
+                    parseFloat(evaluationData.avg_quality || 0).toFixed(2), // Fallback to 0 if invalid
+                    parseFloat(evaluationData.avg_communication_skills || 0).toFixed(2), // Fallback to 0 if invalid
+                    parseFloat(evaluationData.avg_teamwork || 0).toFixed(2), // Fallback to 0 if invalid
+                    parseFloat(evaluationData.avg_punctuality || 0).toFixed(2), // Fallback to 0 if invalid
+                    parseFloat(evaluationData.avg_initiative || 0).toFixed(2) // Fallback to 0 if invalid
                 ],
                 backgroundColor: 'rgba(54, 162, 235, 0.2)', // Light blue fill
                 borderColor: 'rgba(54, 162, 235, 1)', // Blue border
@@ -801,11 +836,11 @@ const performanceRadarChart = new Chart(ctx, {
             {
                 label: 'Overall Rating',
                 data: [
-                    evaluationData.totalAverage,
-                    evaluationData.totalAverage,
-                    evaluationData.totalAverage,
-                    evaluationData.totalAverage,
-                    evaluationData.totalAverage
+                    parseFloat(evaluationData.totalAverage || 0).toFixed(2), // Fallback to 0 if invalid
+                    parseFloat(evaluationData.totalAverage || 0).toFixed(2), // Fallback to 0 if invalid
+                    parseFloat(evaluationData.totalAverage || 0).toFixed(2), // Fallback to 0 if invalid
+                    parseFloat(evaluationData.totalAverage || 0).toFixed(2), // Fallback to 0 if invalid
+                    parseFloat(evaluationData.totalAverage || 0).toFixed(2) // Fallback to 0 if invalid
                 ],
                 backgroundColor: 'rgba(255, 99, 132, 0.2)', // Light red fill
                 borderColor: 'rgba(255, 99, 132, 1)', // Red border
@@ -849,7 +884,8 @@ const performanceRadarChart = new Chart(ctx, {
                 enabled: true, // Enable tooltips
                 callbacks: {
                     label: function (context) {
-                        return `${context.dataset.label}: ${context.raw}`; // Show dataset label and value in tooltip
+                        // Format tooltip value to 2 decimal places
+                        return `${context.dataset.label}: ${parseFloat(context.raw || 0).toFixed(2)}`;
                     }
                 }
             },
@@ -864,15 +900,30 @@ const performanceRadarChart = new Chart(ctx, {
                     return context.datasetIndex === 0 ? 'top' : 'bottom';
                 },
                 formatter: function (value) {
-                    return value; // Display the value as the label
+                    // Format data label value to 2 decimal places
+                    return parseFloat(value || 0).toFixed(2);
+                },
+                font: {
+                    weight: 'bold', // Make the text bold
+                    size: getDynamicFontSize(), // Use dynamic font size
+                    family: 'Arial' // Optional: Set font family
                 }
             }
         },
-        responsive: true,
-        maintainAspectRatio: false
+        responsive: true, // Enable responsiveness
+        maintainAspectRatio: false // Allow chart to adjust height and width independently
     },
     plugins: [ChartDataLabels] // Enable the datalabels plugin
 });
+
+// Function to update the chart on window resize
+function updateChartOnResize() {
+    performanceRadarChart.options.plugins.datalabels.font.size = getDynamicFontSize(); // Update font size
+    performanceRadarChart.update(); // Update the chart to reflect new font sizes
+}
+
+// Add event listener for window resize
+window.addEventListener('resize', updateChartOnResize);
 </script>
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'> </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>

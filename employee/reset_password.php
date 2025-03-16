@@ -80,7 +80,7 @@ if (isset($_POST['resend_token'])) {
     // Send the reset email with PHPMailer
     try {
         // Check if the email exists in the admin_register table
-        $sql = "SELECT firstname, lastname FROM employee_register WHERE email = ?";
+        $sql = "SELECT first_name, last_name FROM employee_register WHERE email = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param('s', $email);
         $stmt->execute();
@@ -150,12 +150,12 @@ if (isset($_POST['resend_token'])) {
         <div class="row justify-content-center mt-5">
             <div class="col-lg-5">
                 <div class="card shadow-lg border-0 rounded-lg mt-5 bg-dark">
-                    <div class="card-header border-bottom border-1 border-warning">
+                    <div class="card-header border-bottom border-1 border-secondary">
                         <h3 class="text-center text-light font-weight-light my-4">Reset Your Password</h3>
-                            <?php if (!empty($message)) echo $message; ?>
-                            <?php if (!empty($formError)): ?>
-                                <div class="alert alert-danger text-center"><?php echo $formError; ?></div>
-                            <?php endif; ?>
+                        <?php if (!empty($message)) echo $message; ?>
+                        <?php if (!empty($formError)): ?>
+                            <div class="alert alert-danger text-center"><?php echo $formError; ?></div>
+                        <?php endif; ?>
                     </div>
                     <div class="card-body">
                         <?php if (!$resetSuccessful): ?>
@@ -198,8 +198,46 @@ if (isset($_POST['resend_token'])) {
             </div>
         </div>
     </div>
+
+    <!-- Success Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark text-light">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="successModalLabel">Password Reset Successful</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Your password has been reset successfully.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="okButton">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // Function to show the success modal
+            function showSuccessModal() {
+                var successModal = new bootstrap.Modal(document.getElementById('successModal'), {
+                    backdrop: 'static', // Prevent closing by clicking outside
+                    keyboard: false // Prevent closing by pressing the ESC key
+                });
+                successModal.show();
+            }
+
+            // Redirect to login page when "OK" is clicked
+            document.getElementById('okButton').addEventListener('click', function () {
+                window.location.href = '../login.php';
+            });
+
+            // Show the modal if the reset was successful
+            <?php if ($resetSuccessful): ?>
+                showSuccessModal();
+            <?php endif; ?>
+
+            // Countdown timer for token expiration (existing code)
             var resetSuccessful = <?php echo json_encode($resetSuccessful); ?>;
             if (!resetSuccessful) {
                 var expiresAt = new Date("<?php echo $expiresAt; ?>").getTime();
@@ -227,38 +265,32 @@ if (isset($_POST['resend_token'])) {
                     }
                 }, 1000);
             }
+
+            // Toggle visibility of New Password (existing code)
+            const toggleNewPassword = document.querySelector("#toggleNewPassword");
+            const newPasswordField = document.querySelector("#new_password");
+            const newPasswordIcon = toggleNewPassword.querySelector("i");
+
+            toggleNewPassword.addEventListener("click", function () {
+                const type = newPasswordField.getAttribute("type") === "password" ? "text" : "password";
+                newPasswordField.setAttribute("type", type);
+                newPasswordIcon.classList.toggle("fa-eye");
+                newPasswordIcon.classList.toggle("fa-eye-slash");
+            });
+
+            // Toggle visibility of Confirm New Password (existing code)
+            const toggleConfirmPassword = document.querySelector("#toggleConfirmPassword");
+            const confirmPasswordField = document.querySelector("#confirm_new_password");
+            const confirmPasswordIcon = toggleConfirmPassword.querySelector("i");
+
+            toggleConfirmPassword.addEventListener("click", function () {
+                const type = confirmPasswordField.getAttribute("type") === "password" ? "text" : "password";
+                confirmPasswordField.setAttribute("type", type);
+                confirmPasswordIcon.classList.toggle("fa-eye");
+                confirmPasswordIcon.classList.toggle("fa-eye-slash");
+            });
         });
-
-
-      // Toggle visibility of New Password
-    const toggleNewPassword = document.querySelector("#toggleNewPassword");
-    const newPasswordField = document.querySelector("#new_password");
-    const newPasswordIcon = toggleNewPassword.querySelector("i");
-
-    toggleNewPassword.addEventListener("click", function () {
-        // Toggle the password field type
-        const type = newPasswordField.getAttribute("type") === "password" ? "text" : "password";
-        newPasswordField.setAttribute("type", type);
-
-        // Toggle the eye/eye-slash icon
-        newPasswordIcon.classList.toggle("fa-eye");
-        newPasswordIcon.classList.toggle("fa-eye-slash");
-    });
-
-    // Toggle visibility of Confirm New Password
-    const toggleConfirmPassword = document.querySelector("#toggleConfirmPassword");
-    const confirmPasswordField = document.querySelector("#confirm_new_password");
-    const confirmPasswordIcon = toggleConfirmPassword.querySelector("i");
-
-    toggleConfirmPassword.addEventListener("click", function () {
-        // Toggle the password field type
-        const type = confirmPasswordField.getAttribute("type") === "password" ? "text" : "password";
-        confirmPasswordField.setAttribute("type", type);
-
-        // Toggle the eye/eye-slash icon
-        confirmPasswordIcon.classList.toggle("fa-eye");
-        confirmPasswordIcon.classList.toggle("fa-eye-slash");
-    });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

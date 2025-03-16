@@ -3,7 +3,7 @@ session_start();
 include '../../db/db_conn.php';
 
 // Check if the employee is logged in
-if (!isset($_SESSION['e_id'])) {
+if (!isset($_SESSION['employee_id'])) {
     header('Content-Type: application/json');
     echo json_encode(['success' => false, 'error' => 'Unauthorized access. Please log in.']);
     exit();

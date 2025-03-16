@@ -15,9 +15,9 @@ if ($conn->connect_error) {
 // Fetch all approved leaves with employee details
 $sql = "
     SELECT 
-        lr.e_id, 
-        er.firstname, 
-        er.lastname, 
+        lr.employee_id, 
+        er.first_name, 
+        er.last_name, 
         lr.start_date, 
         lr.end_date, 
         lr.leave_type 
@@ -26,7 +26,7 @@ $sql = "
     JOIN 
         employee_register er 
     ON 
-        lr.e_id = er.e_id 
+        lr.employee_id = er.employee_id 
     WHERE 
         lr.status = 'Approved'
 ";
@@ -40,14 +40,14 @@ if (!$result) {
 $events = [];
 while ($row = $result->fetch_assoc()) {
     $events[] = [
-        'title' => $row['firstname'] . ' ' . $row['lastname'],
+        'title' => $row['first_name'] . ' ' . $row['last_name'],
         'start' => $row['start_date'],
         'end' => date('Y-m-d', strtotime($row['end_date'] . ' +1 day')), // Add 1 day to include the end date
         'backgroundColor' => '#ffc107', // Customize the event color
         'borderColor' => '#ffc107',
         'textColor' => '#000',
         'extendedProps' => [
-            'e_id' => $row['e_id'],
+            'employee_id' => $row['employee_id'],
             'leave_type' => $row['leave_type']
         ]
     ];

@@ -8,7 +8,7 @@ if (isset($_GET['employee_id'])) {
     // Fetch the latest schedule for the employee
     $query = "SELECT * FROM employee_schedule WHERE employee_id = ? ORDER BY schedule_date DESC LIMIT 1";
     $stmt = $conn->prepare($query);
-    $stmt->bind_param('i', $employeeId);
+    $stmt->bind_param('s', $employeeId);
     $stmt->execute();
     $result = $stmt->get_result();
 

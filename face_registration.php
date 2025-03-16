@@ -8,25 +8,184 @@
     <meta name="description" content="" />
     <meta name="author" content="" />
     <title>Employee Account Registration</title>
-    <link href="../css/styles.css" rel="stylesheet" />
+    <link href="css/styles.css" rel="stylesheet" />
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
-    <script src="/HR2/face-api.js-master/dist/face-api.min.js"></script> <!-- Face API for face recognition -->
+    <script src="/HR2/face-api.js-master/dist/face-api.min.js"></script>
+<style>
+    /* General Styles */
+/* General Styles */
+body {
+    background-color: #0e0e0e;
+    color: #ffffff;
+    font-family: 'Arial', sans-serif;
+    padding-top: 50px;
+    height: 100%;
+}
 
-    <style>
-        /* Ensures the page fills the full height */
-        html, body {
-            height: 100%;
-        }
-        /* Makes the layout use the full height and pushes footer to the bottom */
-        #layoutAuthentication {
-            min-height: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-        #layoutAuthentication_content {
-            flex-grow: 1;
-        }
-    </style>
+h3, h4 {
+    font-family: 'Segoe UI', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.container-fluid {
+    margin-bottom: 50px;
+}
+
+/* Card Styling */
+.card {
+    background-color: #1a1a1a;
+    border: 1px solid #444;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+    transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
+}
+
+.card-header {
+    background: linear-gradient(135deg, #444, #333);
+    border-bottom: 1px solid #555;
+    color: #f1f1f1;
+    font-size: 1.5rem;
+    text-align: center;
+}
+
+.card-body {
+    padding: 25px;
+}
+
+/* Form Styling */
+.form-control {
+    background-color: #2c2c2c;
+    border: 1px solid #555;
+    color: #ffffff;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 20px;
+    font-size: 1rem;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.form-control:focus {
+    background-color: #3d3d3d;
+    border-color: #777;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+}
+
+.form-label {
+    color: #ffffff;
+    margin-bottom: 7px;
+    font-size: 1.1rem;
+}
+
+/* Button Styling */
+.btn {
+    border-radius: 6px;
+    padding: 12px 25px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    text-align: center;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+}
+
+.btn-success {
+    background-color: #28a745;
+    border: none;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    border: none;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+    transform: translateY(-2px);
+}
+
+/* Video Feed Styling */
+#videoFeed {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 2px solid #555;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Captured Face Styling */
+#capturedFace {
+    width: 160px;
+    height: 160px;
+    border-radius: 8px;
+    border: 2px solid #444;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    display: none;
+    text-align: center;
+    margin-top: 20px;
+}
+
+.loading-spinner.active {
+    display: block;
+}
+
+.loading-spinner .spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Footer Styling */
+footer {
+    background-color: #1a1a1a;
+    padding: 20px;
+    text-align: center;
+    color: #ccc;
+    font-size: 0.9rem;
+    border-top: 1px solid #333;
+}
+
+footer a {
+    color: #bbbbbb;
+    transition: color 0.3s ease;
+}
+
+footer a:hover {
+    color: #ffffff;
+}
+
+</style>
 </head>
 
 <body class="bg-black">
@@ -35,124 +194,49 @@
             <main>
                 <div class="container-fluid">
                     <div class="row justify-content-around align-items-center">
+                        <!-- Registration Form -->
                         <div class="col-lg-5">
-                            <div class="card shadow-lg border-0 rounded-lg mt-5 my-5 bg-dark">
-                                <div class="card-header border-bottom border-1 border-warning">
+                            <div class="card shadow-lg border-0 rounded-lg mt-5 my-5">
+                                <div class="card-header">
                                     <h3 class="text-center text-light font-weight-light my-4">Create Employee Account</h3>
                                     <div id="form-feedback" class="alert text-center" style="display: none;"></div>
                                 </div>
                                 <div class="card-body">
-                                    <form id="registrationForm" action="../db/registeremployee_db.php" method="POST" enctype="multipart/form-data">
-                                        <div class="row mb-3">
-                                            <div class="col-md-6">
-                                                <div class="form-floating mb-3 mb-md-0">
-                                                    <input class="form-control" id="inputFirstName" type="text"
-                                                        name="firstname" placeholder="Enter your first name" required />
-                                                    <label for="inputFirstName">First name</label>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="form-floating"> 
-                                                    <input class="form-control" id="inputLastName" type="text"
-                                                        name="lastname" placeholder="Enter your last name" required />
-                                                    <label for="inputLastName">Last name</label>
-                                                </div>
-                                            </div>
+                                    <form id="registrationForm" action="registeremployee_db.php" method="POST" enctype="multipart/form-data">
+                                        <!-- Email Input -->
+                                        <div class="form-control mb-3">
+                                            <label for="inputEmail" class="form-label">Email</label>
+                                            <input type="email" id="inputEmail" name="email" class="form-control" required>
                                         </div>
-                                        <div class="row mb-3">
-                                            <div class="col-md-6">
-                                                <div class="form-floating">
-                                                    <select id="gender" name="gender" class="form-control form-select" required>
-                                                        <option value="" disabled selected>Select gender</option>
-                                                        <option value="Male">Male</option>
-                                                        <option value="Female">Female</option>
-                                                    </select>
-                                                    <label for="inputGender">Gender</label>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="form-floating">
-                                                    <input class="form-control" id="inputEmail" type="email"
-                                                        name="email" placeholder="name@example.com" required />
-                                                    <label for="inputEmail">Email address</label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="row mb-3">
-                                            <div class="col-md-6">
-                                                <div class="form-floating mb-3 mb-md-0">
-                                                    <input class="form-control" id="inputPassword" type="password"
-                                                        name="password" placeholder="Create a password" required />
-                                                    <label for="inputPassword">Password</label>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="form-floating mb-3 mb-md-0">
-                                                    <input class="form-control" id="inputPasswordConfirm"
-                                                        type="password" name="confirm_password" placeholder="Confirm password" required />
-                                                    <label for="inputPasswordConfirm">Confirm Password</label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="row mb-3">
-                                            <div class="col-md-6">
-                                                <div class="form-floating mb-3 mb-md-0">
-                                                    <input type="hidden" id="inputRoleHidden" name="role" value="Employee">
-                                                    <input class="form-control" type="text" id="inputRole" value="Employee" disabled>
-                                                    <label for="inputRole">Role</label>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="form-floating mb-3 mb-md-0">
-                                                    <select class="form-control form-select" id="inputDepartment" name="department" required>
-                                                        <option value="" disabled selected>Select a Department</option>
-                                                        <option value="Finance Department">Finance Department</option>
-                                                        <option value="Administration Department">Administration Department</option>
-                                                        <option value="Sales Department">Sales Department</option>
-                                                        <option value="Credit Department">Credit Department</option>
-                                                        <option value="Human Resource Department">Human Resource Department</option>
-                                                        <option value="IT Department">IT Department</option>
-                                                    </select>
-                                                    <label for="inputDepartment">Select Department</label>
-                                                </div>          
-                                            </div>
-                                        </div>
-                                        <div class="form-floating mt-3 mb-3">
-                                            <select id="inputPosition" name="position" class="form-control form-select" required>
-                                                <option value="" disabled selected>Select department first.</option>
-                                            </select>
-                                            <label for="inputPosition">Select Position</label>
-                                        </div> 
+
                                         <!-- Face Image Upload -->
-                                        <div class="form-control mb-3 bg-light rounded">
-                                            <label for="face_image" class="form-label"></label>
+                                        <div class="form-control mb-3">
+                                            <label for="face_image" class="form-label">Upload Face Image</label>
                                             <input type="file" id="face_image" name="photo[]" accept="image/*" multiple required>
-                                            <span id="file_name" class="ms-2"></span>
                                         </div>
+
                                         <!-- Hidden face descriptor input -->
                                         <input type="hidden" id="faceDescriptorInput" name="face_descriptor">
 
                                         <div class="mt-4 mb-0">
                                             <div class="d-grid">
-                                                <button class="btn btn-primary btn-block" type="submit" id="submitBtn" disabled>Create Account</button>
+                                                <button class="btn btn-primary btn-block" type="submit" id="submitBtn" disabled>Upload Photo</button>
                                             </div>
-                                            <div class="text-center">
-                                                <div class="text-center mt-2 mb-2"> <a class="btn border-secondary w-100 text-light" href="../admin/employee.php">Back</a></div>
-                                            </div>  
                                         </div>
                                     </form>
                                 </div>
-                                <div class="card-footer text-center border-top border-1 border-warning">
-                                    <p class="small text-center text-muted mt-1">Human Resource 2</p>
+                                <div class="card-footer text-center">
+                                    <p class="small text-muted mt-1">Human Resource 2</p>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Face Registration Section -->
                         <div class="col-md-5">
-                            <div class="card shadow-lg border-0 rounded-lg mb-4 bg-dark">
+                            <div class="card shadow-lg border-0 rounded-lg mb-4">
                                 <div class="card-body">
                                     <h4 class="text-light">Register Face</h4>
-                                    <div class="mb-3 rounded">
-                                        <label for="face_image" class="form-label"></label>
+                                    <div class="mb-3">
                                         <video id="videoFeed" width="440" height="280" autoplay></video>
                                     </div>
                                     <input type="hidden" id="faceDescriptorInput" name="face_descriptor">
@@ -160,12 +244,11 @@
                                     <button type="button" class="btn btn-success" id="captureFaceBtn" disabled>Capture Face</button>
                                 </div>
                             </div>
-                            <div class="card bg-dark text-light p-3 mb-2">
+                            <div class="card p-3 mb-2">
                                 <h5 class="text-center mb-3">Captured Face</h5>
                                 <div class="d-flex justify-content-around">
                                     <div id="capturedFaceContainer">
-                                        <!-- This is where the captured face will be inserted -->
-                                        <img id="capturedFace" src="" alt="Captured Face" class="img-fluid rounded" style="width: 150px; height: 150px; display: none;">
+                                        <img id="capturedFace" src="" alt="Captured Face" class="img-fluid rounded" style="display: block;">
                                     </div>
                                 </div>
                             </div>
@@ -173,9 +256,9 @@
                     </div>
                 </div>
             </main>
-        </div>       
+        </div>
         <div id="layoutAuthentication_footer">
-            <footer class="py-4 bg-dark text-light mt-auto border-1 border-warning border-top">
+            <footer class="py-4 bg-dark text-light mt-auto">
                 <div class="container-fluid px-4">
                     <div class="d-flex align-items-center justify-content-between small">
                         <div class="text-muted">Copyright &copy; Your Website 2023</div>
@@ -244,7 +327,6 @@ async function processFace() {
 // Listen for file upload changes to trigger face processing
 faceImageInput.addEventListener('change', processFace);  // Changed to face_image
 
-
 // Function to start the camera and capture face
 async function startCamera() {
     // Ensure models are loaded before starting the camera
@@ -277,7 +359,6 @@ async function startCamera() {
         }
     }
 }
-
 
 // Function to detect and capture face from the video feed
 async function detectFace(video) {
@@ -315,7 +396,6 @@ async function detectFace(video) {
     requestAnimationFrame(() => detectFace(video));
 }
 
-
 // Attach event listeners for buttons
 document.getElementById('startCameraBtn').addEventListener('click', startCamera);
 document.getElementById('captureFaceBtn').addEventListener('click', () => {
@@ -328,7 +408,6 @@ document.getElementById('captureFaceBtn').addEventListener('click', () => {
     link.download = 'captured-face.png';
     link.click();
 });
-
 
         const positionsByDepartment = {
             "Finance Department": ["Financial Controller", "Accountant", "Credit Analyst", "Supervisor", "Staff", "Field Worker", "Contractual"],
@@ -360,7 +439,27 @@ document.getElementById('captureFaceBtn').addEventListener('click', () => {
 
         // Attach event listener to department dropdown
         document.getElementById("inputDepartment").addEventListener("change", filterPositions);
-    </script>
+
+        document.getElementById('registrationForm').addEventListener('submit', async function (event) {
+            event.preventDefault(); // Prevent form submission
+
+            const email = document.getElementById('inputEmail').value;
+
+            // Check if email already has face data
+            const response = await fetch(`db/check_face_data.php?email=${encodeURIComponent(email)}`);
+            const data = await response.json();
+
+            if (data.hasFaceData) {
+                alert('This email already has face data. Please choose another email.');
+                return;
+            }
+
+            // If no face data exists, proceed with form submission
+            this.submit();
+        });
+</script>
 </body>
 
 </html>
+
+

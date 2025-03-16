@@ -4,7 +4,7 @@ include 'db/db_conn.php';
 header('Content-Type: application/json');
 
 // Prepare SQL query with a prepared statement
-$sql = "SELECT e_id, face_descriptor FROM employee_register";
+$sql = "SELECT employee_id, face_descriptor FROM employee_register";
 $stmt = $conn->prepare($sql);
 
 // Execute the prepared statement
@@ -26,12 +26,12 @@ if ($result && $result->num_rows > 0) {
         if ($face_descriptor) {
             // Directly use the face_descriptor
             $employees[] = [
-                'e_id' => $row['e_id'],
+                'employee_id' => $row['employee_id'],
                 'face_descriptor' => $face_descriptor // Send the face_descriptor field
             ];
         } else {
             // Log an error if no face_descriptor data is found
-            error_log("No face descriptor found for employee: " . $row['e_id']);
+            error_log("No face descriptor found for employee: " . $row['employee_id']);
         }
     }
 } else {

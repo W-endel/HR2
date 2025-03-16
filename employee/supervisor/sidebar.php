@@ -2,14 +2,25 @@
             <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
                 <div class="sb-sidenav-menu">
                     <div class="nav">
-                        <div class="sb-sidenav-menu-heading text-center text-muted">Home</div>
+                        <div class="sb-sidenav-menu-heading text-center text-muted">Profile</div>
                         <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
                             <li class="nav-item dropdown text">
                                 <a class="nav-link dropdown-toggle text-light d-flex justify-content-center ms-4" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <img src="<?php echo (!empty($employeeInfo['pfp']) && $employeeInfo['pfp'] !== 'defaultpfp.jpg') 
-                                        ? htmlspecialchars($employeeInfo['pfp']) 
-                                        : '../../img/defaultpfp.jpg'; ?>" 
-                                        class="rounded-circle border border-light" width="120" height="120" alt="Profile Picture" />
+                                    <?php
+                                    // Check if a custom profile picture exists
+                                    if (!empty($employeeInfo['pfp']) && $employeeInfo['pfp'] !== 'defaultpfp.jpg') {
+                                        // Display the custom profile picture
+                                        echo '<img src="' . htmlspecialchars($employeeInfo['pfp']) . '" class="rounded-circle border border-light" width="80" height="80" alt="Profile Picture" />';
+                                    } else {
+                                        // Generate initials from the first name and last name
+                                        $firstName = $employeeInfo['first_name'] ?? '';
+                                        $lastName = $employeeInfo['last_name'] ?? '';
+                                        $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1));
+
+                                        // Display the initials in a circular container
+                                        echo '<div class="rounded-circle border border-light d-flex justify-content-center align-items-center" style="width: 80px; height: 80px; background-color: rgba(16, 17, 18); color: white; font-size: 24px; font-weight: bold;">' . $initials . '</div>';
+                                    }
+                                    ?>
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                                     <li><a class="dropdown-item loading" href="../../employee/supervisor/profile.php">Profile</a></li>
@@ -24,7 +35,7 @@
                                 <span class="big text-light mb-1">
                                     <?php
                                         if ($employeeInfo) {
-                                        echo htmlspecialchars($employeeInfo['firstname'] . ' ' . $employeeInfo['middlename'] . ' ' . $employeeInfo['lastname']);
+                                        echo htmlspecialchars($employeeInfo['first_name'] . ' ' . $employeeInfo['last_name']);
                                         } else {
                                         echo "employee information not available.";
                                         }
@@ -93,7 +104,7 @@
                     </div>
                 </div>
                 <div class="sb-sidenav-footer bg-black border-top border-1 border-secondary">
-                    <div class="small text-light">Logged in as: <?php echo htmlspecialchars($employeeInfo['role']); ?></div>
+                    <div class="small text-light">Logged in as: <?php echo htmlspecialchars($employeeInfo['position']); ?></div>
                 </div>
             </nav>
         </div>

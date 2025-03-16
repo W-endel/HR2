@@ -27,7 +27,7 @@ function getAdminEvaluationProgress($conn, $department, $adminId) {
     $totalEmployees = $employeeResult->fetch_assoc()['total'];
 
     // Get total employees evaluated by the admin in the department
-    $evaluatedQuery = "SELECT COUNT(*) as evaluated FROM admin_evaluations WHERE department = '$department' AND a_id = '$adminId'";
+    $evaluatedQuery = "SELECT COUNT(*) as evaluated FROM evaluations WHERE department = '$department' AND a_id = '$adminId'";
     $evaluatedResult = $conn->query($evaluatedQuery);
     $evaluated = $evaluatedResult->fetch_assoc()['evaluated'];
 
@@ -80,12 +80,12 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                     <div class="row justify-content-center">
                         <?php include '../db/db_conn.php'; 
 
-                            $role = 'employee';
+                            $position = 'employee';
                             $department = 'Finance Department';
 
                             // Check if it is the first week of the month
                             $currentDay = date('j'); // Current day of the month (1-31)
-                            $isFirstWeek = ($currentDay <= 7); // First week is days 1-7
+                            $isFirstWeek = ($currentDay <= 15); // First week is days 1-7
 
                             // Set the evaluation period to the previous month if it is the first week
                             if ($isFirstWeek) {
@@ -94,7 +94,7 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                                 $evaluationPeriod = date('F Y', strtotime('last month')); // Format: February 2024
 
                                 // Calculate the end date of the evaluation period (7th day of the current month)
-                                $evaluationEndDate = date('F j, Y', strtotime(date('Y-m-07'))); // Format: March 7, 2024
+                                $evaluationEndDate = date('F j, Y', strtotime(date('Y-m-15'))); // Format: March 7, 2024
                             } else {
                                 // If it is not the first week, evaluations are closed
                                 $evaluationMonth = null;
@@ -104,23 +104,23 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                             }
 
                             // Fetch employee records where role is 'employee' and department is 'Administration Department'
-                            $sql = "SELECT e_id, firstname, lastname, role, position, department FROM employee_register WHERE role = ? AND department = ?";
+                            $sql = "SELECT employee_id, first_name, last_name, role, position, department FROM employee_register WHERE position = ? AND department = ?";
                             $stmt = $conn->prepare($sql);
-                            $stmt->bind_param('ss', $role, $department);
+                            $stmt->bind_param('ss', $position, $department);
                             $stmt->execute();
                             $result = $stmt->get_result();
 
                             // Fetch evaluations for this admin
                             $adminId = $_SESSION['a_id'];
                             $evaluatedEmployees = [];
-                            $evalSql = "SELECT e_id FROM admin_evaluations WHERE a_id = ?";
+                            $evalSql = "SELECT employee_id FROM evaluations WHERE a_id = ?";
                             $evalStmt = $conn->prepare($evalSql);
                             $evalStmt->bind_param('i', $adminId);
                             $evalStmt->execute();
                             $evalResult = $evalStmt->get_result();
                             if ($evalResult->num_rows > 0) {
                                 while ($row = $evalResult->fetch_assoc()) {
-                                    $evaluatedEmployees[] = $row['e_id'];
+                                    $evaluatedEmployees[] = $row['employee_id'];
                                 }
                             }
 
@@ -129,9 +129,10 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                             $questions = [];
 
                             foreach ($categories as $category) {
-                                $categorySql = "SELECT question FROM evaluation_questions WHERE category = ?";
+                                // Fetch questions for the specific category and position
+                                $categorySql = "SELECT question FROM evaluation_questions WHERE category = ? AND role = ?";
                                 $categoryStmt = $conn->prepare($categorySql);
-                                $categoryStmt->bind_param('s', $category);
+                                $categoryStmt->bind_param('ss', $category, $role); // $position is the position being evaluated
                                 $categoryStmt->execute();
                                 $categoryResult = $categoryStmt->get_result();
                                 $questions[$category] = [];
@@ -235,19 +236,19 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                                                     <?php if (!empty($employees)): ?>
                                                         <?php foreach ($employees as $employee): ?>
                                                             <tr>
-                                                                <td class="text-light"><?php echo htmlspecialchars($employee['firstname'] . ' ' . $employee['lastname']); ?></td>
-                                                                <td class="text-light"><?php echo htmlspecialchars($employee['position']); ?></td>
+                                                                <td class="text-light"><?php echo htmlspecialchars($employee['first_name'] . ' ' . $employee['last_name']); ?></td>
                                                                 <td class="text-light"><?php echo htmlspecialchars($employee['role']); ?></td>
+                                                                <td class="text-light"><?php echo htmlspecialchars($employee['position']); ?></td>
                                                                 <td>
                                                                     <button class="btn btn-success" 
                                                                         onclick="evaluateEmployee(
-                                                                            <?php echo $employee['e_id']; ?>, 
-                                                                            '<?php echo htmlspecialchars($employee['firstname'] . ' ' . $employee['lastname']); ?>', 
-                                                                            '<?php echo htmlspecialchars($employee['position']); ?>', 
+                                                                            <?php echo $employee['employee_id']; ?>, 
+                                                                            '<?php echo htmlspecialchars($employee['first_name'] . ' ' . $employee['last_name']); ?>', 
+                                                                            '<?php echo htmlspecialchars($employee['role']); ?>', 
                                                                             '<?php echo htmlspecialchars($employee['department']); ?>' // Add department here
                                                                         )"
-                                                                        <?php echo !$isFirstWeek || in_array($employee['e_id'], $evaluatedEmployees) ? 'disabled' : ''; ?>>
-                                                                        <?php echo in_array($employee['e_id'], $evaluatedEmployees) ? 'Evaluated' : 'Evaluate'; ?>
+                                                                        <?php echo !$isFirstWeek || in_array($employee['employee_id'], $evaluatedEmployees) ? 'disabled' : ''; ?>>
+                                                                        <?php echo in_array($employee['employee_id'], $evaluatedEmployees) ? 'Done' : 'Evaluate'; ?>
                                                                     </button>
                                                                 </td>
                                                             </tr>
@@ -271,18 +272,18 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                             include '../db/db_conn.php'; 
 
                             // Define the values for role and department
-                            $role = 'employee';
+                            $position = 'employee';
                             $department = 'Human Resource Department';
                             
                             // Check if it is the first week of the month
                             $currentDay = date('j'); // Current day of the month (1-31)
-                            $isFirstWeek = ($currentDay <= 7); // First week is days 1-7
+                            $isFirstWeek = ($currentDay <= 15); // First week is days 1-7
                             
                             // Set the evaluation period to the previous month if it is the first week
                             if ($isFirstWeek) {
                                 // Handle January edge case
                                 if (date('m') == '01') {
-                                    $evaluationMonth = '12'; // December
+                                    $evaluationMonth = '15'; // December
                                     $evaluationYear = date('Y') - 1; // Previous year
                                 } else {
                                     $evaluationMonth = date('m', strtotime('last month')); // Previous month
@@ -291,7 +292,7 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                             
                                 // Format evaluation period and end date
                                 $evaluationPeriod = date('F Y', strtotime('last month')); // Format: February 2024
-                                $evaluationEndDate = date('F j, Y', strtotime(date('Y-m-') . '07')); // Format: March 7, 2024
+                                $evaluationEndDate = date('F j, Y', strtotime(date('Y-m-') . '15')); // Format: March 7, 2024
                             } else {
                                 // If it is not the first week, evaluations are closed
                                 $evaluationMonth = null;
@@ -301,38 +302,39 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                             }
                             
                             // Fetch employee records where role is 'employee' and department is 'Administration Department'
-                            $sql = "SELECT e_id, firstname, lastname, role, position, department FROM employee_register WHERE role = ? AND department = ?";
+                            $sql = "SELECT employee_id, first_name, last_name, role, position, department FROM employee_register WHERE position = ? AND department = ?";
                             $stmt = $conn->prepare($sql);
-                            $stmt->bind_param('ss', $role, $department);
+                            $stmt->bind_param('ss', $position, $department);
                             $stmt->execute();
                             $result = $stmt->get_result();
                             
                             // Fetch evaluations for this admin
                             $adminId = $_SESSION['a_id'];
                             $evaluatedEmployees = [];
-                            $evalSql = "SELECT e_id FROM admin_evaluations WHERE a_id = ?";
+                            $evalSql = "SELECT employee_id FROM evaluations WHERE a_id = ?";
                             $evalStmt = $conn->prepare($evalSql);
                             $evalStmt->bind_param('i', $adminId);
                             $evalStmt->execute();
                             $evalResult = $evalStmt->get_result();
                             if ($evalResult->num_rows > 0) {
                                 while ($row = $evalResult->fetch_assoc()) {
-                                    $evaluatedEmployees[] = $row['e_id'];
+                                    $evaluatedEmployees[] = $row['employee_id'];
                                 }
                             }
                             
                             // Fetch evaluation questions from the database for each category
                             $categories = ['Quality of Work', 'Communication Skills', 'Teamwork', 'Punctuality', 'Initiative'];
                             $questions = [];
-                            
+
                             foreach ($categories as $category) {
-                                $categorySql = "SELECT question FROM evaluation_questions WHERE category = ?";
+                                // Fetch questions for the specific category and position
+                                $categorySql = "SELECT question FROM evaluation_questions WHERE category = ? AND role = ?";
                                 $categoryStmt = $conn->prepare($categorySql);
-                                $categoryStmt->bind_param('s', $category);
+                                $categoryStmt->bind_param('ss', $category, $role); // $position is the position being evaluated
                                 $categoryStmt->execute();
                                 $categoryResult = $categoryStmt->get_result();
                                 $questions[$category] = [];
-                            
+
                                 if ($categoryResult->num_rows > 0) {
                                     while ($row = $categoryResult->fetch_assoc()) {
                                         $questions[$category][] = $row['question'];
@@ -431,19 +433,19 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                                                     <?php if (!empty($employees)): ?>
                                                         <?php foreach ($employees as $employee): ?>
                                                             <tr>
-                                                                <td class="text-light"><?php echo htmlspecialchars($employee['firstname'] . ' ' . $employee['lastname']); ?></td>
-                                                                <td class="text-light"><?php echo htmlspecialchars($employee['position']); ?></td>
+                                                                <td class="text-light"><?php echo htmlspecialchars($employee['first_name'] . ' ' . $employee['last_name']); ?></td>
                                                                 <td class="text-light"><?php echo htmlspecialchars($employee['role']); ?></td>
+                                                                <td class="text-light"><?php echo htmlspecialchars($employee['position']); ?></td>
                                                                 <td>
                                                                     <button class="btn btn-success" 
                                                                         onclick="evaluateEmployee(
-                                                                            <?php echo $employee['e_id']; ?>, 
-                                                                            '<?php echo htmlspecialchars($employee['firstname'] . ' ' . $employee['lastname']); ?>', 
-                                                                            '<?php echo htmlspecialchars($employee['position']); ?>', 
+                                                                            <?php echo $employee['employee_id']; ?>, 
+                                                                            '<?php echo htmlspecialchars($employee['first_name'] . ' ' . $employee['last_name']); ?>', 
+                                                                            '<?php echo htmlspecialchars($employee['role']); ?>', 
                                                                             '<?php echo htmlspecialchars($employee['department']); ?>' // Add department here
                                                                         )"
-                                                                        <?php echo !$isFirstWeek || in_array($employee['e_id'], $evaluatedEmployees) ? 'disabled' : ''; ?>>
-                                                                        <?php echo in_array($employee['e_id'], $evaluatedEmployees) ? 'Evaluated' : 'Evaluate'; ?>
+                                                                        <?php echo !$isFirstWeek || in_array($employee['employee_id'], $evaluatedEmployees) ? 'disabled' : ''; ?>>
+                                                                        <?php echo in_array($employee['employee_id'], $evaluatedEmployees) ? 'Done' : 'Evaluate'; ?>
                                                                     </button>
                                                                 </td>
                                                             </tr>
@@ -467,12 +469,12 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                             include '../db/db_conn.php'; 
 
                             // Define the values for role and department
-                            $role = 'employee';
+                            $position = 'employee';
                             $department = 'Administration Department';
                             
                             // Check if it is the first week of the month
                             $currentDay = date('j'); // Current day of the month (1-31)
-                            $isFirstWeek = ($currentDay <= 7); // First week is days 1-7
+                            $isFirstWeek = ($currentDay <= 15); // First week is days 1-7
                             
                             // Set the evaluation period to the previous month if it is the first week
                             if ($isFirstWeek) {
@@ -487,7 +489,7 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                             
                                 // Format evaluation period and end date
                                 $evaluationPeriod = date('F Y', strtotime('last month')); // Format: February 2024
-                                $evaluationEndDate = date('F j, Y', strtotime(date('Y-m-') . '07')); // Format: March 7, 2024
+                                $evaluationEndDate = date('F j, Y', strtotime(date('Y-m-') . '15')); // Format: March 7, 2024
                             } else {
                                 // If it is not the first week, evaluations are closed
                                 $evaluationMonth = null;
@@ -497,38 +499,39 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                             }
                             
                             // Fetch employee records where role is 'employee' and department is 'Administration Department'
-                            $sql = "SELECT e_id, firstname, lastname, role, position, department FROM employee_register WHERE role = ? AND department = ?";
+                            $sql = "SELECT employee_id, first_name, last_name, role, position, department FROM employee_register WHERE position = ? AND department = ?";
                             $stmt = $conn->prepare($sql);
-                            $stmt->bind_param('ss', $role, $department);
+                            $stmt->bind_param('ss', $position, $department);
                             $stmt->execute();
                             $result = $stmt->get_result();
                             
                             // Fetch evaluations for this admin
                             $adminId = $_SESSION['a_id'];
                             $evaluatedEmployees = [];
-                            $evalSql = "SELECT e_id FROM admin_evaluations WHERE a_id = ?";
+                            $evalSql = "SELECT employee_id FROM evaluations WHERE a_id = ?";
                             $evalStmt = $conn->prepare($evalSql);
                             $evalStmt->bind_param('i', $adminId);
                             $evalStmt->execute();
                             $evalResult = $evalStmt->get_result();
                             if ($evalResult->num_rows > 0) {
                                 while ($row = $evalResult->fetch_assoc()) {
-                                    $evaluatedEmployees[] = $row['e_id'];
+                                    $evaluatedEmployees[] = $row['employee_id'];
                                 }
                             }
                             
                             // Fetch evaluation questions from the database for each category
                             $categories = ['Quality of Work', 'Communication Skills', 'Teamwork', 'Punctuality', 'Initiative'];
                             $questions = [];
-                            
+
                             foreach ($categories as $category) {
-                                $categorySql = "SELECT question FROM evaluation_questions WHERE category = ?";
+                                // Fetch questions for the specific category and position
+                                $categorySql = "SELECT question FROM evaluation_questions WHERE category = ? AND role = ?";
                                 $categoryStmt = $conn->prepare($categorySql);
-                                $categoryStmt->bind_param('s', $category);
+                                $categoryStmt->bind_param('ss', $category, $role); // $position is the position being evaluated
                                 $categoryStmt->execute();
                                 $categoryResult = $categoryStmt->get_result();
                                 $questions[$category] = [];
-                            
+
                                 if ($categoryResult->num_rows > 0) {
                                     while ($row = $categoryResult->fetch_assoc()) {
                                         $questions[$category][] = $row['question'];
@@ -627,19 +630,19 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                                                     <?php if (!empty($employees)): ?>
                                                         <?php foreach ($employees as $employee): ?>
                                                             <tr>
-                                                                <td class="text-light"><?php echo htmlspecialchars($employee['firstname'] . ' ' . $employee['lastname']); ?></td>
-                                                                <td class="text-light"><?php echo htmlspecialchars($employee['position']); ?></td>
+                                                                <td class="text-light"><?php echo htmlspecialchars($employee['first_name'] . ' ' . $employee['last_name']); ?></td>
                                                                 <td class="text-light"><?php echo htmlspecialchars($employee['role']); ?></td>
+                                                                <td class="text-light"><?php echo htmlspecialchars($employee['position']); ?></td>
                                                                 <td>
                                                                     <button class="btn btn-success" 
                                                                         onclick="evaluateEmployee(
-                                                                            <?php echo $employee['e_id']; ?>, 
-                                                                            '<?php echo htmlspecialchars($employee['firstname'] . ' ' . $employee['lastname']); ?>', 
-                                                                            '<?php echo htmlspecialchars($employee['position']); ?>', 
+                                                                            <?php echo $employee['employee_id']; ?>, 
+                                                                            '<?php echo htmlspecialchars($employee['first_name'] . ' ' . $employee['last_name']); ?>', 
+                                                                            '<?php echo htmlspecialchars($employee['role']); ?>', 
                                                                             '<?php echo htmlspecialchars($employee['department']); ?>' // Add department here
                                                                         )"
-                                                                        <?php echo !$isFirstWeek || in_array($employee['e_id'], $evaluatedEmployees) ? 'disabled' : ''; ?>>
-                                                                        <?php echo in_array($employee['e_id'], $evaluatedEmployees) ? 'Evaluated' : 'Evaluate'; ?>
+                                                                        <?php echo !$isFirstWeek || in_array($employee['employee_id'], $evaluatedEmployees) ? 'disabled' : ''; ?>>
+                                                                        <?php echo in_array($employee['employee_id'], $evaluatedEmployees) ? 'Done' : 'Evaluate'; ?>
                                                                     </button>
                                                                 </td>
                                                             </tr>
@@ -663,12 +666,12 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                             include '../db/db_conn.php'; 
 
                             // Define the values for role and department
-                            $role = 'employee';
+                            $position = 'employee';
                             $department = 'Sales Department';
 
                             // Check if it is the first week of the month
                             $currentDay = date('j'); // Current day of the month (1-31)
-                            $isFirstWeek = ($currentDay <= 7); // First week is days 1-7
+                            $isFirstWeek = ($currentDay <= 15); // First week is days 1-7
 
                             // Set the evaluation period to the previous month if it is the first week
                             if ($isFirstWeek) {
@@ -677,7 +680,7 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                                 $evaluationPeriod = date('F Y', strtotime('last month')); // Format: February 2024
 
                                 // Calculate the end date of the evaluation period (7th day of the current month)
-                                $evaluationEndDate = date('F j, Y', strtotime(date('Y-m-07'))); // Format: March 7, 2024
+                                $evaluationEndDate = date('F j, Y', strtotime(date('Y-m-15'))); // Format: March 7, 2024
                             } else {
                                 // If it is not the first week, evaluations are closed
                                 $evaluationMonth = null;
@@ -687,23 +690,23 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                             }
 
                             // Fetch employee records where role is 'employee' and department is 'Administration Department'
-                            $sql = "SELECT e_id, firstname, lastname, role, position, department FROM employee_register WHERE role = ? AND department = ?";
+                            $sql = "SELECT employee_id, first_name, last_name, role, position, department FROM employee_register WHERE position = ? AND department = ?";
                             $stmt = $conn->prepare($sql);
-                            $stmt->bind_param('ss', $role, $department);
+                            $stmt->bind_param('ss', $position, $department);
                             $stmt->execute();
                             $result = $stmt->get_result();
 
                             // Fetch evaluations for this admin
                             $adminId = $_SESSION['a_id'];
                             $evaluatedEmployees = [];
-                            $evalSql = "SELECT e_id FROM admin_evaluations WHERE a_id = ?";
+                            $evalSql = "SELECT employee_id FROM evaluations WHERE a_id = ?";
                             $evalStmt = $conn->prepare($evalSql);
                             $evalStmt->bind_param('i', $adminId);
                             $evalStmt->execute();
                             $evalResult = $evalStmt->get_result();
                             if ($evalResult->num_rows > 0) {
                                 while ($row = $evalResult->fetch_assoc()) {
-                                    $evaluatedEmployees[] = $row['e_id'];
+                                    $evaluatedEmployees[] = $row['employee_id'];
                                 }
                             }
 
@@ -712,9 +715,10 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                             $questions = [];
 
                             foreach ($categories as $category) {
-                                $categorySql = "SELECT question FROM evaluation_questions WHERE category = ?";
+                                // Fetch questions for the specific category and position
+                                $categorySql = "SELECT question FROM evaluation_questions WHERE category = ? AND role = ?";
                                 $categoryStmt = $conn->prepare($categorySql);
-                                $categoryStmt->bind_param('s', $category);
+                                $categoryStmt->bind_param('ss', $category, $role); // $position is the position being evaluated
                                 $categoryStmt->execute();
                                 $categoryResult = $categoryStmt->get_result();
                                 $questions[$category] = [];
@@ -818,19 +822,19 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                                                     <?php if (!empty($employees)): ?>
                                                         <?php foreach ($employees as $employee): ?>
                                                             <tr>
-                                                                <td class="text-light"><?php echo htmlspecialchars($employee['firstname'] . ' ' . $employee['lastname']); ?></td>
-                                                                <td class="text-light"><?php echo htmlspecialchars($employee['position']); ?></td>
+                                                                <td class="text-light"><?php echo htmlspecialchars($employee['first_name'] . ' ' . $employee['last_name']); ?></td>
                                                                 <td class="text-light"><?php echo htmlspecialchars($employee['role']); ?></td>
+                                                                <td class="text-light"><?php echo htmlspecialchars($employee['position']); ?></td>
                                                                 <td>
                                                                     <button class="btn btn-success" 
                                                                         onclick="evaluateEmployee(
-                                                                            <?php echo $employee['e_id']; ?>, 
-                                                                            '<?php echo htmlspecialchars($employee['firstname'] . ' ' . $employee['lastname']); ?>', 
-                                                                            '<?php echo htmlspecialchars($employee['position']); ?>', 
+                                                                            <?php echo $employee['employee_id']; ?>, 
+                                                                            '<?php echo htmlspecialchars($employee['first_name'] . ' ' . $employee['last_name']); ?>', 
+                                                                            '<?php echo htmlspecialchars($employee['role']); ?>', 
                                                                             '<?php echo htmlspecialchars($employee['department']); ?>' // Add department here
                                                                         )"
-                                                                        <?php echo !$isFirstWeek || in_array($employee['e_id'], $evaluatedEmployees) ? 'disabled' : ''; ?>>
-                                                                        <?php echo in_array($employee['e_id'], $evaluatedEmployees) ? 'Evaluated' : 'Evaluate'; ?>
+                                                                        <?php echo !$isFirstWeek || in_array($employee['employee_id'], $evaluatedEmployees) ? 'disabled' : ''; ?>>
+                                                                        <?php echo in_array($employee['employee_id'], $evaluatedEmployees) ? 'Done' : 'Evaluate'; ?>
                                                                     </button>
                                                                 </td>
                                                             </tr>
@@ -854,12 +858,12 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                             include '../db/db_conn.php'; 
 
                             // Define the values for role and department
-                            $role = 'employee';
+                            $position = 'employee';
                             $department = 'Credit Department';
 
                             // Check if it is the first week of the month
                             $currentDay = date('j'); // Current day of the month (1-31)
-                            $isFirstWeek = ($currentDay <= 7); // First week is days 1-7
+                            $isFirstWeek = ($currentDay <= 15); // First week is days 1-7
 
                             // Set the evaluation period to the previous month if it is the first week
                             if ($isFirstWeek) {
@@ -868,7 +872,7 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                                 $evaluationPeriod = date('F Y', strtotime('last month')); // Format: February 2024
 
                                 // Calculate the end date of the evaluation period (7th day of the current month)
-                                $evaluationEndDate = date('F j, Y', strtotime(date('Y-m-07'))); // Format: March 7, 2024
+                                $evaluationEndDate = date('F j, Y', strtotime(date('Y-m-15'))); // Format: March 7, 2024
                             } else {
                                 // If it is not the first week, evaluations are closed
                                 $evaluationMonth = null;
@@ -878,23 +882,23 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                             }
 
                             // Fetch employee records where role is 'employee' and department is 'Administration Department'
-                            $sql = "SELECT e_id, firstname, lastname, role, position, department FROM employee_register WHERE role = ? AND department = ?";
+                            $sql = "SELECT employee_id, first_name, last_name, role, position, department FROM employee_register WHERE position = ? AND department = ?";
                             $stmt = $conn->prepare($sql);
-                            $stmt->bind_param('ss', $role, $department);
+                            $stmt->bind_param('ss', $position, $department);
                             $stmt->execute();
                             $result = $stmt->get_result();
 
                             // Fetch evaluations for this admin
                             $adminId = $_SESSION['a_id'];
                             $evaluatedEmployees = [];
-                            $evalSql = "SELECT e_id FROM admin_evaluations WHERE a_id = ?";
+                            $evalSql = "SELECT employee_id FROM evaluations WHERE a_id = ?";
                             $evalStmt = $conn->prepare($evalSql);
                             $evalStmt->bind_param('i', $adminId);
                             $evalStmt->execute();
                             $evalResult = $evalStmt->get_result();
                             if ($evalResult->num_rows > 0) {
                                 while ($row = $evalResult->fetch_assoc()) {
-                                    $evaluatedEmployees[] = $row['e_id'];
+                                    $evaluatedEmployees[] = $row['employee_id'];
                                 }
                             }
 
@@ -903,9 +907,10 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                             $questions = [];
 
                             foreach ($categories as $category) {
-                                $categorySql = "SELECT question FROM evaluation_questions WHERE category = ?";
+                                // Fetch questions for the specific category and position
+                                $categorySql = "SELECT question FROM evaluation_questions WHERE category = ? AND role = ?";
                                 $categoryStmt = $conn->prepare($categorySql);
-                                $categoryStmt->bind_param('s', $category);
+                                $categoryStmt->bind_param('ss', $category, $role); // $position is the position being evaluated
                                 $categoryStmt->execute();
                                 $categoryResult = $categoryStmt->get_result();
                                 $questions[$category] = [];
@@ -1010,19 +1015,19 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                                                     <?php if (!empty($employees)): ?>
                                                         <?php foreach ($employees as $employee): ?>
                                                             <tr>
-                                                                <td class="text-light"><?php echo htmlspecialchars($employee['firstname'] . ' ' . $employee['lastname']); ?></td>
-                                                                <td class="text-light"><?php echo htmlspecialchars($employee['position']); ?></td>
+                                                                <td class="text-light"><?php echo htmlspecialchars($employee['first_name'] . ' ' . $employee['last_name']); ?></td>
                                                                 <td class="text-light"><?php echo htmlspecialchars($employee['role']); ?></td>
+                                                                <td class="text-light"><?php echo htmlspecialchars($employee['position']); ?></td>
                                                                 <td>
                                                                     <button class="btn btn-success" 
                                                                         onclick="evaluateEmployee(
-                                                                            <?php echo $employee['e_id']; ?>, 
-                                                                            '<?php echo htmlspecialchars($employee['firstname'] . ' ' . $employee['lastname']); ?>', 
-                                                                            '<?php echo htmlspecialchars($employee['position']); ?>', 
+                                                                            <?php echo $employee['employee_id']; ?>, 
+                                                                            '<?php echo htmlspecialchars($employee['first_name'] . ' ' . $employee['last_name']); ?>', 
+                                                                            '<?php echo htmlspecialchars($employee['role']); ?>', 
                                                                             '<?php echo htmlspecialchars($employee['department']); ?>' // Add department here
                                                                         )"
-                                                                        <?php echo !$isFirstWeek || in_array($employee['e_id'], $evaluatedEmployees) ? 'disabled' : ''; ?>>
-                                                                        <?php echo in_array($employee['e_id'], $evaluatedEmployees) ? 'Evaluated' : 'Evaluate'; ?>
+                                                                        <?php echo !$isFirstWeek || in_array($employee['employee_id'], $evaluatedEmployees) ? 'disabled' : ''; ?>>
+                                                                        <?php echo in_array($employee['employee_id'], $evaluatedEmployees) ? 'Done' : 'Evaluate'; ?>
                                                                     </button>
                                                                 </td>
                                                             </tr>
@@ -1046,12 +1051,12 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                             include '../db/db_conn.php'; 
 
                             // Define the values for role and department
-                            $role = 'employee';
+                            $position = 'employee';
                             $department = 'IT Department';
 
                             // Check if it is the first week of the month
                             $currentDay = date('j'); // Current day of the month (1-31)
-                            $isFirstWeek = ($currentDay <= 7); // First week is days 1-7
+                            $isFirstWeek = ($currentDay <= 15); // First week is days 1-7
 
                             // Set the evaluation period to the previous month if it is the first week
                             if ($isFirstWeek) {
@@ -1060,7 +1065,7 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                                 $evaluationPeriod = date('F Y', strtotime('last month')); // Format: February 2024
 
                                 // Calculate the end date of the evaluation period (7th day of the current month)
-                                $evaluationEndDate = date('F j, Y', strtotime(date('Y-m-07'))); // Format: March 7, 2024
+                                $evaluationEndDate = date('F j, Y', strtotime(date('Y-m-15'))); // Format: March 7, 2024
                             } else {
                                 // If it is not the first week, evaluations are closed
                                 $evaluationMonth = null;
@@ -1070,23 +1075,23 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                             }
 
                             // Fetch employee records where role is 'employee' and department is 'Administration Department'
-                            $sql = "SELECT e_id, firstname, lastname, role, position, department FROM employee_register WHERE role = ? AND department = ?";
+                            $sql = "SELECT employee_id, first_name, last_name, role, position, department FROM employee_register WHERE position = ? AND department = ?";
                             $stmt = $conn->prepare($sql);
-                            $stmt->bind_param('ss', $role, $department);
+                            $stmt->bind_param('ss', $position, $department);
                             $stmt->execute();
                             $result = $stmt->get_result();
 
                             // Fetch evaluations for this admin
                             $adminId = $_SESSION['a_id'];
                             $evaluatedEmployees = [];
-                            $evalSql = "SELECT e_id FROM admin_evaluations WHERE a_id = ?";
+                            $evalSql = "SELECT employee_id FROM evaluations WHERE a_id = ?";
                             $evalStmt = $conn->prepare($evalSql);
                             $evalStmt->bind_param('i', $adminId);
                             $evalStmt->execute();
                             $evalResult = $evalStmt->get_result();
                             if ($evalResult->num_rows > 0) {
                                 while ($row = $evalResult->fetch_assoc()) {
-                                    $evaluatedEmployees[] = $row['e_id'];
+                                    $evaluatedEmployees[] = $row['employee_id'];
                                 }
                             }
 
@@ -1095,9 +1100,10 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                             $questions = [];
 
                             foreach ($categories as $category) {
-                                $categorySql = "SELECT question FROM evaluation_questions WHERE category = ?";
+                                // Fetch questions for the specific category and position
+                                $categorySql = "SELECT question FROM evaluation_questions WHERE category = ? AND role = ?";
                                 $categoryStmt = $conn->prepare($categorySql);
-                                $categoryStmt->bind_param('s', $category);
+                                $categoryStmt->bind_param('ss', $category, $role); // $position is the position being evaluated
                                 $categoryStmt->execute();
                                 $categoryResult = $categoryStmt->get_result();
                                 $questions[$category] = [];
@@ -1204,19 +1210,19 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
                                             <?php if (!empty($employees)): ?>
                                                 <?php foreach ($employees as $employee): ?>
                                                     <tr>
-                                                        <td class="text-light"><?php echo htmlspecialchars($employee['firstname'] . ' ' . $employee['lastname']); ?></td>
-                                                        <td class="text-light"><?php echo htmlspecialchars($employee['position']); ?></td>
+                                                        <td class="text-light"><?php echo htmlspecialchars($employee['first_name'] . ' ' . $employee['last_name']); ?></td>
                                                         <td class="text-light"><?php echo htmlspecialchars($employee['role']); ?></td>
+                                                        <td class="text-light"><?php echo htmlspecialchars($employee['position']); ?></td>
                                                         <td>
                                                             <button class="btn btn-success" 
                                                                 onclick="evaluateEmployee(
-                                                                    <?php echo $employee['e_id']; ?>, 
-                                                                    '<?php echo htmlspecialchars($employee['firstname'] . ' ' . $employee['lastname']); ?>', 
-                                                                    '<?php echo htmlspecialchars($employee['position']); ?>', 
+                                                                    <?php echo $employee['employee_id']; ?>, 
+                                                                    '<?php echo htmlspecialchars($employee['first_name'] . ' ' . $employee['last_name']); ?>', 
+                                                                    '<?php echo htmlspecialchars($employee['role']); ?>', 
                                                                     '<?php echo htmlspecialchars($employee['department']); ?>' // Add department here
                                                                 )"
-                                                                <?php echo !$isFirstWeek || in_array($employee['e_id'], $evaluatedEmployees) ? 'disabled' : ''; ?>>
-                                                                <?php echo in_array($employee['e_id'], $evaluatedEmployees) ? 'Evaluated' : 'Evaluate'; ?>
+                                                                <?php echo !$isFirstWeek || in_array($employee['employee_id'], $evaluatedEmployees) ? 'disabled' : ''; ?>>
+                                                                <?php echo in_array($employee['employee_id'], $evaluatedEmployees) ? 'Done' : 'Evaluate'; ?>
                                                             </button>
                                                         </td>
                                                     </tr>
@@ -1279,153 +1285,141 @@ $itData = getAdminEvaluationProgress($conn, 'IT Department', $adminId);
     
 <script>
 
-        //EVALUATION TOGGLE
-            // Add event listener to all elements with class "department-toggle"
-        document.querySelectorAll('.department-toggle').forEach(function (toggle) {
-            toggle.addEventListener('click', function () {
-                const target = this.getAttribute('data-target');
-                const icon = this.querySelector('i');
+        let currentEmployeeId;
+        let currentEmployeeName;  
+        let currentEmployeeRole; 
+        let currentDepartment; // Add this line at the top of your script
 
-                // Toggle the collapse
-                $(target).collapse('toggle');
+        // Function to fetch questions based on the evaluated employee's position
+        async function fetchQuestions(role) {
+            const response = await fetch(`../db/fetchQuestions.php?role=${role}`);
+            return await response.json();
+        }
 
-                // Toggle the icon classes between angle-down and angle-up
-                icon.classList.toggle('fa-angle-down');
-                icon.classList.toggle('fa-angle-up');
+        async function evaluateEmployee(employee_id, employeeName, employeeRole, department) {
+            currentEmployeeId = employee_id; 
+            currentEmployeeName = employeeName; 
+            currentEmployeeRole = employeeRole; 
+            currentDepartment = department; // Store the department
+
+            // Fetch questions based on the evaluated employee's position
+            const questions = await fetchQuestions(employeeRole);
+
+            const employeeDetails = `<strong>Name: ${employeeName} <br> Position: ${employeeRole} <br> Department: ${department}</strong>`;
+            document.getElementById('employeeDetails').innerHTML = employeeDetails;
+
+            const questionsDiv = document.getElementById('questions');
+            questionsDiv.innerHTML = ''; 
+
+            // Start the table structure
+            let tableHtml = `
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Question</th>
+                        <th>Rating</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+            // Loop through categories and questions to add them into the table
+            for (const [category, categoryQuestions] of Object.entries(questions)) {
+                categoryQuestions.forEach((question, index) => {
+                    const questionName = `${category.replace(/\s/g, '')}q${index}`; // Unique name per question
+                    tableHtml += `
+                    <tr>
+                        <td>${index === 0 ? category : ''}</td>
+                        <td>${question}</td>
+                        <td>
+                            <div class="star-rating">
+                                ${[6, 5, 4, 3, 2, 1].map(value => `
+                                    <input type="radio" name="${questionName}" value="${value}" id="${questionName}star${value}">
+                                    <label for="${questionName}star${value}">&#9733;</label>
+                                `).join('')}
+                            </div>
+                        </td>
+                    </tr>`;
+                });
+            }
+
+            // Close the table structure
+            tableHtml += `
+                </tbody>
+            </table>`;
+
+            questionsDiv.innerHTML = tableHtml;
+
+            $('#evaluationModal').modal('show'); 
+        }
+
+        function submitEvaluation() {
+            const evaluations = [];
+            const questionsDiv = document.getElementById('questions');
+
+            questionsDiv.querySelectorAll('input[type="radio"]:checked').forEach(input => {
+                evaluations.push({
+                    question: input.name,  
+                    rating: input.value    
+                });
             });
-        });
-        //EVALUATION TOGGLE END
 
-                            let currentEmployeeId;
-                            let currentEmployeeName;  
-                            let currentEmployeePosition; 
-                            let currentDepartment; // Add this line at the top of your script
+            const totalQuestions = questionsDiv.querySelectorAll('.star-rating').length;
 
-                            // The categories and questions fetched from the PHP script
-                            const questions = <?php echo json_encode($questions); ?>;
+            if (evaluations.length !== totalQuestions) {
+                alert('Please complete the evaluation before submitting.');
+                return;
+            }
 
-                            function evaluateEmployee(e_id, employeeName, employeePosition, department) {
-                                currentEmployeeId = e_id; 
-                                currentEmployeeName = employeeName; 
-                                currentEmployeePosition = employeePosition; 
-                                currentDepartment = department; // Store the department
+            const categoryAverages = {
+                QualityOfWork: calculateAverage('Quality of Work', evaluations),
+                CommunicationSkills: calculateAverage('Communication Skills', evaluations),
+                Teamwork: calculateAverage('Teamwork', evaluations),
+                Punctuality: calculateAverage('Punctuality', evaluations),
+                Initiative: calculateAverage('Initiative', evaluations)
+            };
 
-                                const employeeDetails = `<strong>Name: ${employeeName} <br> Position: ${employeePosition} <br> Department: ${department}</strong>`;
-                                document.getElementById('employeeDetails').innerHTML = employeeDetails;
+            console.log('Category Averages:', categoryAverages);
 
-                                const questionsDiv = document.getElementById('questions');
-                                questionsDiv.innerHTML = ''; 
+            const adminId = document.getElementById('a_id').value;
 
-                                // Start the table structure
-                                let tableHtml = `
-                                <table class="table table-bordered">
-                                    <thead>
-                                        <tr>
-                                            <th>Category</th>
-                                            <th>Question</th>
-                                            <th>Rating</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>`;
+            $.ajax({
+                type: 'POST',
+                url: '../db/submit_evaluation.php',
+                data: {
+                    employee_id: currentEmployeeId,
+                    employeeName: currentEmployeeName,
+                    employeeRole: currentEmployeeRole,
+                    categoryAverages: categoryAverages,
+                    adminId: adminId,
+                    department: currentDepartment // Use the dynamic department
+                },
+                success: function (response) {
+                    console.log(response); 
+                    if (response === 'You have already evaluated this employee.') {
+                        alert(response); 
+                    } else {
+                        $('#evaluationModal').modal('hide');
+                        alert('Evaluation submitted successfully!');
+                    }
+                },
+                error: function (err) {
+                    console.error(err);
+                    alert('An error occurred while submitting the evaluation.');
+                }
+            });
+        }
 
-                                // Loop through categories and questions to add them into the table
-                                for (const [category, categoryQuestions] of Object.entries(questions)) {
-                                    categoryQuestions.forEach((question, index) => {
-                                        const questionName = `${category.replace(/\s/g, '')}q${index}`; // Unique name per question
-                                        tableHtml += `
-                                        <tr>
-                                            <td>${index === 0 ? category : ''}</td>
-                                            <td>${question}</td>
-                                            <td>
-                                                <div class="star-rating">
-                                                    ${[6, 5, 4, 3, 2, 1].map(value => `
-                                                        <input type="radio" name="${questionName}" value="${value}" id="${questionName}star${value}">
-                                                        <label for="${questionName}star${value}">&#9733;</label>
-                                                    `).join('')}
-                                                </div>
-                                            </td>
-                                        </tr>`;
-                                    });
-                                }
+        function calculateAverage(category, evaluations) {
+            const categoryEvaluations = evaluations.filter(evaluation => evaluation.question.startsWith(category.replace(/\s/g, '')));
 
-                                // Close the table structure
-                                tableHtml += `
-                                    </tbody>
-                                </table>`;
+            if (categoryEvaluations.length === 0) {
+                return 0; 
+            }
 
-                                questionsDiv.innerHTML = tableHtml;
-
-                                $('#evaluationModal').modal('show'); 
-                            }
-
-                            function submitEvaluation() {
-                                const evaluations = [];
-                                const questionsDiv = document.getElementById('questions');
-
-                                questionsDiv.querySelectorAll('input[type="radio"]:checked').forEach(input => {
-                                    evaluations.push({
-                                        question: input.name,  
-                                        rating: input.value    
-                                    });
-                                });
-
-                                const totalQuestions = questionsDiv.querySelectorAll('.star-rating').length;
-
-                                if (evaluations.length !== totalQuestions) {
-                                    alert('Please complete the evaluation before submitting.');
-                                    return;
-                                }
-
-                                const categoryAverages = {
-                                    QualityOfWork: calculateAverage('Quality of Work', evaluations),
-                                    CommunicationSkills: calculateAverage('Communication Skills', evaluations),
-                                    Teamwork: calculateAverage('Teamwork', evaluations),
-                                    Punctuality: calculateAverage('Punctuality', evaluations),
-                                    Initiative: calculateAverage('Initiative', evaluations)
-                                };
-
-                                console.log('Category Averages:', categoryAverages);
-
-                                const adminId = document.getElementById('a_id').value;
-
-                                $.ajax({
-                                    type: 'POST',
-                                    url: '../db/submit_evaluation.php',
-                                    data: {
-                                        e_id: currentEmployeeId,
-                                        employeeName: currentEmployeeName,
-                                        employeePosition: currentEmployeePosition,
-                                        categoryAverages: categoryAverages,
-                                        adminId: adminId,
-                                        department: currentDepartment // Use the dynamic department
-                                    },
-                                    success: function (response) {
-                                        console.log(response); 
-                                        if (response === 'You have already evaluated this employee.') {
-                                            alert(response); 
-                                        } else {
-                                            $('#evaluationModal').modal('hide');
-                                            alert('Evaluation submitted successfully!');
-                                        }
-                                    },
-                                    error: function (err) {
-                                        console.error(err);
-                                        alert('An error occurred while submitting the evaluation.');
-                                    }
-                                });
-                            }
-
-                            function calculateAverage(category, evaluations) {
-                                const categoryEvaluations = evaluations.filter(evaluation => evaluation.question.startsWith(category.replace(/\s/g, '')));
-
-                                if (categoryEvaluations.length === 0) {
-                                    return 0; 
-                                }
-
-                                const total = categoryEvaluations.reduce((sum, evaluation) => sum + parseInt(evaluation.rating), 0);
-                                return total / categoryEvaluations.length;
-                            }
-
+            const total = categoryEvaluations.reduce((sum, evaluation) => sum + parseInt(evaluation.rating), 0);
+            return total / categoryEvaluations.length;
+        }
 
 </script>
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'> </script>

@@ -6,7 +6,7 @@ if (isset($_GET['department'])) {
     $department = $_GET['department'];
 
     // Fetch employees based on department
-    $employees_sql = "SELECT e_id, firstname, lastname FROM employee_register WHERE department = ?";
+    $employees_sql = "SELECT employee_id, first_name, last_name FROM employee_register WHERE department = ?";
     $stmt = $conn->prepare($employees_sql);
     $stmt->bind_param('s', $department);  // Bind the department value
     $stmt->execute();

@@ -4,17 +4,17 @@ session_start();
 include '../../db/db_conn.php';
 
 // Fetch user ID from session
-$employeeId = $_SESSION['e_id'];
+$employeeId = $_SESSION['employee_id'];
 
 // Prepare and bind
-$stmt = $conn->prepare("UPDATE employee_register SET firstname = ?, middlename = ?, lastname = ?, birthdate = ?, email = ?, phone_number = ?, address = ? WHERE e_id = ?");
+$stmt = $conn->prepare("UPDATE employee_register SET first_name = ?, middle_name = ?, last_name = ?, birthdate = ?, email = ?, phone_number = ?, address = ? WHERE employee_id = ?");
 $stmt->bind_param("sssssssi", $firstname, $middlename, $lastname, $birthdate, $email, $phone_number, $address, $employeeId);
 
 // Get form data
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $firstname = $_POST['firstname'];
-    $middlename = $_POST['middlename'];
-    $lastname = $_POST['lastname'];
+    $firstname = $_POST['first_name'];
+    $middlename = $_POST['middle_name'];
+    $lastname = $_POST['last_name'];
     $birthdate = $_POST['birthdate'];
     $email = $_POST['email'];
     $phone_number = $_POST['phone_number'];

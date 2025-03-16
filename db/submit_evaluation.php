@@ -39,14 +39,14 @@ if ($adminStmt->bind_result($adminFirstName, $adminLastName) && $adminStmt->fetc
 $adminStmt->close();
 
 // Get data from the POST request
-$employeeId = $_POST['e_id'];
+$employeeId = $_POST['employee_id'];
 $categoryAverages = $_POST['categoryAverages'];
 $department = $_POST['department']; // Get the department from POST data
 
 // Fetch the employee's first and last name
-$employeeSql = "SELECT firstname, lastname FROM employee_register WHERE e_id = ?";
+$employeeSql = "SELECT first_name, last_name FROM employee_register WHERE employee_id= ?";
 $employeeStmt = $conn->prepare($employeeSql);
-$employeeStmt->bind_param('i', $employeeId);
+$employeeStmt->bind_param('s', $employeeId);
 $employeeStmt->execute();
 $employeeStmt->bind_result($employeeFirstName, $employeeLastName);
 
@@ -60,22 +60,24 @@ if ($employeeStmt->fetch()) {
 $employeeStmt->close();
 
 // Check if the current admin has already evaluated this employee
-$checkSql = "SELECT * FROM admin_evaluations WHERE a_id = ? AND e_id = ?";
+$checkSql = "SELECT * FROM evaluations WHERE a_id = ? AND employee_id= ?";
 $checkStmt = $conn->prepare($checkSql);
-$checkStmt->bind_param('ii', $adminId, $employeeId);
+$checkStmt->bind_param('is', $adminId, $employeeId);
 $checkStmt->execute();
 $checkStmt->store_result();
 
 if ($checkStmt->num_rows > 0) {
     echo 'You have already evaluated this employee.';
 } else {
-    // Calculate the delayed date (2 weeks ago)
-    $currentDate = date('Y-m-d'); // Current date
-    $delayedDate = date('Y-m-d', strtotime('-2 weeks', strtotime($currentDate))); // Subtract 2 weeks
+    // Get the current date and time
+    $currentDate = date('Y-m-d H:i:s'); // Current date and time
+
+    // Calculate the delayed date and time (2 weeks ago)
+    $delayedDate = date('Y-m-d H:i:s', strtotime('-2 weeks')); // Subtract 2 weeks from the current date and time
 
     // Prepare the SQL to insert the evaluation into the database
-    $sql = "INSERT INTO admin_evaluations (
-                a_id, admin_name, e_id, employee_name, department, quality, communication_skills, teamwork, punctuality, initiative, evaluated_at
+    $sql = "INSERT INTO evaluations (
+                a_id, evaluator_name, employee_id, employee_name, department, quality, communication_skills, teamwork, punctuality, initiative, evaluated_at
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
 
@@ -92,7 +94,7 @@ if ($checkStmt->num_rows > 0) {
         $categoryAverages['Teamwork'], 
         $categoryAverages['Punctuality'], 
         $categoryAverages['Initiative'],
-        $delayedDate // Add the delayed date to the query
+        $delayedDate // Add the delayed date and time to the query
     );
 
     // Execute the statement and check if successful

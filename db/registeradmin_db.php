@@ -52,11 +52,15 @@ if ($count > 0) {
     exit();
 }
 
+// Generate a random admin ID
+$randomDigits = str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT); // Generate 4 random digits
+$adminId = '8080' . $randomDigits; // Concatenate with '8080'
+
 // Hash the password
 $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
 // Prepare and execute SQL statement
-$sql = "INSERT INTO admin_register (firstname, lastname, email, password, gender, role, phone_number, address) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+$sql = "INSERT INTO admin_register (a_id, firstname, lastname, email, password, gender, role, phone_number, address) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 $stmt = $conn->prepare($sql);
 
 if (!$stmt) {
@@ -64,7 +68,7 @@ if (!$stmt) {
     exit();
 }
 
-$stmt->bind_param("ssssssss", $firstName, $lastName, $Email, $hashedPassword, $gender, $role, $phone_number, $address);
+$stmt->bind_param("sssssssss", $adminId, $firstName, $lastName, $Email, $hashedPassword, $gender, $role, $phone_number, $address);
 
 if ($stmt->execute()) {
     // Fetch the new admin ID for logging purposes
@@ -92,7 +96,7 @@ if ($stmt->execute()) {
     // Prepare details for logging the new admin registration
     $action_type = "Registered Admin Account";
     $affected_feature = "Admin Management";
-    $details = "New admin registered with ID: $new_admin_id Name: $firstName $lastName.";
+    $details = "New admin registered with ID: $adminId Name: $firstName $lastName.";
 
     // Insert the log entry into activity_logs table
     $log_query = "INSERT INTO activity_logs (admin_id, admin_name, action_type, affected_feature, details, ip_address) 

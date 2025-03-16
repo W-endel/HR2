@@ -34,7 +34,7 @@ if ($isFirstWeek) {
 }
 
 // Fetch employee records where role is 'employee' and department is 'Administration Department'
-$sql = "SELECT e_id, firstname, lastname, role, position FROM employee_register WHERE role = ? AND department = ?";
+$sql = "SELECT employee_id, firstname, lastname, role, position FROM employee_register WHERE role = ? AND department = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param('ss', $role, $department);
 $stmt->execute();
@@ -43,14 +43,14 @@ $result = $stmt->get_result();
 // Fetch evaluations for this admin
 $adminId = $_SESSION['a_id'];
 $evaluatedEmployees = [];
-$evalSql = "SELECT e_id FROM admin_evaluations WHERE a_id = ?";
+$evalSql = "SELECT employee_id FROM evaluations WHERE a_id = ?";
 $evalStmt = $conn->prepare($evalSql);
 $evalStmt->bind_param('i', $adminId);
 $evalStmt->execute();
 $evalResult = $evalStmt->get_result();
 if ($evalResult->num_rows > 0) {
     while ($row = $evalResult->fetch_assoc()) {
-        $evaluatedEmployees[] = $row['e_id'];
+        $evaluatedEmployees[] = $row['employee_id'];
     }
 }
 
@@ -132,9 +132,9 @@ $conn->close();
                                 <td class="text-light"><?php echo htmlspecialchars($employee['role']); ?></td>
                                 <td>
                                     <button class="btn btn-success" 
-                                        onclick="evaluateEmployee(<?php echo $employee['e_id']; ?>, '<?php echo htmlspecialchars($employee['firstname'] . ' ' . $employee['lastname']); ?>', '<?php echo htmlspecialchars($employee['position']); ?>')"
-                                        <?php echo !$isFirstWeek || in_array($employee['e_id'], $evaluatedEmployees) ? 'disabled' : ''; ?>>
-                                        <?php echo in_array($employee['e_id'], $evaluatedEmployees) ? 'Evaluated' : 'Evaluate'; ?>
+                                        onclick="evaluateEmployee(<?php echo $employee['employee_id']; ?>, '<?php echo htmlspecialchars($employee['firstname'] . ' ' . $employee['lastname']); ?>', '<?php echo htmlspecialchars($employee['position']); ?>')"
+                                        <?php echo !$isFirstWeek || in_array($employee['employee_id'], $evaluatedEmployees) ? 'disabled' : ''; ?>>
+                                        <?php echo in_array($employee['employee_id'], $evaluatedEmployees) ? 'Evaluated' : 'Evaluate'; ?>
                                     </button>
                                 </td>
                             </tr>
@@ -180,8 +180,8 @@ $conn->close();
         // The categories and questions fetched from the PHP script
         const questions = <?php echo json_encode($questions); ?>;
 
-        function evaluateEmployee(e_id, employeeName, employeePosition) {
-            currentEmployeeId = e_id; 
+        function evaluateEmployee(employee_id, employeeName, employeePosition) {
+            currentEmployeeId = employee_id; 
             currentEmployeeName = employeeName; 
             currentEmployeePosition = employeePosition; 
 
@@ -268,7 +268,7 @@ $conn->close();
                 type: 'POST',
                 url: '../db/submit_evaluation.php',
                 data: {
-                    e_id: currentEmployeeId,
+                    employee_id: currentEmployeeId,
                     employeeName: currentEmployeeName,
                     employeePosition: currentEmployeePosition,
                     categoryAverages: categoryAverages,

@@ -42,8 +42,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_picture'])) 
     // Try to upload the file
     if (move_uploaded_file($file["tmp_name"], $targetFile)) {
         // Save the relative file path to the database
-        $employeeId = $_SESSION['e_id'];  // Get the employee ID from session
-        $sql = "UPDATE employee_register SET pfp = ? WHERE e_id = ?";
+        $employeeId = $_SESSION['employee_id'];  // Get the employee ID from session
+        $sql = "UPDATE employee_register SET pfp = ? WHERE employee_id = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("si", $relativePath, $employeeId);
         

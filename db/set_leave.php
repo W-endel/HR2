@@ -15,7 +15,7 @@ if (!isset($_SESSION['a_id'])) {
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Get leave allocations from the form
     $employee_leaves = $_POST['employee_leaves'];
-    $employeeId = $_POST['employee_id']; // Get specific employee ID
+    $employeeId = $_POST['employeemployee_id']; // Get specific employee ID
 
     // Validate leave input
     if (!is_numeric($employee_leaves) || $employee_leaves <= 0 || $employee_leaves > 20) {
@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // Function to get current leave balance for a specific employee
     function get_current_leave_balance($conn, $employeeId) {
-        $sql = "SELECT available_leaves FROM employee_register WHERE e_id = ?";
+        $sql = "SELECT available_leaves FROM employee_register WHERE employee_id = ?";
         $stmt = $conn->prepare($sql);
         if ($stmt === false) {
             die("Error preparing statement: " . $conn->error);
@@ -79,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $current_leaves = get_current_leave_balance($conn, $employeeId);
         $new_leave_total = $current_leaves + $employee_leaves;
 
-        $update_sql = "UPDATE employee_register SET available_leaves = ? WHERE e_id = ?";
+        $update_sql = "UPDATE employee_register SET available_leaves = ? WHERE employee_id = ?";
         $update_stmt = $conn->prepare($update_sql);
         if ($update_stmt === false) {
             die("Error preparing update statement: " . $conn->error);

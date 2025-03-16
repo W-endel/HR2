@@ -2,7 +2,6 @@
 session_start(); // Start the session
 
 use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
 require '../phpmailer/vendor/autoload.php';
@@ -12,11 +11,23 @@ $message = '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = $_POST['email'];
+    $userType = $_POST['user_type']; // Get the user type (employee or admin)
     $mail = new PHPMailer(true);
 
     try {
-        // Check if the email exists in the admin_register table
-        $sql = "SELECT firstname, lastname FROM admin_register WHERE email = ?";
+        // Determine the table and column names based on user type
+        if ($userType === 'admin') {
+            $table = 'admin_register'; // Table name for admins
+            $firstNameColumn = 'firstname'; // Column name for first name in admin table
+            $lastNameColumn = 'lastname'; // Column name for last name in admin table
+        } else {
+            $table = 'employee_register'; // Table name for employees
+            $firstNameColumn = 'first_name'; // Column name for first name in employee table
+            $lastNameColumn = 'last_name'; // Column name for last name in employee table
+        }
+
+        // Check if the email exists in the selected table
+        $sql = "SELECT $firstNameColumn, $lastNameColumn FROM $table WHERE email = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param('s', $email);
         $stmt->execute();
@@ -25,17 +36,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if ($result->num_rows > 0) {
             // Fetch the first and last name
             $row = $result->fetch_assoc();
-            $userName = $row['firstname'] . ' ' . $row['lastname'];
+            $userName = $row[$firstNameColumn] . ' ' . $row[$lastNameColumn];
 
             // Generate the reset token and set expiration time
             date_default_timezone_set('Asia/Manila');
             $token = bin2hex(random_bytes(32));  // Generate a secure token
             $expiresAt = date('Y-m-d H:i:s', strtotime('+3 minutes'));  // Token expires in 3 minutes
 
-            // Store token and expiration in the database
-            $sql = "INSERT INTO password_resets (email, token, expires_at) VALUES (?, ?, ?)";
+            // Store token, expiration, and user type in the database
+            $sql = "INSERT INTO password_resets (email, token, expires_at, user_type) VALUES (?, ?, ?, ?)";
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param('sss', $email, $token, $expiresAt);  // Correct parameter binding
+            $stmt->bind_param('ssss', $email, $token, $expiresAt, $userType);  // Bind user type
             $stmt->execute();
 
             // PHPMailer settings
@@ -113,7 +124,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <div class="row justify-content-center mt-5">
                         <div class="col-lg-5">
                             <div class="card shadow-lg border-0 rounded-lg mt-3 bg-dark">
-                                <div class="card-header border-bottom border-1 border-warning">
+                                <div class="card-header border-bottom border-1 border-secondary">
                                     <h3 class="text-center text-light font-weight-light my-4">Password Recovery</h3>
                                     <?php
                                     // Display message if set in session
@@ -124,20 +135,36 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                     ?>
                                 </div>
                                 <div class="card-body">
-                                    <div class="small mb-3 text-light">Enter your email address and we will send you a
-                                        link to your Gmail to reset your password.</div>
+                                    <div class="small mb-3 text-light">Enter your email address and we will send you a link to your Gmail to reset your password.</div>
                                     <form method="POST" action="">
+                                        <!-- User Type Selection -->
+                                        <div class="form-floating mb-3">
+                                            <select class="form-control form-select" id="user_type" name="user_type" required>
+                                                <option value="" selected>Select user type.</option>
+                                                <option value="employee">Employee</option>
+                                                <option value="admin">Admin</option>
+                                            </select>
+                                            <label for="user_type">User Type</label>
+                                        </div>
+
+                                        <!-- Email Input -->
                                         <div class="form-floating mb-3">
                                             <input class="form-control" id="inputEmail" name="email" type="email" placeholder="name@example.com" required />
                                             <label for="inputEmail">Email address</label>
                                         </div>
+
+                                        <!-- Submit Button -->
                                         <div class="d-flex align-items-center justify-content-end mt-4 mb-2">
                                             <button type="submit" class="btn btn-primary align-items-center w-100">Send Link</button>
                                         </div>
-                                        <div class="text-center mt-3 mb-2"> <a class="btn border-secondary w-100 text-light border border-1" href="../employee/login.php">Back</a></div>
+
+                                        <!-- Back Button -->
+                                        <div class="text-center mt-3 mb-2">
+                                            <a class="btn border-secondary w-100 text-light border border-1" href="../login.php">Back</a>
+                                        </div>
                                     </form>
                                 </div>
-                                <div class="card-footer text-center border-top border-1 border-warning">
+                                <div class="card-footer text-center border-top border-1 border-secondary">
                                     <div class="text-center text-muted">Human Resource 2</div>
                                 </div>
                             </div>
@@ -161,7 +188,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </footer>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/scripts.js"></script>
 </body>
 </html>

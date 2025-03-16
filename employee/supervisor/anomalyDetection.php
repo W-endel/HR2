@@ -43,7 +43,7 @@
             const tr = document.createElement('tr');
             const performanceScore = parseFloat(row.performance_score) || 0; // Ensure it's a number
             tr.innerHTML = `
-                <td>${row.e_id}</td>
+                <td>${row.employee_id}</td>
                 <td>${row.total_leave_days}</td>
                 <td>${performanceScore.toFixed(2)}</td>
                 <td>${row.attendance_rate}</td>

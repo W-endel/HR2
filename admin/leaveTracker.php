@@ -154,7 +154,7 @@
                 eventClick: function (info) {
                     const employeeName = info.event.title;
                     const leaveType = info.event.extendedProps.leave_type;
-                    const eId = info.event.extendedProps.e_id;
+                    const eId = info.event.extendedProps.employee_id;
 
                     // Get the modal elements
                     const modalEmployeeName = document.getElementById("modalEmployeeName");

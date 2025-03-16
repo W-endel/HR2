@@ -1,26 +1,28 @@
-
 <?php
 session_start();
 
 // Include database connection
-include '../../db/db_conn.php'; 
+include '../../db/db_conn.php';
 
-if (!isset($_SESSION['e_id'])) {
-    header("Location: ../../employee/login.php");
+// Redirect if not logged in
+if (!isset($_SESSION['employee_id'])) {
+    header("Location: ../../login.php");
     exit();
 }
 
-$employeeId = $_SESSION['e_id'];
-$sql = "SELECT e_id, firstname, middlename, lastname, birthdate, email, role, position, department, phone_number, address, pfp FROM employee_register WHERE e_id = ?";
+$employeeId = $_SESSION['employee_id'];
+
+// Fetch employee information
+$sql = "SELECT employee_id, first_name, middle_name, last_name, birthdate, email, role, position, department, phone_number, address, pfp 
+        FROM employee_register 
+        WHERE employee_id = ?";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $employeeId);
+$stmt->bind_param("s", $employeeId);
 $stmt->execute();
 $result = $stmt->get_result();
 $employeeInfo = $result->fetch_assoc();
 
-$employeeId = $_SESSION['e_id'];
-
-// Fetch the average of the employee's evaluations
+// Fetch evaluation data
 $sql = "SELECT 
             AVG(quality) AS avg_quality, 
             AVG(communication_skills) AS avg_communication_skills, 
@@ -28,15 +30,13 @@ $sql = "SELECT
             AVG(punctuality) AS avg_punctuality, 
             AVG(initiative) AS avg_initiative,
             COUNT(*) AS total_evaluations 
-        FROM admin_evaluations 
-        WHERE e_id = ?";
-        
+        FROM evaluations 
+        WHERE employee_id = ?";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $employeeId);
+$stmt->bind_param("s", $employeeId);
 $stmt->execute();
 $result = $stmt->get_result();
 
-// Check if evaluations exist
 if ($result->num_rows > 0) {
     $evaluation = $result->fetch_assoc();
 } else {

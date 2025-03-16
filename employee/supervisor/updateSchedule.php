@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Check if a schedule already exists for the employee on the given date
     $checkQuery = "SELECT * FROM employee_schedule WHERE employee_id = ? AND schedule_date = ?";
     $stmt = $conn->prepare($checkQuery);
-    $stmt->bind_param('is', $employeeId, $scheduleDate);
+    $stmt->bind_param('ss', $employeeId, $scheduleDate);
     $stmt->execute();
     $result = $stmt->get_result();
 
@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $insertQuery = "INSERT INTO employee_schedule (employee_id, shift_type, schedule_date, start_time, end_time) 
                         VALUES (?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($insertQuery);
-        $stmt->bind_param('issss', $employeeId, $shiftType, $scheduleDate, $startTime, $endTime);
+        $stmt->bind_param('sssss', $employeeId, $shiftType, $scheduleDate, $startTime, $endTime);
     }
 
     // Execute the query

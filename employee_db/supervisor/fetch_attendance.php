@@ -5,12 +5,12 @@ date_default_timezone_set('Asia/Manila'); // Set the time zone to Philippine tim
 include '../../db/db_conn.php';
 
 // Check if necessary parameters are provided
-if (!isset($_GET['e_id'], $_GET['month'], $_GET['year'])) {
+if (!isset($_GET['employee_id'], $_GET['month'], $_GET['year'])) {
     echo json_encode(['error' => 'Missing parameters']);
     exit;
 }
 
-$employee_id = $_GET['e_id'];
+$employee_id = $_GET['employee_id'];
 $month = $_GET['month'];
 $year = $_GET['year'];
 
@@ -52,9 +52,9 @@ try {
     }
 
     // Fetch leave data for the employee in the given month and year
-    $leaveSql = "SELECT start_date, end_date FROM leave_requests WHERE e_id = ? AND status = 'Approved' AND (YEAR(start_date) = ? AND MONTH(start_date) = ?)";
+    $leaveSql = "SELECT start_date, end_date FROM leave_requests WHERE employee_id = ? AND status = 'Approved' AND (YEAR(start_date) = ? AND MONTH(start_date) = ?)";
     $leaveStmt = $conn->prepare($leaveSql);
-    $leaveStmt->bind_param("iii", $employee_id, $year, $month);
+    $leaveStmt->bind_param("sii", $employee_id, $year, $month);
     $leaveStmt->execute();
     $leaveResult = $leaveStmt->get_result();
 
@@ -87,9 +87,9 @@ try {
         }
 
         // Check if the day is a leave day
-        $leaveSql = "SELECT start_date, end_date FROM leave_requests WHERE e_id = ? AND status = 'Approved' AND ? BETWEEN DAY(start_date) AND DAY(end_date) AND MONTH(start_date) = ? AND YEAR(start_date) = ?";
+        $leaveSql = "SELECT start_date, end_date FROM leave_requests WHERE employee_id = ? AND status = 'Approved' AND ? BETWEEN DAY(start_date) AND DAY(end_date) AND MONTH(start_date) = ? AND YEAR(start_date) = ?";
         $leaveStmt = $conn->prepare($leaveSql);
-        $leaveStmt->bind_param("iiii", $employee_id, $day, $month, $year);
+        $leaveStmt->bind_param("siii", $employee_id, $day, $month, $year);
         $leaveStmt->execute();
         $leaveResult = $leaveStmt->get_result();
 
@@ -99,9 +99,9 @@ try {
         }
 
         // Fetch attendance details for the given day
-        $sql = "SELECT time_in, time_out FROM attendance_log WHERE e_id = ? AND DAY(attendance_date) = ? AND MONTH(attendance_date) = ? AND YEAR(attendance_date) = ?";
+        $sql = "SELECT time_in, time_out FROM attendance_log WHERE employee_id = ? AND DAY(attendance_date) = ? AND MONTH(attendance_date) = ? AND YEAR(attendance_date) = ?";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("iiii", $employee_id, $day, $month, $year);
+        $stmt->bind_param("siii", $employee_id, $day, $month, $year);
         $stmt->execute();
         $result = $stmt->get_result();
 
@@ -110,6 +110,7 @@ try {
             $timeIn = $row['time_in'];
             $timeOut = $row['time_out'];
 
+            // Check if either time_in or time_out is NULL
             if ($timeIn === null || $timeOut === null) {
                 $attendanceDetails['status'] = 'Absent';
             } else {
@@ -133,24 +134,22 @@ try {
                 } else {
                     $attendanceDetails['status'] = 'Present';
                 }
+
+                $attendanceDetails['time_in'] = $timeIn;
+                $attendanceDetails['time_out'] = $timeOut;
             }
-
-            $attendanceDetails['time_in'] = $timeIn ? $timeIn : 'No data';
-            $attendanceDetails['time_out'] = $timeOut ? $timeOut : 'No data';
-        }
-
-        if (empty($attendanceDetails)) {
-            echo json_encode(['message' => 'No attendance details found for the given day']);
         } else {
-            echo json_encode($attendanceDetails);
+            // If no attendance record is found, mark as Absent
+            $attendanceDetails['status'] = 'Absent';
         }
 
+        echo json_encode($attendanceDetails);
         $stmt->close();
     } else {
         // Fetch attendance for the entire month
-        $sql = "SELECT DAY(attendance_date) AS day, time_in, time_out FROM attendance_log WHERE e_id = ? AND MONTH(attendance_date) = ? AND YEAR(attendance_date) = ?";
+        $sql = "SELECT DAY(attendance_date) AS day, time_in, time_out FROM attendance_log WHERE employee_id = ? AND MONTH(attendance_date) = ? AND YEAR(attendance_date) = ?";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("iii", $employee_id, $month, $year);
+        $stmt->bind_param("sii", $employee_id, $month, $year);
         $stmt->execute();
         $result = $stmt->get_result();
 
@@ -160,6 +159,7 @@ try {
             $timeIn = $row['time_in'];
             $timeOut = $row['time_out'];
 
+            // Check if either time_in or time_out is NULL
             if ($timeIn === null || $timeOut === null) {
                 $attendanceRecords[$day] = 'Absent';
             } else {

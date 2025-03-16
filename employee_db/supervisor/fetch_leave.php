@@ -20,13 +20,13 @@ if (!$conn) {
 }
 
 // Check if necessary parameters are provided
-if (!isset($_GET['e_id'], $_GET['day'], $_GET['month'], $_GET['year'])) {
+if (!isset($_GET['employee_id'], $_GET['day'], $_GET['month'], $_GET['year'])) {
     echo json_encode(['error' => 'Missing parameters']);
     exit;
 }
 
 // Validate and sanitize input parameters
-$employee_id = (int)$_GET['e_id'];
+$employee_id = (int)$_GET['employee_id'];
 $day = (int)$_GET['day'];
 $month = (int)$_GET['month'];
 $year = (int)$_GET['year'];
@@ -39,7 +39,7 @@ if ($employee_id <= 0 || $day < 1 || $day > 31 || $month < 1 || $month > 12 || $
 try {
     // Fetch leave data for the employee on the given day
     $leaveSql = "SELECT start_date, end_date, leave_type FROM leave_requests 
-                 WHERE e_id = ? AND status = 'Approved' 
+                 WHERE employee_id = ? AND status = 'Approved' 
                  AND ? BETWEEN DAY(start_date) AND DAY(end_date) 
                  AND MONTH(start_date) = ? AND YEAR(start_date) = ?";
     $leaveStmt = $conn->prepare($leaveSql);
