@@ -292,7 +292,7 @@ $notifications = $notificationStmt->get_result();
                     const notificationId = notificationItem.querySelector('.delete-notification').dataset.id;
 
                     // Mark the notification as read
-                    fetch('../../employee_db/supervisor/markNotif.php', {
+                    fetch('../../employee_db/markNotif.php', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -325,7 +325,7 @@ $notifications = $notificationStmt->get_result();
                     const notificationId = event.target.closest('.delete-notification').dataset.id;
 
                     // Delete the notification
-                    fetch('../../employee_db/supervisor/deleteNotif.php', {
+                    fetch('../../employee_db/deleteNotif.php', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'

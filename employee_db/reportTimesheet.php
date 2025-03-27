@@ -3,10 +3,10 @@
 session_start();
 
 // Include the database connection file
-include '../../db/db_conn.php';
+include '../db/db_conn.php';
 
 // Include PhpSpreadsheet
-require '../../vendor/autoload.php';
+require '../vendor/autoload.php';
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -14,7 +14,7 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 // Check if the user is logged in
 if (!isset($_SESSION['employee_id'])) {
     // Redirect to the login page if the user is not logged in
-    header("Location: ../../login.php");
+    header("Location: ../login.php");
     exit();
 }
 

@@ -10,7 +10,8 @@ $query = "
     SELECT 
         a.employee_id, 
         er.first_name, 
-        er.last_name, 
+        er.last_name,
+        er.role, 
         a.time_in, 
         a.time_out, 
         a.attendance_date, 
@@ -273,11 +274,12 @@ $conn->close();
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
-                            <table id="datatablesSimple" class="table table-hover mb-0">
+                            <table id="datatablesSimple" class="table table-striped table-hover mb-0">
                                 <thead>
                                     <tr>
                                         <th>Employee ID</th>
                                         <th>Name</th>
+                                        <th>Role</th>
                                         <th>Time-In</th>
                                         <th>Time-Out</th>
                                         <th>Work Hours</th>
@@ -300,6 +302,7 @@ $conn->close();
                                             <tr>
                                                 <td><?php echo htmlspecialchars(trim($row['employee_id'] ?? 'N/A')); ?></td>
                                                 <td><?php echo htmlspecialchars(trim($row['first_name'] . ' ' . $row['last_name'] ?? 'N/A')); ?></td>
+                                                <td><?php echo htmlspecialchars(trim($row['role'] ?? 'N/A')); ?></td>
                                                 <td>
                                                     <?php if (!empty($row['time_in'])): ?>
                                                         <i class="fas fa-sign-in-alt text-success me-1"></i>
@@ -349,6 +352,12 @@ $conn->close();
                                                             break;
                                                         case 'overtime':
                                                             $statusClass = 'status-present';
+                                                            break;
+                                                        case 'on leave':
+                                                            $statusClass = 'status-absent';
+                                                            break;
+                                                        case 'holiday':
+                                                            $statusClass = 'status-absent';
                                                             break;
                                                         case 'absent':
                                                             $statusClass = 'status-absent';

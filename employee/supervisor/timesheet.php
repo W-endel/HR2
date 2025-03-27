@@ -268,7 +268,6 @@ $totalWorkMinutes = $totalWorkMinutes % 60;
         
         body {
             background-color: rgba(16, 17, 18) !important;
-            color: var(--text-primary);
             line-height: 1.6;
         }
         
@@ -482,7 +481,7 @@ $totalWorkMinutes = $totalWorkMinutes % 60;
         }
         
         .table th {
-            background-color: rgba(255, 255, 255, 0.05);
+            background-color: rgba(33, 37, 41);
             color: var(--text-primary);
             font-weight: 600;
             text-transform: uppercase;
@@ -652,7 +651,7 @@ $totalWorkMinutes = $totalWorkMinutes % 60;
             <main>
                 <div class="container-fluid px-4">
                     <div class="page-header">
-                        <h1 class="">Employee Timesheet</h1>
+                        <h1 class="text-light">Employee Timesheet</h1>
                         <div class="d-flex align-items-center">
                             <span class="text-secondary me-3">
                                 <i class="fas fa-clock me-1"></i>
@@ -721,7 +720,7 @@ $totalWorkMinutes = $totalWorkMinutes % 60;
                                 <div class="stats-icon">
                                     <i class="fas fa-check-circle"></i>
                                 </div>
-                                <div class="stats-value"><?php echo $presentDays; ?></div>
+                                <div class="stats-value text-light"><?php echo $presentDays; ?></div>
                                 <div class="stats-label">Present Days</div>
                                 <div class="progress">
                                     <div class="progress-bar" style="width: <?php echo ($totalWorkDays > 0) ? ($presentDays / $totalWorkDays * 100) : 0; ?>%"></div>
@@ -733,7 +732,7 @@ $totalWorkMinutes = $totalWorkMinutes % 60;
                                 <div class="stats-icon">
                                     <i class="fas fa-clock"></i>
                                 </div>
-                                <div class="stats-value"><?php echo $lateDays; ?></div>
+                                <div class="stats-value text-light"><?php echo $lateDays; ?></div>
                                 <div class="stats-label">Late Days</div>
                                 <div class="progress">
                                     <div class="progress-bar" style="width: <?php echo ($totalWorkDays > 0) ? ($lateDays / $totalWorkDays * 100) : 0; ?>%"></div>
@@ -745,7 +744,7 @@ $totalWorkMinutes = $totalWorkMinutes % 60;
                                 <div class="stats-icon">
                                     <i class="fas fa-times-circle"></i>
                                 </div>
-                                <div class="stats-value"><?php echo $absentDays; ?></div>
+                                <div class="stats-value text-light"><?php echo $absentDays; ?></div>
                                 <div class="stats-label">Absent Days</div>
                                 <div class="progress">
                                     <div class="progress-bar" style="width: <?php echo ($totalWorkDays > 0) ? ($absentDays / $totalWorkDays * 100) : 0; ?>%"></div>
@@ -757,7 +756,7 @@ $totalWorkMinutes = $totalWorkMinutes % 60;
                                 <div class="stats-icon">
                                     <i class="fas fa-hourglass-half"></i>
                                 </div>
-                                <div class="stats-value"><?php echo $totalWorkHours; ?><span class="fs-6"><?php echo ($totalWorkMinutes > 0) ? ':'.$totalWorkMinutes : ''; ?></span></div>
+                                <div class="stats-value text-light"><?php echo $totalWorkHours; ?><span class="fs-6"><?php echo ($totalWorkMinutes > 0) ? ':'.$totalWorkMinutes : ''; ?></span></div>
                                 <div class="stats-label">Total Work Hours</div>
                                 <div class="progress">
                                     <div class="progress-bar" style="width: <?php echo min(100, ($totalWorkHours / 160) * 100); ?>%"></div>
@@ -842,7 +841,7 @@ $totalWorkMinutes = $totalWorkMinutes % 60;
                      <div class="month-selector fade-in" style="animation-delay: 0.1s;">
                         <form method="GET" class="row align-items-end">
                             <div class="col-md-4">
-                                <label for="month" class="form-label">Month</label>
+                                <label for="month" class="form-label text-light">Month</label>
                                 <select name="month" id="month" class="form-select bg-light text-dark">
                                     <?php for ($i = 1; $i <= 12; $i++): ?>
                                         <option value="<?php echo $i; ?>" <?php echo ($i == $selectedMonth) ? 'selected' : ''; ?>>
@@ -852,8 +851,21 @@ $totalWorkMinutes = $totalWorkMinutes % 60;
                                 </select>
                             </div>
                             <div class="col-md-4">
-                                <label for="year" class="form-label">Year</label>
-                                <input type="number" name="year" id="year" class="form-control bg-light text-dark" value="<?php echo $selectedYear; ?>" min="2000" max="<?php echo date('Y'); ?>">
+                                <label for="year" class="form-label text-light">Year</label>
+                                <select name="year" id="year" class="form-control form-select bg-light text-dark">
+                                    <?php
+                                    $currentYear = date('Y'); // Get the current year
+                                    $startYear = 2000; // Starting year
+                                    $selectedYear = $selectedYear ?? $currentYear; // Use the selected year if available, otherwise default to the current year
+
+                                    // Loop from the current year down to the start year
+                                    for ($year = $currentYear; $year >= $startYear; $year--) {
+                                        // Check if this year is the selected year
+                                        $selected = ($year == $selectedYear) ? 'selected' : '';
+                                        echo "<option value='$year' $selected>$year</option>";
+                                    }
+                                    ?>
+                                </select>
                             </div>
                             <div class="col-md-4">
                                 <button type="submit" class="btn btn-primary w-100">
@@ -865,7 +877,7 @@ $totalWorkMinutes = $totalWorkMinutes % 60;
                     
                     <!-- Attendance Log Table -->
                     <div class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center">
+                        <div class="card-header d-flex justify-content-between align-items-center" id="timesheet">
                             <h5 class="mb-0 text-light"><i class="fas fa-table"></i> Detailed Timesheet</h5>
                             <form method="POST" action="../../employee_db/supervisor/reportTimesheet.php">
                                 <input type="hidden" name="month" value="<?php echo $selectedMonth; ?>">
@@ -875,9 +887,9 @@ $totalWorkMinutes = $totalWorkMinutes % 60;
                                 </button>
                             </form>
                         </div>
-                        <div class="card-body">
-                            <table id="timesheetTable" class="table table-hover">
-                                <thead>
+                        <div class="card-body text-light">
+                            <table id="timesheetTable" class="table table-hover table-striped">
+                                <thead class="bg-black">
                                     <tr>
                                         <th>Date</th>
                                         <th>Day</th>

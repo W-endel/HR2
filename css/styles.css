@@ -2105,13 +2105,13 @@ progress {
 }
 
 .table-striped>tbody>tr:nth-of-type(odd)>* {
-    --bs-table-accent-bg: var(--bs-table-striped-bg);
-    color: var(--bs-table-striped-color);
+    --bs-table-accent-bg: rgb(255 255 255 / 5%);
+    color: var(--bs-text-light);
 }
 
 .table-striped-columns> :not(caption)>tr> :nth-child(even) {
-    --bs-table-accent-bg: var(--bs-table-striped-bg);
-    color: var(--bs-table-striped-color);
+    --bs-table-accent-bg: rgb(255 255 255 / 5%);
+    color: var(--bs-text-light);
 }
 
 .table-active {

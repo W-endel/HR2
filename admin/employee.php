@@ -61,7 +61,7 @@ $result = $conn->query($sql);
                             <a class="btn btn-primary text-light" href="../admin/create_employee.php">Create Employee</a>
                         </div>
                         <div class="card-body">
-                            <table id="datatablesSimple" class="table text-light text-center">
+                            <table id="datatablesSimple" class="table text-light text-center table-striped">
                                 <thead class="thead-light">
                                     <tr class="text-center text-light">
                                         <th>Employee ID</th>

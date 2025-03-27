@@ -13,17 +13,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['add_question'])) {
         $category = $_POST['category'];
         $question = $_POST['question'];
-        $position = $_POST['position']; // Get the selected position
+        $position = $_POST['role']; // Get the selected position
 
         // Insert into database
-        $sql = "INSERT INTO evaluation_questions (category, question, position) VALUES (?, ?, ?)";
+        $sql = "INSERT INTO evaluation_questions (category, question, role) VALUES (?, ?, ?)";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("sss", $category, $question, $position);
         $stmt->execute();
         $stmt->close();
 
         // Redirect back to the settings page
-        header("Location: ../admin/settings.php#questions"); // Replace "settings.php" with the actual page name
+        header("Location: ../admin/settings.php#performance"); // Replace "settings.php" with the actual page name
         exit();
     }
 
@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt->close();
 
         // Redirect back to the settings page
-        header("Location: ../admin/settings.php#questions"); // Replace "settings.php" with the actual page name
+        header("Location: ../admin/settings.php#performance"); // Replace "settings.php" with the actual page name
         exit();
     }
 
@@ -54,13 +54,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt->close();
 
         // Redirect back to the settings page
-        header("Location: ../admin/settings.php#questions"); // Replace "settings.php" with the actual page name
+        header("Location: ../admin/settings.php#performance"); // Replace "settings.php" with the actual page name
         exit();
     }
 }
 
 // Fetch all questions and categories
-$sql = "SELECT * FROM evaluation_questions ORDER BY position, category, id";
+$sql = "SELECT * FROM evaluation_questions ORDER BY role, category, id";
 $result = $conn->query($sql);
 
 $questions = [];

@@ -80,7 +80,7 @@ if ($result->num_rows > 0) {
 }
 
 // Employee login check
-$sql = "SELECT employee_id, password, role, department FROM employee_register WHERE email = ?"; // Fetch department
+$sql = "SELECT employee_id, password, role, department, face_image, face_descriptor FROM employee_register WHERE email = ?"; // Fetch face_image and face_descriptor
 $stmt = $conn->prepare($sql);
 
 if ($stmt === false) {
@@ -103,49 +103,67 @@ if ($result->num_rows > 0) {
         $resetStmt->execute();
         $resetStmt->close();
 
-        $_SESSION['employee_id'] = $employeeData['employee_id']; 
-        $_SESSION['role'] = $employeeData['role']; // Store the user's role in the session
-        $_SESSION['department'] = $employeeData['department']; // Store the user's department in the session
+        // Debug: Check face_image and face_descriptor values
+        error_log("Face Image: " . $employeeData['face_image']);
+        error_log("Face Descriptor: " . $employeeData['face_descriptor']);
 
-        date_default_timezone_set('Asia/Manila');
+        // Check if face_image and face_descriptor are missing or empty
+        if (empty($employeeData['face_image']) || empty($employeeData['face_descriptor'])) {
+            // Set a session flag to indicate face registration is required
+            $_SESSION['face_registration_required'] = true;
+            $_SESSION['employee_id'] = $employeeData['employee_id'];
+            $_SESSION['role'] = $employeeData['role'];
+            $_SESSION['department'] = $employeeData['department'];
 
-        $login_time = date("Y-m-d H:i:s");
-
-        // Record login activity in the user_activity table
-        $activitySql = "INSERT INTO user_activity (user_id, login_time) VALUES (?, ?)";
-        $activityStmt = $conn->prepare($activitySql);
-        $activityStmt->bind_param("is", $_SESSION['employee_id'], $login_time);
-        $activityStmt->execute();
-        $activityStmt->close();
-
-        // Redirect based on role
-        if ($employeeData['role'] === 'Staff') {
-            $stmt->close();
-            $conn->close();
-            header("Location: ../HR2/employee/staff/dashboard.php"); // Redirect to staff dashboard
-            exit();
-        } elseif ($employeeData['role'] === 'Supervisor') {
-            $stmt->close();
-            $conn->close();
-            header("Location: ../HR2/employee/supervisor/dashboard.php"); // Redirect to supervisor dashboard
-            exit();
-        } elseif ($employeeData['role'] === 'Field Worker') {
-            $stmt->close();
-            $conn->close();
-            header("Location: ../HR2/employee/fieldworker/dashboard.php"); // Redirect to field worker dashboard
-            exit();
-        } elseif ($employeeData['role'] === 'Contractual') {
-            $stmt->close();
-            $conn->close();
-            header("Location: ../HR2/employee/contractual/dashboard.php"); // Redirect to contractual dashboard
+            // Redirect back to the login page to show the modal
+            header("Location: ../HR2/login.php");
             exit();
         } else {
-            // Handle other roles or unknown roles
-            $error = urlencode("Invalid role detected.");
-            $stmt->close();
-            $conn->close();
-            header("Location: ../HR2/login.php?error=$error");
-            exit();
+            // If face_image and face_descriptor are valid, store user data in the session
+            $_SESSION['employee_id'] = $employeeData['employee_id']; 
+            $_SESSION['role'] = $employeeData['role']; // Store the user's role in the session
+            $_SESSION['department'] = $employeeData['department']; // Store the user's department in the session
+
+            // Set the timezone and record login activity
+            date_default_timezone_set('Asia/Manila');
+            $login_time = date("Y-m-d H:i:s");
+
+            // Record login activity in the user_activity table
+            $activitySql = "INSERT INTO user_activity (user_id, login_time) VALUES (?, ?)";
+            $activityStmt = $conn->prepare($activitySql);
+            $activityStmt->bind_param("is", $_SESSION['employee_id'], $login_time);
+            $activityStmt->execute();
+            $activityStmt->close();
+
+            // Redirect based on role
+            if ($employeeData['role'] === 'Staff') {
+                $stmt->close();
+                $conn->close();
+                header("Location: ../HR2/employee/staff/dashboard.php");
+                exit();
+            } elseif ($employeeData['role'] === 'Supervisor') {
+                $stmt->close();
+                $conn->close();
+                header("Location: ../HR2/employee/supervisor/dashboard.php");
+                exit();
+            } elseif ($employeeData['role'] === 'Field Worker') {
+                $stmt->close();
+                $conn->close();
+                header("Location: ../HR2/employee/fieldworker/dashboard.php");
+                exit();
+            } elseif ($employeeData['role'] === 'Contractual') {
+                $stmt->close();
+                $conn->close();
+                header("Location: ../HR2/employee/contractual/dashboard.php");
+                exit();
+            } else {
+                // Handle other roles or unknown roles
+                $error = urlencode("Invalid role detected.");
+                $stmt->close();
+                $conn->close();
+                header("Location: ../HR2/login.php?error=$error");
+                exit();
+            }
         }
     } else {
         // Increment failed login attempts
@@ -156,7 +174,7 @@ if ($result->num_rows > 0) {
         header("Location: ../HR2/login.php?error=$error");
         exit();
     }
-} 
+}
 
 // Admin login check if employee login fails
 $sql = "SELECT a_id, password, role FROM admin_register WHERE email = ?";
@@ -276,3 +294,4 @@ function sendUnlockEmail($email) {
     }
 }
 ?>
+

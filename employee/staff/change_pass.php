@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     try {
         // Check if the email exists in the admin_register table
-        $sql = "SELECT firstname, lastname FROM employee_register WHERE email = ?";
+        $sql = "SELECT first_name, last_name FROM employee_register WHERE email = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param('s', $email);
         $stmt->execute();
@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if ($result->num_rows > 0) {
             // Fetch the first and last name
             $row = $result->fetch_assoc();
-            $userName = $row['firstname'] . ' ' . $row['lastname'];
+            $userName = $row['first_name'] . ' ' . $row['last_name'];
 
             // Generate the reset token and set expiration time
             date_default_timezone_set('Asia/Manila');
@@ -113,7 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <div class="row justify-content-center mt-5">
                         <div class="col-lg-5">
                             <div class="card shadow-lg border-0 rounded-lg mt-3 bg-dark">
-                                <div class="card-header border-bottom border-1 border-warning">
+                                <div class="card-header border-bottom border-1 border-secondary">
                                     <h3 class="text-center text-light font-weight-light my-4">Change Password</h3>
                                     <?php
                                     // Display message if set in session
@@ -134,10 +134,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                         <div class="d-flex align-items-center justify-content-end mt-4 mb-2">
                                             <button type="submit" class="btn btn-primary align-items-center w-100">Send Link</button>
                                         </div>
-                                        <div class="text-center mt-3 mb-2"> <a class="btn border-secondary w-100 text-light border border-1" href="../employee/profile.php">Back</a></div>
+                                        <div class="text-center mt-3 mb-2"> <a class="btn border-secondary w-100 text-light border border-1" href="../../employee/staff/profile.php">Back</a></div>
                                     </form>
                                 </div>
-                                <div class="card-footer text-center border-top border-1 border-warning">
+                                <div class="card-footer text-center border-top border-1 border-secondary">
                                     <div class="text-center text-muted">Human Resource 2</div>
                                 </div>
                             </div>

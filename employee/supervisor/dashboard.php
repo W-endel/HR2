@@ -192,7 +192,7 @@ $profilePicture = !empty($employeeInfo['pfp']) ? $employeeInfo['pfp'] : '../../i
                             <div class="card bg-dark text-light" style="height: 500px;">
                                 <div class="card-header text-light border-bottom border-1 border-secondary">
                                     <i class="fas fa-calendar-check me-1"></i> 
-                                    <a class="text-light" href="">Attendance </a>
+                                    <a class="text-light" href="../../employee/supervisor/timesheet.php#timesheet">Attendance </a>
                                 </div>
                                 <div class="card-body overflow-auto" style="max-height: 400px;">
                                     <div class="d-flex justify-content-between align-items-start mb-0">

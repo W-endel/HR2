@@ -493,7 +493,7 @@ foreach ($employeeAttendance as $record) {
         }
         
         .table th {
-            background-color: rgba(255, 255, 255, 0.05);
+            background-color: rgba(33, 37, 41);
             color: var(--text-primary);
             font-weight: 600;
             text-transform: uppercase;
@@ -781,7 +781,7 @@ foreach ($employeeAttendance as $record) {
                             </form>
                         </div>
                         <div class="card-body">
-                            <table id="timesheetTable" class="table table-hover">
+                            <table id="timesheetTable" class="table table-hover table-striped">
                                 <thead>
                                     <tr>
                                         <th>Date</th>

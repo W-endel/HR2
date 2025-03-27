@@ -1,14 +1,15 @@
 <?php
 session_start();
-if (!isset($_SESSION['e_id']) || !isset($_SESSION['position']) || $_SESSION['position'] !== 'Contractual') {
+if (!isset($_SESSION['employee_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'Contractual') {
     header("Location: ../../login.php");
     exit();
 }
 
 include '../../db/db_conn.php';
 
-$employeeId = $_SESSION['e_id'];
-$employeePosition = $_SESSION['position'];
+$employeeId = $_SESSION['employee_id'];
+$employeeRole = $_SESSION['role'];
+
 // Fetch the average of the employee's evaluations
 $sql = "SELECT 
             AVG(quality) AS avg_quality, 
@@ -17,11 +18,11 @@ $sql = "SELECT
             AVG(punctuality) AS avg_punctuality, 
             AVG(initiative) AS avg_initiative,
             COUNT(*) AS total_evaluations 
-        FROM admin_evaluations 
-        WHERE e_id = ?";
+        FROM ptp_evaluations 
+        WHERE employee_id = ?";
 
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $employeeId);
+$stmt->bind_param("s", $employeeId);
 $stmt->execute();
 $result = $stmt->get_result();
 
@@ -43,9 +44,9 @@ if ($result->num_rows > 0) {
 }
 
 // Fetch user info
-$sql = "SELECT firstname, middlename, lastname, email, role, position, pfp FROM employee_register WHERE e_id = ?";
+$sql = "SELECT first_name, middle_name, last_name, email, role, position, pfp FROM employee_register WHERE employee_id = ?";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $employeeId);
+$stmt->bind_param("s", $employeeId);
 $stmt->execute();
 $result = $stmt->get_result();
 $employeeInfo = $result->fetch_assoc();
@@ -65,56 +66,102 @@ $profilePicture = !empty($employeeInfo['pfp']) ? $employeeInfo['pfp'] : '../../i
     <meta name="description" content="" />
     <meta name="author" content="" />
     <title>Employee Dashboard | HR2</title>
+    <link href="../../css/styles.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
-    <link href="../../css/styles.css" rel="stylesheet" />
     <link href="../../css/calendar.css" rel="stylesheet"/>
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet'/>
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
-
     <style>
-        .collapse {
-            transition: width 3s ease;
+        /* Base styles for the calendar */
+        #ATTENDANCEcalendar .col {
+            padding: 5px; /* Add padding to calendar cells */
         }
 
-        #searchInput.collapsing {
-            width: 0;
+        /* Responsive adjustments */
+        @media (max-width: 767.98px) {
+            /* Adjust font size for smaller screens */
+            #ATTENDANCEcalendar .btn span {
+                font-size: 0.9rem; /* Smaller font size for mobile */
+            }
+
+            /* Reduce padding for smaller screens */
+            #ATTENDANCEcalendar .col {
+                padding: 2px;
+            }
+
+            /* Make buttons smaller on mobile */
+            #ATTENDANCEcalendar .btn {
+                height: 30px !important; /* Adjust button height for mobile */
+            }
         }
 
-        #searchInput.collapse.show {
-            width: 250px; /* Adjust the width as needed */
+        @media (max-width: 575.98px) {
+            /* Further adjustments for very small screens */
+            #ATTENDANCEcalendar .btn span {
+                font-size: 0.8rem; /* Even smaller font size */
+            }
+
+            #ATTENDANCEcalendar .col {
+                padding: 1px;
+            }
         }
 
-        .search-bar {
-            position: relative;
-            width: 100%;
-            max-width: 400px;
-            margin: 0 auto;
-        }
+        /* Base styles for the days of the week */
+            .row.text-center.fw-bold .col {
+                padding: 5px; /* Add padding to each day */
+                font-size: 1rem; /* Default font size */
+            }
 
-        #search-results {
-            position: absolute;
-            width: 100%;
-            z-index: 1000;
-            display: none; /* Hidden by default */
-        }
+            /* Responsive adjustments */
+            @media (max-width: 767.98px) {
+                /* Adjust font size for smaller screens */
+                .row.text-center.fw-bold .col {
+                    font-size: 0.9rem; /* Smaller font size for mobile */
+                    padding: 3px; /* Reduce padding for smaller screens */
+                }
+            }
 
-        #search-results a {
-            text-decoration: none;
-        }
+            @media (max-width: 575.98px) {
+                /* Further adjustments for very small screens */
+                .row.text-center.fw-bold .col {
+                    font-size: 0.8rem; /* Even smaller font size */
+                    padding: 2px; /* Further reduce padding */
+                }
+            }
 
-        .form-control:focus + #search-results {
-            display: block; /* Show the results when typing */
-        }
-        
+            /* Base styles for the chart container */
+            .chart-container {
+                position: relative;
+                height: 400px; /* Default height for desktop */
+                width: 100%;
+            }
 
-          /* CSS for background blur */
-  .blur-background {
-    filter: blur(8px); /* You can adjust the blur strength */
-    transition: filter 0.3s ease;
-  }
+            /* Responsive adjustments */
+            @media (max-width: 767.98px) {
+                /* Adjust height for tablets */
+                .chart-container {
+                    height: 300px;
+                }
+
+                /* Reduce font size for point labels */
+                #performanceRadarChart {
+                    font-size: 12px;
+                }
+            }
+
+            @media (max-width: 575.98px) {
+                /* Adjust height for mobile */
+                .chart-container {
+                    height: 250px;
+                }
+
+                /* Further reduce font size for point labels */
+                #performanceRadarChart {
+                    font-size: 10px;
+                }
+            }
     </style>
-
 </head>
 
 <body class="sb-nav-fixed bg-black">
@@ -122,7 +169,7 @@ $profilePicture = !empty($employeeInfo['pfp']) ? $employeeInfo['pfp'] : '../../i
     <div id="layoutSidenav">
         <?php include 'sidebar.php'; ?>
         <div id="layoutSidenav_content">
-            <main id="main-content">
+            <main>
                 <div class="container-fluid position-relative px-4">
                     <div class="">
                         <div class="row align-items-center">
@@ -145,20 +192,16 @@ $profilePicture = !empty($employeeInfo['pfp']) ? $employeeInfo['pfp'] : '../../i
                             <div class="card bg-dark text-light" style="height: 500px;">
                                 <div class="card-header text-light border-bottom border-1 border-secondary">
                                     <i class="fas fa-calendar-check me-1"></i> 
-                                    <a class="text-light" href="">Attendance </a>
+                                    <a class="text-light" href="../../employee/contractual/timesheet.php#timesheet">Attendance </a>
                                 </div>
                                 <div class="card-body overflow-auto" style="max-height: 400px;">
-                                    <div class="d-flex justify-content-between align-items-start mb-0">
-                                        <div>
-                                            <h5 class="fw-bold d-inline">Today's Date: <a href="../../employee/supervisor/dashboard.php" 
-                                            id="todaysDate" class="cursor-pointer text-decoration-none"><span id="todaysDateContent">Feb 21, 2025</span></a></h5>
-                                        </div>
-                                        <div>
-                                            <h5 class="fw-bold">Time in:</h5>
-                                            <p class="text-light">08:11 AM</p>
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="mb-2">
+                                            <h5 class="fw-bold d-inline">Today's Date: <a href="../../employee/contractual/dashboard.php" 
+                                            id="todaysDate" class="cursor-pointer text-decoration-none"><span id="todaysDateContent"></span></a></h5>
                                         </div>
                                     </div>
-                                    <div class="mb-3">
+                                    <div class="mb-3 mt-2">
                                         <label for="dateFilter" class="form-label">Filter by Date:</label>
                                         <input type="date" class="form-control" id="dateFilter">
                                     </div>
@@ -166,17 +209,17 @@ $profilePicture = !empty($employeeInfo['pfp']) ? $employeeInfo['pfp'] : '../../i
                                     <div class="mb-0">
                                         <h3 class="mb-0" id="monthYearDisplay"></h3>
                                         <div class="row text-center fw-bold">
-                                            <div class="col">Sun</div>
-                                            <div class="col">Mon</div>
-                                            <div class="col">Tue</div>
-                                            <div class="col">Wed</div>
-                                            <div class="col">Thu</div>
-                                            <div class="col">Fri</div>
-                                            <div class="col">Sat</div>
+                                            <div class="col p-1">Sun</div>
+                                            <div class="col p-1">Mon</div>
+                                            <div class="col p-1">Tue</div>
+                                            <div class="col p-1">Wed</div>
+                                            <div class="col p-1">Thu</div>
+                                            <div class="col p-1">Fri</div>
+                                            <div class="col p-1">Sat</div>
                                         </div>
 
                                         <!-- Calendar rows with attendance status -->
-                                        <div id="ATTENDANCEcalendar" class="pt-3 text-light bg-black"></div>
+                                        <div id="ATTENDANCEcalendar" class="pt-3 text-light bg-black rounded"></div>
                                     </div>
                                 </div>
                                 <div class="card-footer text-center d-flex justify-content-around">
@@ -193,62 +236,29 @@ $profilePicture = !empty($employeeInfo['pfp']) ? $employeeInfo['pfp'] : '../../i
                             <div class="card bg-dark">
                                 <div class="card-header text-light border-bottom border-1 border-secondary">
                                     <i class="fas fa-bar-chart me-1"></i>
-                                    <a class="text-light" href="">Performance Ratings</a>
+                                    <a class="text-light" href="../../employee/contractual/performance_rating.php">Performance Ratings</a>
                                 </div>
-                                <div class="card-body">
-                                    <!-- Canvas for Radar Chart -->
-                                    <canvas id="performanceRadarChart" width="400" height="400"></canvas>
+                                <div class="chart-container" style="position: relative; height: 459px; width: 100%;">
+                                    <canvas id="performanceRadarChart"></canvas>
                                 </div>
                             </div>
                         </div>
+                    </div>
                     <div class="row mb-4">
                         <div class="col-md-12 mt-2 mb-2">
                             <div class="card bg-dark text-light border-0">
                                 <div class="card-header border-bottom border-1 border-secondary">
-                                    <i class="fas fa-line-chart me-1"></i> 
-                                    <a class="text-light" href="">Top Perfomers</a>
+                                    <i class="fa fa-trophy me-1"></i> 
+                                    <a class="text-light" href="../../employee/contractual/awardee.php">Top Performers</a>
                                 </div>
                                 <div class="card-body">
-                                    <ul class="list-group list-group-flush">
-                                        <!-- Performer 1 -->
-                                        <li class="list-group-item bg-dark text-light d-flex align-items-center justify-content-between border-0">
-                                            <div class="d-flex align-items-center">
-                                                <img src="../../uploads/profile_pictures/try.jpg" alt="Performer 1" class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;">
-                                                <div>
-                                                    <h5 class="mb-0">John Doe</h5>
-                                                    <small class="text-warning">Sales Manager</small>
-                                                </div>
+                                    <ul class="list-group list-group-flush" id="topPerformersList">
+                                        <!-- Content will be loaded dynamically -->
+                                        <div class="text-center py-3">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Loading...</span>
                                             </div>
-                                            <div class="progress" style="width: 30%; height: 8px;">
-                                                <div class="progress-bar bg-success" role="progressbar" style="width: 90%;" aria-valuenow="90" aria-valuemin="0" aria-valuemax="100"></div>
-                                            </div>
-                                        </li>
-                                        <!-- Performer 2 -->
-                                        <li class="list-group-item bg-dark text-light d-flex align-items-center justify-content-between border-0">
-                                            <div class="d-flex align-items-center">
-                                                <img src="../../uploads/profile_pictures/pfp3.jpg" alt="Performer 2" class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;">
-                                                <div>
-                                                    <h5 class="mb-0">Jane Smith</h5>
-                                                    <small class="text-warning">Marketing Specialist</small>
-                                                </div>
-                                            </div>
-                                            <div class="progress" style="width: 30%; height: 8px;">
-                                                <div class="progress-bar bg-success" role="progressbar" style="width: 85%;" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100"></div>
-                                            </div>
-                                        </li>
-                                        <!-- Performer 3 -->
-                                        <li class="list-group-item bg-dark text-light d-flex align-items-center justify-content-between border-0">
-                                            <div class="d-flex align-items-center">
-                                                <img src="../../uploads/profile_pictures/logo.jpg" alt="Performer 3" class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;">
-                                                <div>
-                                                    <h5 class="mb-0">Michael Johnson</h5>
-                                                    <small class="text-warning">HR Manager</small>
-                                                </div>
-                                            </div>
-                                            <div class="progress" style="width: 30%; height: 8px;">
-                                                <div class="progress-bar bg-success" role="progressbar" style="width: 80%;" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
-                                            </div>
-                                        </li>
+                                        </div>
                                     </ul>
                                 </div>
                             </div>
@@ -281,7 +291,7 @@ $profilePicture = !empty($employeeInfo['pfp']) ? $employeeInfo['pfp'] : '../../i
                             <!-- Modal Header -->
                             <div class="modal-header border-bottom border-secondary">
                                 <h5 class="modal-title fw-bold" id="timeInfoModalLabel">Attendance Information</h5>
-                                <button type="button" class="btn-close bg-light" data-bs-dismiss="modal" aria-label="Close"></button>
+                                <button type="button" class="btn-close text-light" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
 
                             <!-- Modal Body -->
@@ -319,161 +329,11 @@ $profilePicture = !empty($employeeInfo['pfp']) ? $employeeInfo['pfp'] : '../../i
                         </div>
                     </div>
                 </div>
-                <div class="modal fade" id="todoModal" tabindex="-1" aria-labelledby="todoModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content bg-dark text-light">
-                            <div class="modal-header">
-                                <h5 class="modal-title text-info" id="todoModalLabel">To Do</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div class="d-flex justify-content-end">
-                                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addTaskModal">
-                                        <i class="fas fa-plus me-2"></i>Add To Do List
-                                    </button>
-                                </div>
-                                <ul class="list-group list-group-flush">
-                                    <li class="list-group-item bg-dark text-light fs-4 border-0 d-flex justify-content-between align-items-center">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" value="" id="task1">
-                                            <label class="form-check-label" for="task1">
-                                                <i class="bi bi-check-circle text-warning me-2"></i>Facial Recognition
-                                            </label>
-                                        </div>
-                                    </li>
-                                    <li class="list-group-item bg-dark text-light fs-4 border-0 d-flex justify-content-between align-items-center">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" value="" id="task2">
-                                            <label class="form-check-label" for="task2">
-                                                <i class="bi bi-check-circle text-warning me-2"></i>Attendance Record
-                                            </label>
-                                        </div>
-                                    </li>
-                                    <li class="list-group-item bg-dark text-light fs-4 border-0 d-flex justify-content-between align-items-center">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" value="" id="task3">
-                                            <label class="form-check-label" for="task3">
-                                                <i class="bi bi-check-circle text-warning me-2"></i>Leave Processing
-                                            </label>
-                                        </div>
-                                    </li>
-                                    <li class="list-group-item bg-dark text-light fs-4 border-0 d-flex justify-content-between align-items-center">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" value="" id="task4">
-                                            <label class="form-check-label" for="task4">
-                                                <i class="bi bi-check-circle text-warning me-2"></i>Performance Processing
-                                            </label>
-                                        </div>
-                                    </li>
-                                    <li class="list-group-item bg-dark text-light fs-4 border-0 d-flex justify-content-between align-items-center">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" value="" id="task5">
-                                            <label class="form-check-label" for="task5">
-                                                <i class="bi bi-check-circle text-warning me-2"></i>Payroll Processing
-                                            </label>
-                                        </div>
-                                    </li>
-                                    <li class="list-group-item bg-dark text-light fs-4 border-0 d-flex justify-content-between align-items-center">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" value="" id="task6">
-                                            <label class="form-check-label" for="task6">
-                                                <i class="bi bi-check-circle text-warning me-2"></i>Social Recognition
-                                            </label>
-                                        </div>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             <?php include 'footer.php'; ?>
         </div>
     </div>
 
 <script>
-    // for calendar only
-    let calendar; // Declare calendar variable globally
-
-    function toggleCalendar() {
-        const calendarContainer = document.getElementById('calendarContainer');
-        if (calendarContainer.style.display === 'none' || calendarContainer.style.display === '') {
-            calendarContainer.style.display = 'block';
-
-            // Initialize the calendar if it hasn't been initialized yet
-            if (!calendar) {
-                initializeCalendar();
-            }
-        } else {
-            calendarContainer.style.display = 'none';
-        }
-    }
-
-    function initializeCalendar() {
-        const calendarEl = document.getElementById('calendar');
-        calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth',
-            headerToolbar: {
-                left: 'prev,next today',
-                center: 'title',
-                right: 'dayGridMonth,timeGridWeek,timeGridDay'
-            },
-            height: 440,  // Set the height of the calendar to make it small
-            events: {
-                url: '../../db/holiday.php',  // Endpoint for fetching events
-                method: 'GET',
-                failure: function() {
-                    alert('There was an error fetching events!');
-                }
-            }
-        });
-
-        calendar.render();
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-        const currentDateElement = document.getElementById('currentDate');
-        const currentDate = new Date().toLocaleDateString(); // Get the current date
-        currentDateElement.textContent = currentDate; // Set the date text
-    });
-
-    document.addEventListener('click', function(event) {
-        const calendarContainer = document.getElementById('calendarContainer');
-        const calendarButton = document.querySelector('button[onclick="toggleCalendar()"]');
-
-        if (!calendarContainer.contains(event.target) && !calendarButton.contains(event.target)) {
-            calendarContainer.style.display = 'none';
-        }
-    });
-    // for calendar only end
-
-    function setCurrentTime() {
-        const currentTimeElement = document.getElementById('currentTime');
-        const currentDateElement = document.getElementById('currentDate');
-
-        const currentDate = new Date();
-
-        // Convert to 12-hour format with AM/PM
-        let hours = currentDate.getHours();
-        const minutes = currentDate.getMinutes();
-        const seconds = currentDate.getSeconds();
-        const ampm = hours >= 12 ? 'PM' : 'AM';
-
-        hours = hours % 12;
-        hours = hours ? hours : 12; // If hour is 0, set to 12
-
-        const formattedHours = hours < 10 ? '0' + hours : hours;
-        const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
-        const formattedSeconds = seconds < 10 ? '0' + seconds : seconds;
-
-        currentTimeElement.textContent = `${formattedHours}:${formattedMinutes}:${formattedSeconds} ${ampm}`;
-
-        // Format the date in text form (e.g., "January 12, 2025")
-        const options = { year: 'numeric', month: 'long', day: 'numeric' };
-        currentDateElement.textContent = currentDate.toLocaleDateString('en-US', options);
-    }
-
-    setCurrentTime();
-    setInterval(setCurrentTime, 1000);
 
 // ATTENDANCE
 let currentMonth = new Date().getMonth(); // January is 0, December is 11
@@ -531,9 +391,14 @@ function calculateAttendanceStatus(timeIn, timeOut) {
 function renderCalendar(month, year, attendanceRecords = {}) {
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const firstDay = new Date(year, month, 1).getDay();
+    const currentDate = new Date(); // Get the current date
+    const currentDay = currentDate.getDate();
+    const currentMonth = currentDate.getMonth();
+    const currentYear = currentDate.getFullYear();
 
     let calendarHTML = '<div class="row text-center pt-3">';
 
+    // Fill empty cells for days before the first day of the month
     for (let i = 0; i < firstDay; i++) {
         calendarHTML += '<div class="col"></div>';
     }
@@ -551,6 +416,10 @@ function renderCalendar(month, year, attendanceRecords = {}) {
         const isFilteredDay = filteredDay && filteredDay.getDate() === dayCounter && filteredDay.getMonth() === month && filteredDay.getFullYear() === year;
         const borderClass = isFilteredDay ? 'border border-2 border-light' : '';
 
+        // Check if the current day is today
+        const isToday = dayCounter === currentDay && month === currentMonth && year === currentYear;
+        const todayClass = isToday ? 'border border-2 border-light rounded-circle text-white d-flex align-items-center justify-content-center mx-auto' : ''; // Bootstrap classes for circle highlight
+
         // Simplified status logic, adding 'text-muted' for holidays, leaves, and day off
         let statusClass = '';
         if (statusCount > 1) {
@@ -559,14 +428,14 @@ function renderCalendar(month, year, attendanceRecords = {}) {
             statusClass = status === 'Present' ? 'text-success' : // Green for Present/Present
                           status === 'Absent' ? 'text-muted' : // Red for Absent
                           status === 'Late' ? 'text-warning' : // Yellow for Late
-                          status === 'Half-Day' ? 'text-light' : // Light for Half-Day
+                          status === 'Half-Day' ? 'text-success' : // Light for Half-Day
                           status === 'Early Out' ? 'text-warning' : // warning for Early Out
                           status === 'Day Off' || status === 'Holiday' || status === 'On Leave' ? 'text-danger' : ''; // Muted for Day Off, Holidays, and On Leave
         }
 
         calendarHTML += `
-            <div class="col">
-                <button class="btn text-light p-0 ${borderClass}" data-bs-toggle="modal" data-bs-target="#attendanceModal" onclick="showAttendanceDetails(${dayCounter})">
+            <div class="col p-1">
+                <button class="btn text-light p-0 ${borderClass} ${todayClass}" data-bs-toggle="modal" data-bs-target="#attendanceModal" onclick="showAttendanceDetails(${dayCounter})" style="width: 100%; height: 40px;">
                     <span class="fw-bold ${statusClass}">
                         ${dayCounter}
                     </span>
@@ -585,14 +454,17 @@ function renderCalendar(month, year, attendanceRecords = {}) {
         for (let i = 0; i < 7 && dayCounter <= daysInMonth; i++) {
             const dayStatus = attendanceRecords[dayCounter]; // Get the status for the current day
             const status = (dayOfWeek === 0) ? 'Day Off' : // Set "Day Off" for Sundays (day 0)
-                           (dayStatus && dayStatus.status === 'Holiday') ? 'Holiday' : // Check for holidays
+                           (dayStatus && dayStatus.status === 'Holiday') ? 'Holiday' :
                            dayStatus || ''; // Fallback to the status or empty string
 
             // Check for multiple statuses
             const statusCount = Array.isArray(attendanceRecords[dayCounter]) ? attendanceRecords[dayCounter].length : 1;
-            
             const isFilteredDay = filteredDay && filteredDay.getDate() === dayCounter && filteredDay.getMonth() === month && filteredDay.getFullYear() === year;
             const borderClass = isFilteredDay ? 'border border-2 border-light' : '';
+
+            // Check if the current day is today
+            const isToday = dayCounter === currentDay && month === currentMonth && year === currentYear;
+            const todayClass = isToday ? 'border border-2 border-light rounded-circle text-white d-flex align-items-center justify-content-center mx-auto' : ''; // Bootstrap classes for circle highlight
 
             // Simplified status logic, adding 'text-muted' for holidays, leaves, and day off
             let statusClass = '';
@@ -602,14 +474,14 @@ function renderCalendar(month, year, attendanceRecords = {}) {
                 statusClass = status === 'Present' ? 'text-success' : // Green for Present/Present
                               status === 'Absent' ? 'text-muted' : // Red for Absent
                               status === 'Late' ? 'text-warning' : // Yellow for Late
-                              status === 'Half-Day' ? 'text-light' : // Light for Half-Day
+                              status === 'Half-Day' ? 'text-success' : // Light for Half-Day
                               status === 'Early Out' ? 'text-warning' : // warning for Early Out
                               status === 'Day Off' || status === 'Holiday' || status === 'On Leave' ? 'text-danger' : ''; // Muted for Day Off, Holidays, and On Leave
             }
 
             calendarHTML += `
-                <div class="col">
-                    <button class="btn text-light p-0 ${borderClass}" data-bs-toggle="modal" data-bs-target="#attendanceModal" onclick="showAttendanceDetails(${dayCounter})">
+                <div class="col p-1">
+                    <button class="btn text-light p-0 ${borderClass} ${todayClass}" data-bs-toggle="modal" data-bs-target="#attendanceModal" onclick="showAttendanceDetails(${dayCounter})" style="width: 100%; height: 40px;">
                         <span class="fw-bold ${statusClass}">
                             ${dayCounter}
                         </span>
@@ -622,7 +494,7 @@ function renderCalendar(month, year, attendanceRecords = {}) {
 
         if (dayOfWeek < 7) {
             for (let j = dayOfWeek; j < 7; j++) {
-                calendarHTML += '<div class="col"></div>';
+                calendarHTML += '<div class="col p-1"></div>';
             }
         }
 
@@ -637,7 +509,7 @@ function renderCalendar(month, year, attendanceRecords = {}) {
 // Fetch attendance for the given month and year
 async function fetchAttendance(month, year) {
     try {
-        const response = await fetch(`/HR2/employee_db/supervisor/fetch_attendance.php?e_id=${employeeId}&month=${month + 1}&year=${year}`);
+        const response = await fetch(`/HR2/employee_db/contractual/fetch_attendance.php?employee_id=${employeeId}&month=${month + 1}&year=${year}`);
         const data = await response.json();
 
         if (data.error) {
@@ -665,7 +537,7 @@ async function showAttendanceDetails(day) {
     // Check if the selected day is a Sunday
     const isSunday = selectedDateObj.getDay() === 0; // Sunday is 0 in JavaScript's getDay()
 
-    const leaveResponse = await fetch(`/HR2/employee_db/supervisor/fetch_leave.php?e_id=${employeeId}&day=${day}&month=${currentMonth + 1}&year=${currentYear}`);
+    const leaveResponse = await fetch(`/HR2/employee_db/contractual/fetch_leave.php?employee_id=${employeeId}&day=${day}&month=${currentMonth + 1}&year=${currentYear}`);
     const leaveData = await leaveResponse.json();
 
     if (leaveData.onLeave) {
@@ -677,7 +549,7 @@ async function showAttendanceDetails(day) {
         statusElement.classList.remove('text-success', 'text-warning', 'text-info', 'text-light', 'text-muted', 'text-warning');
         statusElement.classList.add('text-danger');
     } else {
-        const attendanceResponse = await fetch(`/HR2/employee_db/supervisor/fetch_attendance.php?e_id=${employeeId}&day=${day}&month=${currentMonth + 1}&year=${currentYear}`);
+        const attendanceResponse = await fetch(`/HR2/employee_db/contractual/fetch_attendance.php?employee_id=${employeeId}&day=${day}&month=${currentMonth + 1}&year=${currentYear}`);
         const data = await attendanceResponse.json();
 
         if (data.error) {
@@ -892,8 +764,20 @@ const evaluationData = {
     totalAverage: <?php echo json_encode($totalAverage ?? null); ?>
 };
 
-// Radar Chart initialization
 const ctx = document.getElementById('performanceRadarChart').getContext('2d');
+
+// Function to calculate dynamic font size based on screen width
+function getDynamicFontSize() {
+    const screenWidth = window.innerWidth;
+    if (screenWidth < 576) { // Mobile
+        return 10;
+    } else if (screenWidth < 768) { // Tablet
+        return 12;
+    } else { // Desktop
+        return 14;
+    }
+}
+
 const performanceRadarChart = new Chart(ctx, {
     type: 'radar',
     data: {
@@ -902,11 +786,11 @@ const performanceRadarChart = new Chart(ctx, {
             {
                 label: 'Category Ratings',
                 data: [
-                    evaluationData.avg_quality,
-                    evaluationData.avg_communication_skills,
-                    evaluationData.avg_teamwork,
-                    evaluationData.avg_punctuality,
-                    evaluationData.avg_initiative
+                    parseFloat(evaluationData.avg_quality || 0).toFixed(2), // Fallback to 0 if invalid
+                    parseFloat(evaluationData.avg_communication_skills || 0).toFixed(2), // Fallback to 0 if invalid
+                    parseFloat(evaluationData.avg_teamwork || 0).toFixed(2), // Fallback to 0 if invalid
+                    parseFloat(evaluationData.avg_punctuality || 0).toFixed(2), // Fallback to 0 if invalid
+                    parseFloat(evaluationData.avg_initiative || 0).toFixed(2) // Fallback to 0 if invalid
                 ],
                 backgroundColor: 'rgba(54, 162, 235, 0.2)', // Light blue fill
                 borderColor: 'rgba(54, 162, 235, 1)', // Blue border
@@ -915,11 +799,11 @@ const performanceRadarChart = new Chart(ctx, {
             {
                 label: 'Overall Rating',
                 data: [
-                    evaluationData.totalAverage,
-                    evaluationData.totalAverage,
-                    evaluationData.totalAverage,
-                    evaluationData.totalAverage,
-                    evaluationData.totalAverage
+                    parseFloat(evaluationData.totalAverage || 0).toFixed(2), // Fallback to 0 if invalid
+                    parseFloat(evaluationData.totalAverage || 0).toFixed(2), // Fallback to 0 if invalid
+                    parseFloat(evaluationData.totalAverage || 0).toFixed(2), // Fallback to 0 if invalid
+                    parseFloat(evaluationData.totalAverage || 0).toFixed(2), // Fallback to 0 if invalid
+                    parseFloat(evaluationData.totalAverage || 0).toFixed(2) // Fallback to 0 if invalid
                 ],
                 backgroundColor: 'rgba(255, 99, 132, 0.2)', // Light red fill
                 borderColor: 'rgba(255, 99, 132, 1)', // Red border
@@ -963,7 +847,8 @@ const performanceRadarChart = new Chart(ctx, {
                 enabled: true, // Enable tooltips
                 callbacks: {
                     label: function (context) {
-                        return `${context.dataset.label}: ${context.raw}`; // Show dataset label and value in tooltip
+                        // Format tooltip value to 2 decimal places
+                        return `${context.dataset.label}: ${parseFloat(context.raw || 0).toFixed(2)}`;
                     }
                 }
             },
@@ -978,14 +863,221 @@ const performanceRadarChart = new Chart(ctx, {
                     return context.datasetIndex === 0 ? 'top' : 'bottom';
                 },
                 formatter: function (value) {
-                    return value; // Display the value as the label
+                    // Format data label value to 2 decimal places
+                    return parseFloat(value || 0).toFixed(2);
+                },
+                font: {
+                    weight: 'bold', // Make the text bold
+                    size: getDynamicFontSize(), // Use dynamic font size
+                    family: 'Arial' // Optional: Set font family
                 }
             }
         },
-        responsive: true,
-        maintainAspectRatio: false
+        responsive: true, // Enable responsiveness
+        maintainAspectRatio: false // Allow chart to adjust height and width independently
     },
     plugins: [ChartDataLabels] // Enable the datalabels plugin
+});
+
+// Function to update the chart on window resize
+function updateChartOnResize() {
+    performanceRadarChart.options.plugins.datalabels.font.size = getDynamicFontSize(); // Update font size
+    performanceRadarChart.update(); // Update the chart to reflect new font sizes
+}
+
+// Add event listener for window resize
+window.addEventListener('resize', updateChartOnResize);
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('../../employee_db/contractual/top_performers.php')
+        .then(response => response.json())
+        .then(data => {
+            const topPerformersList = document.getElementById('topPerformersList');
+            topPerformersList.innerHTML = '';
+            
+            if (data.length === 0) {
+                topPerformersList.innerHTML = `
+                    <li class="list-group-item bg-dark text-light text-center border-0 py-4">
+                        <i class="fas fa-info-circle fa-2x mb-3 text-muted"></i>
+                        <p class="mb-0">No performance data available</p>
+                    </li>
+                `;
+                return;
+            }
+            
+            // Process top performers
+            const performerPromises = data.slice(0, 3).map((performer, index) => {
+                return fetch(`../../employee_db/get_profile_picture.php?employee_id=${performer.employee_id}`)
+                    .then(response => response.json())
+                    .then(picData => {
+                        performer.profile_pic = picData.profile_pic || null;
+                        return performer;
+                    })
+                    .catch(() => {
+                        performer.profile_pic = null;
+                        return performer;
+                    });
+            });
+
+            Promise.all(performerPromises).then(performersWithPics => {
+                performersWithPics.forEach((performer, index) => {
+                    const scorePercentage = (performer.avg_score / 6) * 100;
+                    const medalColors = ['#FFD700', '#C0C0C0', '#CD7F32'];
+                    const medalIcons = ['crown', 'award', 'medal'];
+                    const rankLabels = ['1st', '2nd', '3rd'];
+                    
+                    // Generate initials and color
+                    const initials = (performer.first_name ? performer.first_name.charAt(0) : '') + 
+                                     (performer.last_name ? performer.last_name.charAt(0) : '');
+                    const nameForColor = (performer.first_name || '') + (performer.last_name || '');
+                    const hash = Array.from(nameForColor).reduce((hash, char) => {
+                        return char.charCodeAt(0) + ((hash << 5) - hash);
+                    }, 0);
+                    const color = `hsl(${hash % 360}, 70%, 60%)`;
+                    
+                    // Profile picture path
+                    const profilePicPath = performer.profile_pic ? 
+                        `../../employee_db/get_profile_image.php?id=${performer.employee_id}` : 
+                        null;
+                    
+                    // Use department if position is not available
+                    const positionOrDept = performer.position || performer.department || 'Employee';
+                    
+                    // Avatar content
+                    const avatarContent = performer.profile_pic ? 
+                        `<img src="${profilePicPath}" 
+                            alt="${performer.first_name} ${performer.last_name}" 
+                            class="rounded-circle border border-2" 
+                            style="width: 60px; height: 60px; object-fit: cover; ${index < 3 ? `border-color: ${medalColors[index]} !important;` : ''}"
+                            onerror="this.onerror=null; this.parentNode.innerHTML='<div class=\'rounded-circle border border-2 d-flex align-items-center justify-content-center\' style=\'width: 60px; height: 60px; background-color: #000; ${index < 3 ? `border-color: ${medalColors[index]} !important;` : ''}\'><span style=\'font-weight: bold; font-size: 1.2rem; color: white;\'>${initials}</span></div>'">` :
+                        `<div class="rounded-circle border border-2 d-flex align-items-center justify-content-center" 
+                            style="width: 60px; height: 60px; background-color: #000; ${index < 3 ? `border-color: ${medalColors[index]} !important;` : ''}">
+                            <span style="font-weight: bold; font-size: 1.2rem; color: white;">${initials}</span>
+                        </div>`;
+                    
+                    topPerformersList.innerHTML += `
+                        <li class="list-group-item bg-dark text-light border-0 p-3 mb-2 rounded" 
+                            style="background: rgba(16, 17, 18) !important;">
+                            <div class="d-flex flex-wrap align-items-center justify-content-between">
+                                <div class="d-flex align-items-center mb-2 mb-md-0">
+                                    <div class="position-relative me-3">
+                                        <div class="performer-avatar-container" style="position: relative;">
+                                            ${avatarContent}
+                                            ${index < 3 ? `
+                                            <div class="position-absolute top-0 start-100 translate-middle" 
+                                                 style="margin-left: -15px; margin-top: -5px;">
+                                                <span class="badge rounded-pill" 
+                                                      style="background-color: ${medalColors[index]}; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;">
+                                                    <i class="fas fa-${medalIcons[index]} text-dark"></i>
+                                                </span>
+                                            </div>
+                                            ` : ''}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h5 class="mb-0 fw-bold">${performer.first_name} ${performer.last_name}</h5>
+                                        <div class="d-flex align-items-center">
+                                            <small class="text-warning">${positionOrDept}</small>
+                                            ${index < 3 ? `
+                                            <span class="badge rounded-pill ms-2" 
+                                                  style="background-color: ${medalColors[index]}; color: #000; font-size: 0.7rem;">
+                                                ${rankLabels[index]}
+                                            </span>
+                                            ` : ''}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <div class="me-3">
+                                        <div class="text-end mb-1">
+                                            <small class="text-muted">Performance Score</small>
+                                        </div>
+                                        <div class="progress" style="width: 120px; height: 10px; background-color: rgba(255, 255, 255, 0.1); border-radius: 5px; overflow: hidden;">
+                                            <div class="progress-bar 
+                                                ${scorePercentage >= 90 ? 'bg-success' : 
+                                                  scorePercentage >= 80 ? 'bg-info' : 
+                                                  scorePercentage >= 70 ? 'bg-primary' : 'bg-warning'}" 
+                                                role="progressbar" 
+                                                style="width: ${scorePercentage}%; transition: width 1s ease-in-out;" 
+                                                aria-valuenow="${scorePercentage}" 
+                                                aria-valuemin="0" 
+                                                aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="score-badge" 
+                                             style="background-color: rgba(0,0,0,0.3); border: 2px solid ${
+                                                 scorePercentage >= 90 ? '#28a745' : 
+                                                 scorePercentage >= 80 ? '#17a2b8' : 
+                                                 scorePercentage >= 70 ? '#007bff' : '#ffc107'
+                                             }; border-radius: 50%; width: 50px; height: 50px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                                            <span style="font-size: 1rem; font-weight: bold;">${performer.avg_score.toFixed(1)}</span>
+                                            <small style="font-size: 0.6rem; margin-top: -3px;">/ 6</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    `;
+                });
+                
+                // Add animation to the progress bars
+                setTimeout(() => {
+                    const progressBars = document.querySelectorAll('.progress-bar');
+                    progressBars.forEach(bar => {
+                        const finalWidth = bar.style.width;
+                        bar.style.width = '0%';
+                        setTimeout(() => {
+                            bar.style.width = finalWidth;
+                        }, 100);
+                    });
+                }, 300);
+            });
+        })
+        .catch(error => {
+            console.error('Error loading top performers:', error);
+            document.getElementById('topPerformersList').innerHTML = `
+                <li class="list-group-item bg-dark text-light text-center border-0 py-4">
+                    <i class="fas fa-exclamation-triangle fa-2x mb-3 text-warning"></i>
+                    <p class="mb-0">Error loading performance data</p>
+                    <button class="btn btn-outline-primary btn-sm mt-3" onclick="location.reload()">
+                        <i class="fas fa-sync-alt me-1"></i> Try Again
+                    </button>
+                </li>
+            `;
+        });
+        
+    // Mobile adjustments (same as before)
+    function adjustForMobile() {
+        if (window.innerWidth < 768) {
+            const scoreBadges = document.querySelectorAll('.score-badge');
+            scoreBadges.forEach(badge => {
+                badge.style.width = '40px';
+                badge.style.height = '40px';
+            });
+            
+            const progressBars = document.querySelectorAll('.progress');
+            progressBars.forEach(bar => {
+                bar.style.width = '80px';
+            });
+        } else {
+            const scoreBadges = document.querySelectorAll('.score-badge');
+            scoreBadges.forEach(badge => {
+                badge.style.width = '50px';
+                badge.style.height = '50px';
+            });
+            
+            const progressBars = document.querySelectorAll('.progress');
+            progressBars.forEach(bar => {
+                bar.style.width = '120px';
+            });
+        }
+    }
+    
+    window.addEventListener('resize', adjustForMobile);
+    setTimeout(adjustForMobile, 1000);
 });
 </script>
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'> </script>
@@ -996,4 +1088,3 @@ const performanceRadarChart = new Chart(ctx, {
 </body>
 
 </html>
-

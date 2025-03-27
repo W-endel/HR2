@@ -461,8 +461,8 @@ while ($row = $result->fetch_assoc()) {
     </style>
 </head>
 <body class="sb-nav-fixed bg-black">
-    <?php include 'navbar.php'; ?>
     <div id="layoutSidenav">
+        <?php include 'navbar.php'; ?>
         <?php include 'sidebar.php'; ?>
         <div id="layoutSidenav_content">
             <main>
@@ -991,10 +991,10 @@ while ($row = $result->fetch_assoc()) {
                             <h5 class="modal-title" id="successAddModalLabel">Success</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                        <div class="modal-body" id="successAddMessage">
+                        <div class="modal-body text-light" id="successAddMessage">
                             Non-working day added successfully!
                         </div>
-                        <div class="modal-footer">
+                        <div class="modal-footer d-flex justify-content-center">
                             <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
                         </div>
                     </div>
@@ -1009,7 +1009,7 @@ while ($row = $result->fetch_assoc()) {
                             <h5 class="modal-title" id="confirmDeleteLabel">Confirm Deletion</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                        <div class="modal-body">
+                        <div class="modal-body text-light">
                             Are you sure you want to delete this non-working day?
                         </div>
                         <div class="modal-footer">
@@ -1028,10 +1028,10 @@ while ($row = $result->fetch_assoc()) {
                             <h5 class="modal-title" id="successModalLabel">Success</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                        <div class="modal-body" id="successMessage">
+                        <div class="modal-body text-light" id="successMessage">
                             Non-working day deleted successfully!
                         </div>
-                        <div class="modal-footer">
+                        <div class="modal-footer d-flexl justify-content-center">
                             <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
                         </div>
                     </div>
@@ -1046,7 +1046,7 @@ while ($row = $result->fetch_assoc()) {
                             <h5 class="modal-title" id="confirmSetAllocationLabel">Confirm Allocation</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                        <div class="modal-body">
+                        <div class="modal-body text-light">
                             Are you sure you want to set these leave allocations?
                         </div>
                         <div class="modal-footer">
@@ -1065,7 +1065,7 @@ while ($row = $result->fetch_assoc()) {
                             <h5 class="modal-title" id="confirmDeleteQuestionLabel">Confirm Deletion</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                        <div class="modal-body">
+                        <div class="modal-body text-light">
                             Are you sure you want to delete this question?
                         </div>
                         <div class="modal-footer">

@@ -2,8 +2,8 @@
 date_default_timezone_set('Asia/Manila');
 include 'db/db_conn.php';
 
-// Function to insert default "Absent" records for all employees
-function insertDefaultAbsentRecords($conn, $currentDate) {
+// Function to insert default records for all employees
+function insertDefaultRecords($conn, $currentDate) {
     // Fetch all employees from employee_register
     $query = "SELECT employee_id FROM employee_register";
     $result = $conn->query($query);
@@ -19,30 +19,78 @@ function insertDefaultAbsentRecords($conn, $currentDate) {
             $checkStmt->execute();
             $checkResult = $checkStmt->get_result();
 
-            // If no record exists, insert a default "Absent" record without time_in or time_out
+            // If no record exists, insert a default record
             if ($checkResult->num_rows == 0) {
+                // Check if the current date is a holiday
+                if (isHoliday($conn, $currentDate)) {
+                    $status = 'Holiday'; // Set status to 'Holiday'
+                } 
+                // Check if the employee is on leave
+                elseif (isOnLeave($conn, $employeeId, $currentDate)) {
+                    $status = 'On Leave'; // Set status to 'Leave'
+                } 
+                // Otherwise, set status to 'Absent'
+                else {
+                    $status = 'Absent';
+                }
+
+                // Insert the record with the appropriate status
                 $insertQuery = "INSERT INTO attendance_log (employee_id, attendance_date, status) VALUES (?, ?, ?)";
                 $insertStmt = $conn->prepare($insertQuery);
-                $status = 'Absent'; // Default status
                 $insertStmt->bind_param("sss", $employeeId, $currentDate, $status);
 
                 if (!$insertStmt->execute()) {
-                    error_log("Failed to insert default absent record for employee ID: $employeeId");
+                    error_log("Failed to insert default record for employee ID: $employeeId");
                 }
             }
         }
     }
 }
 
+// Function to check if the current date is a holiday
+function isHoliday($conn, $currentDate) {
+    $query = "SELECT * FROM non_working_days WHERE date = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("s", $currentDate);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    return $result->num_rows > 0; // Returns true if the date is a holiday
+}
+
+// Function to check if the employee is on leave
+function isOnLeave($conn, $employeeId, $currentDate) {
+    $query = "SELECT * FROM leave_requests WHERE employee_id = ? AND ? BETWEEN start_date AND end_date";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("ss", $employeeId, $currentDate);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    return $result->num_rows > 0; // Returns true if the employee is on leave
+}
+
 // Current date and time
 $currentDate = date('Y-m-d');
 $currentTime = date('Y-m-d H:i:s');
 
-// Insert default "Absent" records for all employees
-insertDefaultAbsentRecords($conn, $currentDate);
+// Insert default records for all employees
+insertDefaultRecords($conn, $currentDate);
 
 if (isset($_POST['employeeId'])) {
     $employeeId = $_POST['employeeId']; // employee_id is VARCHAR
+
+    // Check if the current date is a holiday
+    $isHoliday = isHoliday($conn, $currentDate);
+
+    // Check if the employee is on leave
+    if (isOnLeave($conn, $employeeId, $currentDate)) {
+        // Update the status to 'Leave' if it's not already set
+        $updateQuery = "UPDATE attendance_log SET status = 'Leave' WHERE employee_id = ? AND attendance_date = ?";
+        $updateStmt = $conn->prepare($updateQuery);
+        $updateStmt->bind_param("ss", $employeeId, $currentDate);
+        $updateStmt->execute();
+
+        echo json_encode(["success" => true, "message" => "Employee is on leave.", "status" => "Leave"]);
+        exit;
+    }
 
     // Check existing attendance for today
     $query = "SELECT * FROM attendance_log WHERE employee_id = ? AND attendance_date = ?";
@@ -58,11 +106,11 @@ if (isset($_POST['employeeId'])) {
         if ($attendance['time_in'] === null) {
             $updateQuery = "UPDATE attendance_log SET time_in = ?, status = ? WHERE id = ?";
             $updateStmt = $conn->prepare($updateQuery);
-
-            $timeIn = new DateTime($currentTime);
-            $lateThreshold = new DateTime($currentDate . ' 08:00:00');
-            $status = ($timeIn > $lateThreshold) ? 'Late' : 'Present';
-
+        
+            // Corrected line with proper grouping
+            $isLate = (new DateTime($currentTime)) > (new DateTime($currentDate . ' 08:00:00'));
+            $status = $isHoliday ? 'Holiday Duty' : ($isLate ? 'Late' : 'Present');
+            
             $updateStmt->bind_param("ssi", $currentTime, $status, $attendance['id']);
             $updateStmt->execute();
             echo json_encode(["success" => true, "message" => "Time-in recorded.", "status" => $status]);
@@ -109,7 +157,9 @@ if (isset($_POST['employeeId'])) {
             $totalWorkedMinutes = ($workedHours * 60) + $workedMinutes;
 
             // Determine status
-            if ($totalWorkedMinutes < 120) { // Less than 2 hours (120 minutes)
+            if ($isHoliday) {
+                $status = 'Holiday Duty'; // Always set to 'Holiday Duty' if it's a holiday
+            } elseif ($totalWorkedMinutes < 120) { // Less than 2 hours (120 minutes)
                 $status = 'Absent';
             } elseif ($totalWorkedMinutes < 360) { // 2 to 6 hours (120 to 360 minutes)
                 $status = 'Half-Day';
@@ -132,10 +182,10 @@ if (isset($_POST['employeeId'])) {
         $insertQuery = "INSERT INTO attendance_log (employee_id, time_in, attendance_date, status) VALUES (?, ?, ?, ?)";
         $insertStmt = $conn->prepare($insertQuery);
 
-        $timeIn = new DateTime($currentTime);
-        $lateThreshold = new DateTime($currentDate . ' 08:00:00');
-        $status = ($timeIn > $lateThreshold) ? 'Late' : 'Present';
-
+        // If it's a holiday, set status to 'Holiday Duty'
+        $isLate = (new DateTime($currentTime)) > (new DateTime($currentDate . ' 08:00:00'));
+        $status = $isHoliday ? 'Holiday Duty' : ($isLate ? 'Late' : 'Present');
+        
         $insertStmt->bind_param("ssss", $employeeId, $currentTime, $currentDate, $status);
 
         if ($insertStmt->execute()) {

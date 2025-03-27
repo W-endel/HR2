@@ -46,7 +46,7 @@ unset($_SESSION['face_registration_required']); // Clear the flag after use
                                             <label class="fw-bold position-absolute text-light" style="top: -10px; left: 15px; background-color: #212529; padding: 0 5px;" for="inputEmail">
                                                 Email address
                                             </label>
-                                            <input class="form-control fw-bold bg-dark border border-2 border-secondary text-light"
+                                            <input class="form-control fw-bold bg-black border border-1 border-secondary text-light"
                                                 style="height: 60px; padding-top: 15px; padding-bottom: 15px;" id="inputEmail" type="email" name="email"
                                                 placeholder="name@example.com" required pattern="[^\s@]+@[^\s@]+\.[^\s@]+" />
                                             <div class="invalid-feedback">Email is required and must be in a valid format (e.g., name@example.com).</div>
@@ -55,7 +55,7 @@ unset($_SESSION['face_registration_required']); // Clear the flag after use
                                             <label class="fw-bold position-absolute text-light"
                                                 style="top: -10px; left: 15px; background-color: #212529; padding: 0 5px;"
                                                 for="inputPassword">Password</label>
-                                            <input class="form-control fw-bold bg-dark border border-2 border-secondary text-light"
+                                            <input class="form-control fw-bold bg-black border border-1 border-secondary text-light"
                                                 style="height: 60px; padding-top: 15px; padding-bottom: 15px; padding-right: 60px;"
                                                 id="inputPassword" type="password" name="password" required placeholder="Password" />
                                             <button type="button" class="btn text-muted position-absolute me-1"
